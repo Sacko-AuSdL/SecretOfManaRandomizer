@@ -39,6 +39,14 @@ namespace SoMRandomizer.processing.openworld.randomization
                 string weaponName = SomVanillaValues.weaponByteToName(i);
                 foreach (string plandoKey in plandoSettings.Keys)
                 {
+                    // Start-with weapons are compatible with character starter weapons: when a
+                    // match is selected, OpenWorldPrizes simply avoids granting that weapon a
+                    // second time. Only weapons assigned to ordinary prize locations must be
+                    // reserved from starter selection.
+                    if(plandoKey == PlandoProperties.KEY_LOCATION_START_WITH)
+                    {
+                        continue;
+                    }
                     if (plandoSettings[plandoKey].Contains(weaponName))
                     {
                         plandoWeaponIndexes.Add(i);

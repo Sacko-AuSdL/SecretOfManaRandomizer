@@ -8,6 +8,7 @@ $commonType = $assembly.GetType('SoMRandomizer.config.settings.CommonSettings', 
 $settingsType = $assembly.GetType('SoMRandomizer.config.settings.OpenWorldSettings', $true)
 $contextType = $assembly.GetType('SoMRandomizer.processing.common.RandoContext', $true)
 $simulatorType = $assembly.GetType('SoMRandomizer.processing.openworld.randomization.OpenWorldSimulator', $true)
+$startingWeaponType = $assembly.GetType('SoMRandomizer.processing.openworld.randomization.StartingWeaponRandomizer', $true)
 $prizeLocationType = $assembly.GetType('SoMRandomizer.processing.openworld.randomization.PrizeLocation', $true)
 $prizeItemType = $assembly.GetType('SoMRandomizer.processing.openworld.randomization.PrizeItem', $true)
 
@@ -91,4 +92,28 @@ $control = New-TestObjects
 $controlResult = Invoke-Simulation $control[0] $control[1]
 Assert-True ($controlResult.score -eq -1) 'Control simulation unexpectedly received start-with prizes.'
 
-Write-Output 'PASS: simulator credits supported explicit Start-with weapons/spells, and the Crystal Orb bootstrap is absent.'
+function Invoke-StarterWeaponSelection([string]$PlandoKey, [string[]]$Weapons) {
+    $objects = New-TestObjects
+    $settings = $objects[0]; $context = $objects[1]
+    $workingData = $contextType.GetField('workingData').GetValue($context)
+    [void]$workingData.setBool('boyExists', $true)
+    [void]$workingData.setBool('girlExists', $false)
+    [void]$workingData.setBool('spriteExists', $false)
+    [void]$workingData.set('startingCharacter', 'boy')
+    [void]$contextType.GetField('randomFunctional').SetValue($context, [Random]::new(12345))
+    $weaponList = [System.Collections.Generic.List[string]]::new()
+    foreach($weapon in $Weapons) { [void]$weaponList.Add($weapon) }
+    $contextType.GetField('plandoSettings').GetValue($context)[$PlandoKey] = $weaponList
+    [void]$startingWeaponType.GetMethod('setStartingWeapons').Invoke($null, [object[]]@($settings, $context))
+    return [int]$workingData.getInt('boyStartWeapon')
+}
+
+[string[]]$allWeapons = @('Glove', 'Sword', 'Axe', 'Spear', 'Whip', 'Bow', 'Boomerang', 'Javelin')
+$startWithWeapon = Invoke-StarterWeaponSelection 'p_(Start-with)' $allWeapons
+Assert-True ($startWithWeapon -ge 0 -and $startWithWeapon -le 7) `
+    'All eight Start-with weapons prevented starter-weapon selection.'
+$ordinaryPlandoWeapon = Invoke-StarterWeaponSelection 'p_Test location' $allWeapons[0..6]
+Assert-True ($ordinaryPlandoWeapon -eq 7) `
+    'Ordinary plando locations no longer reserve their assigned weapons.'
+
+Write-Output 'PASS: simulator credits Start-with prizes; Start-with weapons remain valid starters; ordinary plando reservations remain enforced; bootstrap is absent.'
