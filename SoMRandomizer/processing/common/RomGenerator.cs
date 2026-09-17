@@ -39,6 +39,8 @@ namespace SoMRandomizer.processing.common
             commonHacks.Add(new FasterMagicLevels());
             // 4x weapon leveling speed
             commonHacks.Add(new FasterWeaponLevels());
+            // optional reduced Watts weapon upgrade prices
+            commonHacks.Add(new WeaponUpgradeCosts());
             // speed up status messages
             commonHacks.Add(new FasterTopOfScreenDialogue());
             // restore MP at levelup

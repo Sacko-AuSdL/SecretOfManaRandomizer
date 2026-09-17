@@ -29,6 +29,7 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_LEVELUPS_RESTORE_MP = "mpAtLevel";
         public const string PROPERTYNAME_FASTER_MAGIC_LEVELS = "fasterMagicLevel";
         public const string PROPERTYNAME_FASTER_WEAPON_LEVELS = "fasterWeaponLevel";
+        public const string PROPERTYNAME_WEAPON_UPGRADE_COSTS = "weaponUpgradeCosts";
         public const string PROPERTYNAME_FASTER_TOP_SCREEN_DIALOGUE = "fasterMessages";
         public const string PROPERTYNAME_MAX_7_ITEMS = "moreItems";
         public const string PROPERTYNAME_STARTER_GEAR = "starterGear";
@@ -169,6 +170,7 @@ namespace SoMRandomizer.config.settings
             // for custom, the UI pushes a set of custom keys in for each color that are read by the palette rando hack, prefixed by PROPERTYNAME_PREFIX_CUSTOM_CHARACTER_COLORS
             setInitial(PROPERTYNAME_RANDOMIZE_CHAR_COLORS, new string[] { "none", "rando", "custom" }, new string[] { "No change", "Randomize", "Specify..." }, "rando");
             setInitial(PROPERTYNAME_DAMAGE_CANCEL_ALLOW_TYPE, new string[] { "all", "consumables", "none" }, new string[] { "All", "Consumables", "None" }, "all");
+            setInitial(PROPERTYNAME_WEAPON_UPGRADE_COSTS, new string[] { "vanilla", "reduced" }, new string[] { "Vanilla", "Reduced" }, "vanilla");
 
             // progress of longer running generation modes like ancient cave
             setInitial(PROPERTYNAME_CURRENT_PROGRESS, 0);
