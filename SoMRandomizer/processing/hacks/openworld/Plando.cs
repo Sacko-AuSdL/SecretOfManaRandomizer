@@ -398,6 +398,11 @@ namespace SoMRandomizer.processing.hacks.openworld
             }.ToList();
         }
 
+        internal static bool tryGetOpenWorldPrizeName(string plandoPrizeName, out string openWorldPrizeName)
+        {
+            return plandoPrizeNamesToOpenWorld.TryGetValue(plandoPrizeName, out openWorldPrizeName);
+        }
+
         // replace "any" prize with randomly chosen one from that category
         public static void processAnyPrizes(List<string> startingItems, RandoContext context)
         {

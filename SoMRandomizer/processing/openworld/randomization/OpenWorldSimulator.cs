@@ -3,6 +3,7 @@ using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
 using System.Collections.Generic;
 using System.Linq;
+using static SoMRandomizer.processing.openworld.PlandoProperties;
 
 namespace SoMRandomizer.processing.openworld.randomization
 {
@@ -76,6 +77,21 @@ namespace SoMRandomizer.processing.openworld.randomization
             {
                 gottenPrizeNames.Add("sprite");
                 gottenPrizeNames.Add(SomVanillaValues.weaponByteToName(spriteStarterWeapon).ToLower());
+            }
+
+            // OpenWorldPrizes grants explicit Start-with entries in the initial event and
+            // removes them from the ordinary prize pool. Credit those same prizes here so
+            // reachability simulation begins with the inventory the generated ROM receives.
+            if (plandoSettings.TryGetValue(KEY_LOCATION_START_WITH, out List<string> startingPrizes))
+            {
+                foreach (string startingPrize in startingPrizes)
+                {
+                    if (Plando.tryGetOpenWorldPrizeName(startingPrize, out string openWorldPrizeName) &&
+                        !gottenPrizeNames.Contains(openWorldPrizeName))
+                    {
+                        gottenPrizeNames.Add(openWorldPrizeName);
+                    }
+                }
             }
 
             List<string> girlSpellsChars = new List<string>();
