@@ -247,8 +247,13 @@ namespace SoMRandomizer.config.ui
                 }
                 else
                 {
-                    // only include if not the default value
-                    if(value != defaultValue)
+                    // The fixed magic percentage is meaningful only in Fixed mode. Include it
+                    // there even when it is the 75% default so saved/generated options fully
+                    // describe the selection; never serialize it as a Random-mode result.
+                    bool fixedMagicPercentage = propertyName == CommonSettings.PROPERTYNAME_PLAYER_MAGIC_DAMAGE_PERCENT;
+                    bool includeFixedMagicPercentage = fixedMagicPercentage &&
+                        settings.get(CommonSettings.PROPERTYNAME_PLAYER_MAGIC_DAMAGE) == "fixed";
+                    if((!fixedMagicPercentage && value != defaultValue) || includeFixedMagicPercentage)
                     {
                         opStr += propertyName + "=" + value + " ";
                     }

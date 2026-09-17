@@ -41,6 +41,8 @@ namespace SoMRandomizer.processing.common
             commonHacks.Add(new FasterWeaponLevels());
             // optional reduced Watts weapon upgrade prices
             commonHacks.Add(new WeaponUpgradeCosts());
+            // optional final multiplier for player-to-enemy offensive spell HP damage
+            commonHacks.Add(new PlayerMagicDamage());
             // speed up status messages
             commonHacks.Add(new FasterTopOfScreenDialogue());
             // restore MP at levelup

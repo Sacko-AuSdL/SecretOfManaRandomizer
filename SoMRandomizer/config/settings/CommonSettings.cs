@@ -30,6 +30,8 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_FASTER_MAGIC_LEVELS = "fasterMagicLevel";
         public const string PROPERTYNAME_FASTER_WEAPON_LEVELS = "fasterWeaponLevel";
         public const string PROPERTYNAME_WEAPON_UPGRADE_COSTS = "weaponUpgradeCosts";
+        public const string PROPERTYNAME_PLAYER_MAGIC_DAMAGE = "playerMagicDamage";
+        public const string PROPERTYNAME_PLAYER_MAGIC_DAMAGE_PERCENT = "playerMagicDamagePercent";
         public const string PROPERTYNAME_FASTER_TOP_SCREEN_DIALOGUE = "fasterMessages";
         public const string PROPERTYNAME_MAX_7_ITEMS = "moreItems";
         public const string PROPERTYNAME_STARTER_GEAR = "starterGear";
@@ -171,6 +173,11 @@ namespace SoMRandomizer.config.settings
             setInitial(PROPERTYNAME_RANDOMIZE_CHAR_COLORS, new string[] { "none", "rando", "custom" }, new string[] { "No change", "Randomize", "Specify..." }, "rando");
             setInitial(PROPERTYNAME_DAMAGE_CANCEL_ALLOW_TYPE, new string[] { "all", "consumables", "none" }, new string[] { "All", "Consumables", "None" }, "all");
             setInitial(PROPERTYNAME_WEAPON_UPGRADE_COSTS, new string[] { "vanilla", "reduced" }, new string[] { "Vanilla", "Reduced" }, "vanilla");
+            setInitial(PROPERTYNAME_PLAYER_MAGIC_DAMAGE, new string[] { "vanilla", "fixed", "random" }, new string[] { "Vanilla", "Fixed", "Random" }, "vanilla");
+            setInitial(PROPERTYNAME_PLAYER_MAGIC_DAMAGE_PERCENT,
+                new string[] { "0", "5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100" },
+                new string[] { "0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%", "100%" },
+                "40");
 
             // progress of longer running generation modes like ancient cave
             setInitial(PROPERTYNAME_CURRENT_PROGRESS, 0);

@@ -1,5 +1,6 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.common.qol;
 
 namespace SoMRandomizer.processing.hacks.common.procgen
 {
@@ -744,6 +745,18 @@ namespace SoMRandomizer.processing.hacks.common.procgen
 
         private void injectMagicDamageTracker(byte[] outRom, RandoContext context, byte[] replacedCode)
         {
+            // PlayerMagicDamage is a common hack and therefore runs before this mode-specific
+            // statistics hook. Chain its scaler before the final store so procgen modes do not
+            // overwrite the multiplier and their totals reflect the scaled damage.
+            if(context.workingData.hasSetting(PlayerMagicDamage.ROUTINE_OFFSET_HIROM))
+            {
+                int scalerAddress = context.workingData.getInt(PlayerMagicDamage.ROUTINE_OFFSET_HIROM);
+                outRom[context.workingOffset++] = 0x22; // JSL player magic damage scaler
+                outRom[context.workingOffset++] = (byte)scalerAddress;
+                outRom[context.workingOffset++] = (byte)(scalerAddress >> 8);
+                outRom[context.workingOffset++] = (byte)(scalerAddress >> 16);
+            }
+
             // replaced code A
             // 9D F1 E1    STA $E1F1,x
             outRom[context.workingOffset++] = 0x9D;
