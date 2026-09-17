@@ -27,6 +27,8 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new OpenWorldClassSelection());
             // randomize spell orb elements and publish them to the context
             addModeSpecificHack(new ElementSwaps());
+            // apply resolved Crystal Orb requirements after ElementSwaps publishes Orb elements/events
+            addModeSpecificHack(new CrystalOrbWeaponBreaking());
             // randomize bosses
             addModeSpecificHack(new BossSwaps());
             // should be after BossSwaps since that sets the name of mech rider to mech rider 1/2/3

@@ -1,5 +1,6 @@
 ﻿using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.openworld;
 using System.Collections.Generic;
 using static SoMRandomizer.processing.openworld.randomization.OpenWorldSimulator;
 
@@ -112,6 +113,22 @@ namespace SoMRandomizer.processing.openworld.randomization
             if (spriteStartWeaponName != "")
             {
                 Logging.log("Sprite starting weapon = " + SomVanillaValues.weaponByteToName(spriteStarterWeapon), "spoiler");
+            }
+
+            Dictionary<int, CrystalOrbRequirement> crystalOrbRequirements =
+                CrystalOrbRequirements.getResolvedRequirements(context);
+            if(crystalOrbRequirements.Count > 0)
+            {
+                Logging.log("[Crystal Orb requirements]", "spoiler");
+                foreach(CrystalOrbRequirements.Route route in CrystalOrbRequirements.ROUTES)
+                {
+                    if(crystalOrbRequirements.ContainsKey(route.MapNumber))
+                    {
+                        CrystalOrbRequirement requirement = crystalOrbRequirements[route.MapNumber];
+                        Logging.log(route.RouteName + ": " +
+                            CrystalOrbRequirements.getDisplayName(requirement), "spoiler");
+                    }
+                }
             }
 
             // orb elements

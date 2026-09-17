@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.openworld;
 using System.Collections.Generic;
 using System.Linq;
 using static SoMRandomizer.processing.openworld.PlandoProperties;
@@ -39,10 +40,14 @@ namespace SoMRandomizer.processing.openworld.randomization
             int spriteStarterWeapon = context.workingData.getInt(StartingWeaponRandomizer.SPRITE_START_WEAPON_INDEX);
             bool anySpellTriggers = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);
 
-            string _upperLandElement = "no";
+            string upperLandOrbRequirement = "no";
             if (flammieDrumInLogic)
             {
-                _upperLandElement = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[41], false);
+                string upstreamRequirement = (!anySpellTriggers) ? "no" :
+                    SomVanillaValues.elementOrbByteToName(
+                        crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false) + " spells";
+                upperLandOrbRequirement = OpenWorldLocations.getOrbDependency(settings, context,
+                    ElementSwaps.ORBMAP_UPPERLAND, upstreamRequirement);
             }
 
             Dictionary<string, List<string>> plandoSettings = context.plandoSettings;
@@ -159,7 +164,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                 {
                     if (!visitedLocations.Contains(location))
                     {
-                        string[] reqs = location.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                        string[] reqs = location.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                         bool haveAllReqs = true;
                         foreach (string req in reqs)
                         {

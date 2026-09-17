@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.openworld;
 using SoMRandomizer.processing.openworld.events;
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,10 @@ namespace SoMRandomizer.processing.openworld.randomization
             List<string> manafortDependencies = new List<string>();
             List<byte> validElements = ElementSwaps.GetValidOrbElements(girlSpellsExist, spriteSpellsExist);
             OpenWorldLocations.populateDependencies(settings, context, grandPalaceBossDependencies, manafortDependencies);
+            bool crystalOrbRequirementsEnabled = CrystalOrbRequirements.isEnabled(settings);
+            List<CrystalOrbRequirement> grandPalaceOrbRequirements = crystalOrbRequirementsEnabled
+                ? getCachedGrandPalaceRequirements(context)
+                : new List<CrystalOrbRequirement>();
 
             List<string> importantPrizes = new string[] { "boy", "boy", "girl", "girl", "sprite", "sprite", "whip", "axe", "sword" }.ToList();
             if (goal == OpenWorldGoalProcessor.GOAL_MTR)
@@ -239,7 +244,8 @@ namespace SoMRandomizer.processing.openworld.randomization
                 remainingSpecialHints.Add(OpenWorldSpecialHintTypes.FIRE_PLACE_FINAL_PRICE);
             }
 
-            if (randomGrandPalaceElements && anySpellsExists)
+            if ((crystalOrbRequirementsEnabled && grandPalaceOrbRequirements.Count > 0) ||
+                (!crystalOrbRequirementsEnabled && randomGrandPalaceElements && anySpellsExists))
             {
                 remainingSpecialHints.Add(OpenWorldSpecialHintTypes.TOTAL_ORB_ELEMENTS_GRAND_PALACE);
             }
@@ -282,13 +288,20 @@ namespace SoMRandomizer.processing.openworld.randomization
                             }
                             case OpenWorldSpecialHintTypes.TOTAL_ORB_ELEMENTS_GRAND_PALACE:
                             {
-                                HashSet<byte> uniqueElementsList = new HashSet<byte>();
-                                int[] grandPalaceOrbMaps = { 420, 421, 422, 423, 424, 425, 426 };
-                                foreach(int orbMap in grandPalaceOrbMaps)
+                                if(crystalOrbRequirementsEnabled)
                                 {
-                                    uniqueElementsList.Add(crystalOrbColorMap[orbMap]);
+                                    hintPhrase = getGrandPalaceCompositionHint(grandPalaceOrbRequirements);
                                 }
-                                hintPhrase = "Total elements needed for grand palace: " + uniqueElementsList.Count;
+                                else
+                                {
+                                    HashSet<byte> uniqueElementsList = new HashSet<byte>();
+                                    int[] grandPalaceOrbMaps = { 420, 421, 422, 423, 424, 425, 426 };
+                                    foreach(int orbMap in grandPalaceOrbMaps)
+                                    {
+                                        uniqueElementsList.Add(crystalOrbColorMap[orbMap]);
+                                    }
+                                    hintPhrase = "Total elements needed for grand palace: " + uniqueElementsList.Count;
+                                }
                                 break;
                             }
                             default:
@@ -296,18 +309,31 @@ namespace SoMRandomizer.processing.openworld.randomization
                         }
                         remainingSpecialHints.Remove(type);
                     }
-                    else if (randomGrandPalaceElements && anySpellsExists && r.Next(grandPalaceHintChance) == 0)
+                    else if (((crystalOrbRequirementsEnabled && grandPalaceOrbRequirements.Count > 0) ||
+                        (!crystalOrbRequirementsEnabled && randomGrandPalaceElements && anySpellsExists)) &&
+                        r.Next(grandPalaceHintChance) == 0)
                     {
-                        //orb element (not) needed for grand palace
-                        byte eleNum = (byte)(0x81 + r.Next(validElements.Count));
-                        string dependency = SomVanillaValues.elementOrbByteToName(eleNum, false) + " spells";
-                        if (!grandPalaceBossDependencies.Contains(dependency))
+                        if(crystalOrbRequirementsEnabled)
                         {
-                            hintPhrase = "Not needed for grand palace: " + SomVanillaValues.elementOrbByteToName(eleNum, false);
+                            // Preserve the existing one-candidate needed/not-needed hint. ON mode
+                            // broadens its unique candidate pool to eligible Magic and all weapons.
+                            List<CrystalOrbRequirement> candidates = getGrandPalaceHintCandidates(validElements);
+                            CrystalOrbRequirement candidate = candidates[r.Next(candidates.Count)];
+                            hintPhrase = getGrandPalaceDependencyHint(candidate, grandPalaceOrbRequirements);
                         }
                         else
                         {
-                            hintPhrase = "Needed for grand palace: " + SomVanillaValues.elementOrbByteToName(eleNum, false);
+                            // Preserve upstream selection and wording exactly while disabled.
+                            byte eleNum = (byte)(0x81 + r.Next(validElements.Count));
+                            string dependency = SomVanillaValues.elementOrbByteToName(eleNum, false) + " spells";
+                            if (!grandPalaceBossDependencies.Contains(dependency))
+                            {
+                                hintPhrase = "Not needed for grand palace: " + SomVanillaValues.elementOrbByteToName(eleNum, false);
+                            }
+                            else
+                            {
+                                hintPhrase = "Needed for grand palace: " + SomVanillaValues.elementOrbByteToName(eleNum, false);
+                            }
                         }
                     }
                     else
@@ -352,7 +378,77 @@ namespace SoMRandomizer.processing.openworld.randomization
                 }
             }
         }
-        
+
+        internal static List<CrystalOrbRequirement> getCachedGrandPalaceRequirements(RandoContext context)
+        {
+            Dictionary<int, CrystalOrbRequirement> requirements =
+                CrystalOrbRequirements.getResolvedRequirements(context);
+            List<CrystalOrbRequirement> grandPalaceRequirements = new List<CrystalOrbRequirement>();
+            for(int mapNumber = ElementSwaps.ORBMAP_GRANDPALACE_FIRST;
+                mapNumber <= ElementSwaps.ORBMAP_GRANDPALACE_LAST; mapNumber++)
+            {
+                if(requirements.ContainsKey(mapNumber))
+                {
+                    grandPalaceRequirements.Add(requirements[mapNumber]);
+                }
+            }
+            return grandPalaceRequirements;
+        }
+
+        internal static string getGrandPalaceCompositionHint(
+            IEnumerable<CrystalOrbRequirement> requirements)
+        {
+            HashSet<byte> uniqueMagic = new HashSet<byte>();
+            HashSet<byte> uniqueWeapons = new HashSet<byte>();
+            foreach(CrystalOrbRequirement requirement in requirements)
+            {
+                if(requirement.Type == CrystalOrbRequirementType.Magic)
+                {
+                    uniqueMagic.Add(requirement.Value);
+                }
+                else
+                {
+                    uniqueWeapons.Add(requirement.Value);
+                }
+            }
+            string magicNoun = uniqueMagic.Count == 1 ? "magic type" : "magic types";
+            string weaponNoun = uniqueWeapons.Count == 1 ? "weapon" : "weapons";
+            return "Grand Palace requires " + uniqueMagic.Count + " " + magicNoun +
+                " and " + uniqueWeapons.Count + " " + weaponNoun + ".";
+        }
+
+        internal static List<CrystalOrbRequirement> getGrandPalaceHintCandidates(
+            IEnumerable<byte> validElements)
+        {
+            List<CrystalOrbRequirement> candidates = new List<CrystalOrbRequirement>();
+            HashSet<byte> uniqueElements = new HashSet<byte>();
+            foreach(byte element in validElements)
+            {
+                if(uniqueElements.Add(element))
+                {
+                    candidates.Add(new CrystalOrbRequirement(0, 0, "Grand Palace hint",
+                        CrystalOrbRequirementType.Magic, element));
+                }
+            }
+            for(byte weapon = 0; weapon < 8; weapon++)
+            {
+                candidates.Add(new CrystalOrbRequirement(0, 0, "Grand Palace hint",
+                    CrystalOrbRequirementType.SpecificWeapon, weapon));
+            }
+            return candidates;
+        }
+
+        internal static string getGrandPalaceDependencyHint(CrystalOrbRequirement candidate,
+            IEnumerable<CrystalOrbRequirement> requiredRequirements)
+        {
+            bool needed = requiredRequirements.Any(requirement =>
+                requirement.Type == candidate.Type && requirement.Value == candidate.Value);
+            string displayName = CrystalOrbRequirements.getDisplayName(candidate);
+            return (needed
+                ? "Needed for grand palace: "
+                : "Not needed for grand palace: ") + displayName;
+        }
+
         private static string hintEventNumToName(int hintEventNum)
         {
             return HintEventNames.TryGetValue(hintEventNum, out string name) ? name : "unnamed hint event";

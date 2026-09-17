@@ -14,6 +14,12 @@ namespace SoMRandomizer.processing.hacks.openworld
     /// <remarks>Author: Moppleton</remarks>
     public class CrystalOrbColors : RandoProcessor
     {
+        internal const string CRYSTAL_ORB_BASE_NAME = "Orb";
+        // Vanilla initializes $7E:A1CA to 0x1C before the target-name writer runs.
+        internal const int MAX_TARGET_NAME_LENGTH = 28;
+        // Analyzer-style $80 means no elemental family while retaining the Orb color effect.
+        // Use it for every SpecificWeapon requirement so weapon Orbs share one neutral palette.
+        internal const byte SPECIFIC_WEAPON_ORB_COLOR = 0x80;
         protected override string getName()
         {
             return "Set colors and names of spell orbs";
@@ -26,6 +32,10 @@ namespace SoMRandomizer.processing.hacks.openworld
             
             // pull the element values for each orb off the working data, as set by ElementSwaps
             Dictionary<int, byte> elementValuesByMapNum = ElementSwaps.getCrystalOrbElementMap(context);
+            bool showOrbRequirements = CrystalOrbRequirements.isEnabled(settings);
+            Dictionary<int, CrystalOrbRequirement> requirementsByMap = showOrbRequirements
+                ? CrystalOrbRequirements.getResolvedRequirements(context)
+                : new Dictionary<int, CrystalOrbRequirement>();
             CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, elementValuesByMapNum.Count * 40 + 10);
             int mapNumSubrCheckOffset = context.workingOffset;
             // LDA $7E00DC - current map number
@@ -37,6 +47,10 @@ namespace SoMRandomizer.processing.hacks.openworld
             foreach (int mapNum in elementValuesByMapNum.Keys)
             {
                 byte elementValue = elementValuesByMapNum[mapNum];
+                CrystalOrbRequirement colorRequirement = requirementsByMap.ContainsKey(mapNum)
+                    ? requirementsByMap[mapNum]
+                    : null;
+                byte orbColorValue = getOrbColorValue(elementValue, colorRequirement);
                 // CMP #mapnum
                 outRom[context.workingOffset++] = 0xC9;
                 outRom[context.workingOffset++] = (byte)mapNum;
@@ -71,7 +85,7 @@ namespace SoMRandomizer.processing.hacks.openworld
                 outRom[context.workingOffset++] = 0xE0;
                 // LDA #element
                 outRom[context.workingOffset++] = 0xA9;
-                outRom[context.workingOffset++] = elementValue;
+                outRom[context.workingOffset++] = orbColorValue;
                 // STA $E011, y - values set by analyzer to change the orb color
                 outRom[context.workingOffset++] = 0x99;
                 outRom[context.workingOffset++] = 0x11;
@@ -167,7 +181,7 @@ namespace SoMRandomizer.processing.hacks.openworld
 
 
             // change names as they're loaded
-            context.namesOfThings.setName(0x124, "Orb");
+            context.namesOfThings.setName(0x124, CRYSTAL_ORB_BASE_NAME);
             /*
                 re-create this subroutine to print a single byte of text as a long-callable subroutine
 
@@ -203,12 +217,27 @@ namespace SoMRandomizer.processing.hacks.openworld
                 outRom[context.workingOffset++] = b;
             }
 
-            // generate subroutine for each orb to load its associated element name, using the character loader above
+            int crystalOrbBaseNameLength = VanillaEventUtil.getBytes(CRYSTAL_ORB_BASE_NAME).Count;
+            // Generate a subroutine for each orb to load its complete actor-name text, using the
+            // character loader above. Both ordinary targeting and Analyze/Scan consume this same
+            // top-of-screen actor-name path. The ordinary "Orb" base name is skipped at the call
+            // site so both displays use the same resolver-owned requirement-only convention.
             Dictionary<int, int> mapNumToSubr = new Dictionary<int, int>();
+            Dictionary<int, bool> mapNumUsesRequirementName = new Dictionary<int, bool>();
             foreach (int mapNum in elementValuesByMapNum.Keys)
             {
                 byte eleValue = elementValuesByMapNum[mapNum];
-                List<byte> nameString = VanillaEventUtil.getBytes(SomVanillaValues.elementOrbByteToName(eleValue, true) + " ");
+                CrystalOrbRequirement requirement = requirementsByMap.ContainsKey(mapNum)
+                    ? requirementsByMap[mapNum]
+                    : null;
+                mapNumUsesRequirementName[mapNum] = requirement != null;
+                string targetText = getInjectedOrbTargetText(eleValue, requirement);
+                List<byte> nameString = VanillaEventUtil.getBytes(targetText);
+                if(nameString.Count > MAX_TARGET_NAME_LENGTH)
+                {
+                    throw new System.InvalidOperationException(
+                        "Crystal Orb target text exceeds the vanilla 28-character buffer.");
+                }
                 CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, nameString.Count * 6 + 10);
                 mapNumToSubr[mapNum] = context.workingOffset;
                 // SEP 20
@@ -435,7 +464,7 @@ namespace SoMRandomizer.processing.hacks.openworld
                 $C0/1926 BF 00 00 CA LDA $CA0000,x[$CA:0A48] A:0A48 X:0A48 Y:19D3 P:envmxdIzc
                 $C0/192A 8F 01 1D 00 STA $001D01[$00:1D01]   A:E95C X:0A48 Y:19D3 P:eNvmxdIzc **
              */
-            CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, elementValuesByMapNum.Count * 20 + 50);
+            CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, elementValuesByMapNum.Count * 24 + 50);
             outRom[0x192A] = 0x22;
             outRom[0x192B] = (byte)(context.workingOffset);
             outRom[0x192C] = (byte)(context.workingOffset >> 8);
@@ -493,7 +522,7 @@ namespace SoMRandomizer.processing.hacks.openworld
                 outRom[context.workingOffset++] = (byte)(mapNum>>8);
                 // BNE next
                 outRom[context.workingOffset++] = 0xD0;
-                outRom[context.workingOffset++] = 0x0C;
+                outRom[context.workingOffset++] = (byte)(mapNumUsesRequirementName[mapNum] ? 0x10 : 0x0C);
                 // JSL subrAddr
                 int subrAddr = mapNumToSubr[mapNum];
                 outRom[context.workingOffset++] = 0x22;
@@ -511,6 +540,18 @@ namespace SoMRandomizer.processing.hacks.openworld
                 outRom[context.workingOffset++] = 0xFA;
                 // PLA
                 outRom[context.workingOffset++] = 0x68;
+                if(mapNumUsesRequirementName[mapNum])
+                {
+                    // The map-specific subroutine wrote the complete requirement name. Advance
+                    // over "Orb" so the vanilla loader sees its existing terminator instead of
+                    // appending the base name. Inactive/absent requirements keep vanilla naming.
+                    // CLC
+                    outRom[context.workingOffset++] = 0x18;
+                    // ADC #baseNameLength
+                    outRom[context.workingOffset++] = 0x69;
+                    outRom[context.workingOffset++] = (byte)crystalOrbBaseNameLength;
+                    outRom[context.workingOffset++] = (byte)(crystalOrbBaseNameLength >> 8);
+                }
                 // RTL
                 outRom[context.workingOffset++] = 0x6B;
             }
@@ -522,6 +563,31 @@ namespace SoMRandomizer.processing.hacks.openworld
             // RTL
             outRom[context.workingOffset++] = 0x6B;
             return true;
+        }
+        internal static string getInjectedOrbTargetText(byte elementValue, CrystalOrbRequirement requirement)
+        {
+            return getOrbRequirementDisplayText(elementValue, requirement);
+        }
+
+        internal static string getInjectedOrbAnalyzeText(byte elementValue, CrystalOrbRequirement requirement)
+        {
+            return getOrbRequirementDisplayText(elementValue, requirement);
+        }
+
+        private static string getOrbRequirementDisplayText(byte elementValue, CrystalOrbRequirement requirement)
+        {
+            if(requirement != null)
+            {
+                return CrystalOrbRequirements.getDisplayName(requirement);
+            }
+            return SomVanillaValues.elementOrbByteToName(elementValue, true) + " ";
+        }
+
+        internal static byte getOrbColorValue(byte elementValue, CrystalOrbRequirement requirement)
+        {
+            return requirement != null && requirement.Type == CrystalOrbRequirementType.SpecificWeapon
+                ? SPECIFIC_WEAPON_ORB_COLOR
+                : elementValue;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.openworld;
 using SoMRandomizer.util;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,11 +40,18 @@ namespace SoMRandomizer.processing.openworld.randomization
             string _firePalaceElement3 = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE3], false);
             string _lunaPalaceElement = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE], false);
             string _matangoCaveElement = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_MATANGO], false);
-            string _upperLandElement = "no";
-            if (flammieDrumInLogic)
-            {
-                _upperLandElement = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false);
-            }
+            string earthPalaceRequirement = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_EARTHPALACE, _earthPalaceElement + " spells");
+            string firePalaceRequirement1 = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_FIREPALACE1, _firePalaceElement1 + " spells");
+            string firePalaceRequirement2 = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_FIREPALACE2, _firePalaceElement2 + " spells");
+            string firePalaceRequirement3 = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_FIREPALACE3, _firePalaceElement3 + " spells");
+            string lunaPalaceRequirement = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_LUNAPALACE, _lunaPalaceElement + " spells");
+            string matangoRequirement = getOrbDependency(settings, context,
+                ElementSwaps.ORBMAP_MATANGO, _matangoCaveElement + " spells");
 
             populateDependencies(settings, context, grandPalaceBossDependencies, manafortDependencies);
 
@@ -76,13 +84,13 @@ namespace SoMRandomizer.processing.openworld.randomization
 
             if (restrictiveLogic)
             {
-                allLocations.Add(new PrizeLocation("gnome item 1 (spells)", 0x22e, 0, new string[] { }, gnomeHints.ToArray(), new string[] { _earthPalaceElement + " spells", "whip", "earth seed" }, 0.5));
-                allLocations.Add(new PrizeLocation("gnome item 2 (seed)", 0x22e, 1, new string[] { }, gnomeHints.ToArray(), new string[] { _earthPalaceElement + " spells", "whip", "earth seed" }, 0.5));
+                allLocations.Add(new PrizeLocation("gnome item 1 (spells)", 0x22e, 0, new string[] { }, gnomeHints.ToArray(), new string[] { earthPalaceRequirement, "whip", "earth seed" }, 0.5));
+                allLocations.Add(new PrizeLocation("gnome item 2 (seed)", 0x22e, 1, new string[] { }, gnomeHints.ToArray(), new string[] { earthPalaceRequirement, "whip", "earth seed" }, 0.5));
             }
             else
             {
-                allLocations.Add(new PrizeLocation("gnome item 1 (spells)", 0x22e, 0, new string[] { }, gnomeHints.ToArray(), new string[] { _earthPalaceElement + " spells", "whip" }, 0.5));
-                allLocations.Add(new PrizeLocation("gnome item 2 (seed)", 0x22e, 1, new string[] { }, gnomeHints.ToArray(), new string[] { _earthPalaceElement + " spells", "whip" }, 0.5));
+                allLocations.Add(new PrizeLocation("gnome item 1 (spells)", 0x22e, 0, new string[] { }, gnomeHints.ToArray(), new string[] { earthPalaceRequirement, "whip" }, 0.5));
+                allLocations.Add(new PrizeLocation("gnome item 2 (seed)", 0x22e, 1, new string[] { }, gnomeHints.ToArray(), new string[] { earthPalaceRequirement, "whip" }, 0.5));
             }
 
             List<string> lunaHints = new List<string> { "in a strange place", "at a Mana seed pedestal", "where a Mana seed should be", "in a late-game area" };
@@ -103,15 +111,15 @@ namespace SoMRandomizer.processing.openworld.randomization
 
             if (restrictiveLogic)
             {
-                allLocations.Add(new PrizeLocation("fire seed", 0x589, 0, new string[] { }, fp3Hints.ToArray(), new string[] { "whip", _firePalaceElement1 + " spells", _firePalaceElement2 + " spells", _firePalaceElement3 + " spells", "fire seed" }, 0.2));
-                allLocations.Add(new PrizeLocation("luna item 1 (spells)", 0x584, 0, new string[] { }, lunaHints.ToArray(), new string[] { _lunaPalaceElement + " spells", "moon seed" }, 0.5));
-                allLocations.Add(new PrizeLocation("luna item 2 (seed)", 0x584, 1, new string[] { }, lunaHints.ToArray(), new string[] { _lunaPalaceElement + " spells", "moon seed" }, 0.5));
+                allLocations.Add(new PrizeLocation("fire seed", 0x589, 0, new string[] { }, fp3Hints.ToArray(), new string[] { "whip", firePalaceRequirement1, firePalaceRequirement2, firePalaceRequirement3, "fire seed" }, 0.2));
+                allLocations.Add(new PrizeLocation("luna item 1 (spells)", 0x584, 0, new string[] { }, lunaHints.ToArray(), new string[] { lunaPalaceRequirement, "moon seed" }, 0.5));
+                allLocations.Add(new PrizeLocation("luna item 2 (seed)", 0x584, 1, new string[] { }, lunaHints.ToArray(), new string[] { lunaPalaceRequirement, "moon seed" }, 0.5));
             }
             else
             {
-                allLocations.Add(new PrizeLocation("fire seed", 0x589, 0, new string[] { }, fp3Hints.ToArray(), new string[] { "whip", _firePalaceElement1 + " spells", _firePalaceElement2 + " spells", _firePalaceElement3 + " spells" }, 0.2));
-                allLocations.Add(new PrizeLocation("luna item 1 (spells)", 0x584, 0, new string[] { }, lunaHints.ToArray(), new string[] { _lunaPalaceElement + " spells" }, 0.5));
-                allLocations.Add(new PrizeLocation("luna item 2 (seed)", 0x584, 1, new string[] { }, lunaHints.ToArray(), new string[] { _lunaPalaceElement + " spells" }, 0.5));
+                allLocations.Add(new PrizeLocation("fire seed", 0x589, 0, new string[] { }, fp3Hints.ToArray(), new string[] { "whip", firePalaceRequirement1, firePalaceRequirement2, firePalaceRequirement3 }, 0.2));
+                allLocations.Add(new PrizeLocation("luna item 1 (spells)", 0x584, 0, new string[] { }, lunaHints.ToArray(), new string[] { lunaPalaceRequirement }, 0.5));
+                allLocations.Add(new PrizeLocation("luna item 2 (seed)", 0x584, 1, new string[] { }, lunaHints.ToArray(), new string[] { lunaPalaceRequirement }, 0.5));
             }
 
             allLocations.Add(new PrizeLocation("kakkara (moogle belt)", 0x2b2, 0, new string[] { }, new string[] { "in a warm place", "in a town", "at an oasis", "in a mid-game area" }, new string[] { "sea hare tail" }, 0.5));
@@ -139,11 +147,11 @@ namespace SoMRandomizer.processing.openworld.randomization
             allLocations.Add(new PrizeLocation("shade palace glove orb chest", MAPNUM_SHADEPALACE_INTERIOR_E, 2, 0x672, 0, new string[] { }, new string[] { "in the mountains", "in a chest", "in a late-game area" }, new string[] { "axe" }, 0.7));
             allLocations.Add(new PrizeLocation("sunken continent sword orb chest", MAPNUM_GRANDPALACE_INTERIOR_D, 12, 0x675, 0, new string[] { }, new string[] { "in a forgotten land", "in a chest", "in a late-game area" }, new string[] { "whip", }, 0.3));
             allLocations.Add(new PrizeLocation("lumina tower axe orb chest", MAPNUM_LUMINATOWER_2F, 0, 0x677, 0, new string[] { }, new string[] { "in a tower", "in a chest", "in a late-game area", "on an island" }, new string[] { "gold tower key" }, 0.5));
-            allLocations.Add(new PrizeLocation("fire palace axe orb chest", MAPNUM_FIREPALACE_F, 0, 0x678, 0, new string[] { }, fp2Hints.ToArray(), new string[] { _firePalaceElement1 + " spells", _firePalaceElement2 + " spells", }, 0.3));
+            allLocations.Add(new PrizeLocation("fire palace axe orb chest", MAPNUM_FIREPALACE_F, 0, 0x678, 0, new string[] { }, fp2Hints.ToArray(), new string[] { firePalaceRequirement1, firePalaceRequirement2 }, 0.3));
             allLocations.Add(new PrizeLocation("lumina tower spear orb chest", MAPNUM_LUMINATOWER_1F, 0, 0x67b, 0, new string[] { }, new string[] { "in a tower", "in a chest", "in a late-game area", "on an island" }, new string[] { "gold tower key" }, 0.5));
             allLocations.Add(new PrizeLocation("sunken continent boomerang orb chest", MAPNUM_UNDERSEA_AXE_ROOM_A, 1, 0x691, 0, new string[] { }, new string[] { "in a forgotten land", "in a chest", "in a late-game area", "under the sea" }, new string[] { "axe" }, 0.6));
-            allLocations.Add(new PrizeLocation("fire palace chest 1", MAPNUM_FIREPALACE_C, 0, 0x68a, 0, new string[] { }, fp1Hints.ToArray(), new string[] { _firePalaceElement1 + " spells", }, 0.4)); // past first orb
-            allLocations.Add(new PrizeLocation("fire palace chest 2", MAPNUM_FIREPALACE_G, 1, 0x68b, 0, new string[] { }, fp2Hints.ToArray(), new string[] { _firePalaceElement1 + " spells", _firePalaceElement2 + " spells", }, 0.3)); // past first two orbs
+            allLocations.Add(new PrizeLocation("fire palace chest 1", MAPNUM_FIREPALACE_C, 0, 0x68a, 0, new string[] { }, fp1Hints.ToArray(), new string[] { firePalaceRequirement1 }, 0.4)); // past first orb
+            allLocations.Add(new PrizeLocation("fire palace chest 2", MAPNUM_FIREPALACE_G, 1, 0x68b, 0, new string[] { }, fp2Hints.ToArray(), new string[] { firePalaceRequirement1, firePalaceRequirement2 }, 0.3)); // past first two orbs
 
             allLocations.Add(new PrizeLocation("santa (new item)", 0x66d, 0, new string[] { }, new string[] { "in a cold place", "under the Christmas tree", "in a mid-game area", "in a castle" }, new string[] { "whip" }, 0.5));
 
@@ -175,11 +183,11 @@ namespace SoMRandomizer.processing.openworld.randomization
             if (flammieDrumInLogic)
             {
                 // need the axe to walk through the cave
-                allLocations.Add(new PrizeLocation("matango flammie", 0x4e4, 0, new string[] { }, mfHints.ToArray(), new string[] { _matangoCaveElement + " spells", "whip", "axe" }, 0.4));
+                allLocations.Add(new PrizeLocation("matango flammie", 0x4e4, 0, new string[] { }, mfHints.ToArray(), new string[] { matangoRequirement, "whip", "axe" }, 0.4));
             }
             else
             {
-                allLocations.Add(new PrizeLocation("matango flammie", 0x4e4, 0, new string[] { }, mfHints.ToArray(), new string[] { _matangoCaveElement + " spells", "whip" }, 0.4));
+                allLocations.Add(new PrizeLocation("matango flammie", 0x4e4, 0, new string[] { }, mfHints.ToArray(), new string[] { matangoRequirement, "whip" }, 0.4));
             }
             allLocations.Add(new PrizeLocation("jehk", 0x4e5, 0, new string[] { }, new string[] { "in the mountains", "in a cave", "in a late-game area" }, new string[] { "axe", "whip" }, 0.3));
             allLocations.Add(new PrizeLocation("hydra (new item)", 0x59b, 0, new string[] { }, new string[] { "in a forgotten land", "under the sea", "in a late-game area" }, new string[] { "axe" }, 0.5));
@@ -283,6 +291,20 @@ namespace SoMRandomizer.processing.openworld.randomization
             return allLocations;
         }
 
+        internal static string getOrbDependency(RandoSettings settings, RandoContext context,
+            int mapNumber, string upstreamDependency)
+        {
+            if(!CrystalOrbRequirements.isEnabled(settings))
+            {
+                return upstreamDependency;
+            }
+            Dictionary<int, CrystalOrbRequirement> requirements =
+                CrystalOrbRequirements.getResolvedRequirements(context);
+            return requirements.ContainsKey(mapNumber)
+                ? CrystalOrbRequirements.getPrizeDependency(requirements[mapNumber])
+                : upstreamDependency;
+        }
+
         public static void populateDependencies(RandoSettings settings, RandoContext context, List<string> grandPalaceBossDependencies, List<string> manafortDependencies)
         {
             // based on which characters, spells, and spell orbs are included, determine dependencies needed to complete the grand palace
@@ -292,7 +314,28 @@ namespace SoMRandomizer.processing.openworld.randomization
             grandPalaceBossDependencies.Add("whip");
             manafortDependencies.Add(DEPENDENCY_CUTTING_WEAPON);
             manafortDependencies.Add("whip");
-            if (randomizeGrandPalace)
+            if(CrystalOrbRequirements.isEnabled(settings))
+            {
+                // The individual events retain the E8-EE progression chain. Placement needs the
+                // complete set of the seven resolved gates before the final Grand Palace boss;
+                // each Orb contributes exactly one weapon or spell-family dependency.
+                Dictionary<int, CrystalOrbRequirement> requirements =
+                    CrystalOrbRequirements.getResolvedRequirements(context);
+                for(int mapNum = ElementSwaps.ORBMAP_GRANDPALACE_FIRST;
+                    mapNum <= ElementSwaps.ORBMAP_GRANDPALACE_LAST; mapNum++)
+                {
+                    if(requirements.ContainsKey(mapNum))
+                    {
+                        string dependency = CrystalOrbRequirements.getPrizeDependency(requirements[mapNum]);
+                        if(!grandPalaceBossDependencies.Contains(dependency))
+                        {
+                            grandPalaceBossDependencies.Add(dependency);
+                            manafortDependencies.Add(dependency);
+                        }
+                    }
+                }
+            }
+            else if (randomizeGrandPalace)
             {
                 // map 420-426 for grand palace orbs
                 // note that this already accounts for plando, as processed earlier by ElementSwaps

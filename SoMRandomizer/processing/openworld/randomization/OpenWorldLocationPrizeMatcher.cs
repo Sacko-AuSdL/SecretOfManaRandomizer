@@ -30,10 +30,14 @@ namespace SoMRandomizer.processing.openworld.randomization
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
             bool force100PercentPossible = !settings.getBool(OpenWorldSettings.PROPERTYNAME_ALLOW_MISSED_ITEMS);
             bool anySpellTriggers = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);
-            string _upperLandElement = "no";
+            string upperLandOrbRequirement = "no";
             if (flammieDrumInLogic)
             {
-                _upperLandElement = (!anySpellTriggers) ? "no" : SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false);
+                string upstreamRequirement = (!anySpellTriggers) ? "no" :
+                    SomVanillaValues.elementOrbByteToName(
+                        crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false) + " spells";
+                upperLandOrbRequirement = OpenWorldLocations.getOrbDependency(settings, context,
+                    ElementSwaps.ORBMAP_UPPERLAND, upstreamRequirement);
             }
 
             List<PrizeLocation> filteredLocations = goal == OpenWorldGoalProcessor.GOAL_GIFTMODE ? GiftModeProcessing.processLocations(settings, context, allLocations, allPrizes) : allLocations;
@@ -123,7 +127,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                 }
 
                 // remove stuff directly locked here
-                string[] plLocked = prizeLocation.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                string[] plLocked = prizeLocation.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                 foreach (string lockPrize in plLocked)
                 {
                     removeByName(availablePrizes, lockPrize);
@@ -151,7 +155,7 @@ namespace SoMRandomizer.processing.openworld.randomization
 
                 foreach (PrizeLocation prizeLocation2 in filteredLocations)
                 {
-                    string[] pl2Locked = prizeLocation2.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                    string[] pl2Locked = prizeLocation2.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                     // don't allow the prize to go anywhere else now that we put it here.
                     allAvailablePrizes[prizeLocation2].Remove(thisPrize);
                     if (pl2Locked.ToList().Contains(thisPrize.prizeName))
@@ -211,7 +215,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                     // if we're gifting to a known location (like salamando), add his location dependencies
                     foreach (PrizeLocation pl in allLocations)
                     {
-                        string[] plLocked = pl.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                        string[] plLocked = pl.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                         if (pl.eventNum == npc.eventId)
                         {
                             foreach (string dep in plLocked)
@@ -227,7 +231,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                         {
                             foreach (PrizeLocation loc in filteredLocations)
                             {
-                                string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                                string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                                 if (loc.locationName == location.locationName)
                                 {
                                     foreach (string dep in locLocked)
@@ -250,7 +254,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                             {
                                 foreach (PrizeLocation loc in filteredLocations)
                                 {
-                                    string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, _upperLandElement, goal);
+                                    string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
                                     if (loc.locationName == location.locationName)
                                     {
                                         foreach (string dep in locLocked)

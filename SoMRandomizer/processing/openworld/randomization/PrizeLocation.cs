@@ -51,7 +51,7 @@ namespace SoMRandomizer.processing.openworld.randomization
             // no hints constructor for starting stuff
         }
 
-        public string[] getLockedByPrizes(bool flammieDrumInLogic, string _upperLandElement, string goal)
+        public string[] getLockedByPrizes(bool flammieDrumInLogic, string upperLandOrbRequirement, string goal)
         {
             List<string> allPrizes = new List<string>();
             allPrizes.AddRange(lockedByPrizes);
@@ -60,9 +60,9 @@ namespace SoMRandomizer.processing.openworld.randomization
                 if (OpenWorldPrizes.flammieRequiredLocations.Contains(locationName))
                 {
                     allPrizes.Add("flammie drum");
-                    if (_upperLandElement != "no")
+                    if (upperLandOrbRequirement != "no")
                     {
-                        allPrizes.Add(_upperLandElement + " spells");
+                        allPrizes.Add(upperLandOrbRequirement);
                     }
                 }
                 else
@@ -72,9 +72,9 @@ namespace SoMRandomizer.processing.openworld.randomization
                         // reverse logic since we start in ice country
                         if (!OpenWorldPrizes.upperLandOrbRequiredLocations.Contains(locationName))
                         {
-                            if (_upperLandElement != "no")
+                            if (upperLandOrbRequirement != "no")
                             {
-                                allPrizes.Add(_upperLandElement + " spells");
+                                allPrizes.Add(upperLandOrbRequirement);
                             }
                         }
                     }
@@ -82,9 +82,9 @@ namespace SoMRandomizer.processing.openworld.randomization
                     {
                         if (OpenWorldPrizes.upperLandOrbRequiredLocations.Contains(locationName))
                         {
-                            if (_upperLandElement != "no")
+                            if (upperLandOrbRequirement != "no")
                             {
-                                allPrizes.Add(_upperLandElement + " spells");
+                                allPrizes.Add(upperLandOrbRequirement);
                             }
                         }
                     }

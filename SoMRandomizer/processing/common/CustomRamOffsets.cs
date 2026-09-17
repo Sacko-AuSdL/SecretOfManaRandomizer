@@ -74,6 +74,12 @@ namespace SoMRandomizer.processing.common
         // next: +64
         public static int OPENWORLD_CURRENT_ENEMY_LEVEL = STATISTICS_BASE_OFFSET + 64;
         // next: +65
+        public static int CRYSTAL_ORB_PENDING_STATE = STATISTICS_BASE_OFFSET + 65;
+        // next: +66
+        public static int CRYSTAL_ORB_PENDING_TARGET_16BIT = STATISTICS_BASE_OFFSET + 66;
+        // next: +68
+        public static int CRYSTAL_ORB_PENDING_MAP_16BIT = STATISTICS_BASE_OFFSET + 68;
+        // next: +70
 
         // /////////////////////
         // Open world enemy level stuff

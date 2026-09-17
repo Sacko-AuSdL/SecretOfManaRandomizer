@@ -78,7 +78,13 @@ namespace SoMRandomizer.processing
                 Dictionary<int, byte> crystalOrbElementMap = new Dictionary<int, byte>();
                 bool randomizeGrandPalace = settings.getBool(OpenWorldSettings.PROPERTYNAME_RANDOMIZE_GRANDPALACE_ELEMENTS);
                 bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
-                processOpenWorld(outRom, context.randomFunctional, crystalOrbElementMap, context.replacementEvents, girlMagicExists, spriteMagicExists, randomizeGrandPalace, context.plandoSettings, flammieDrumInLogic);
+                bool preserveOrbsWithoutMagic =
+                    settings.get(OpenWorldSettings.PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING) ==
+                    OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON;
+                processOpenWorld(outRom, context.randomFunctional, crystalOrbElementMap,
+                    context.replacementEvents, girlMagicExists, spriteMagicExists,
+                    randomizeGrandPalace, context.plandoSettings, flammieDrumInLogic,
+                    preserveOrbsWithoutMagic);
                 foreach(int mapNum in crystalOrbElementMap.Keys)
                 {
                     context.workingData.setInt(ORBELEMENT_PREFIX + mapNum, crystalOrbElementMap[mapNum]);
@@ -259,7 +265,10 @@ namespace SoMRandomizer.processing
 
         // for open world, set the orb elements to whatever was randomized for them.
         // don't swap spell rewards to match like in vanilla rando; randomized prize locations & logic will determine a new path through them
-        public void processOpenWorld(byte[] rom, Random r, Dictionary<int, byte> crystalOrbColorMap, Dictionary<int, List<byte>> replacementEvents, bool girlExists, bool spriteExists, bool randomizeGrandPalace, Dictionary<string, List<string>> plando, bool flammieDrumInLogic)
+        public void processOpenWorld(byte[] rom, Random r, Dictionary<int, byte> crystalOrbColorMap,
+            Dictionary<int, List<byte>> replacementEvents, bool girlExists, bool spriteExists,
+            bool randomizeGrandPalace, Dictionary<string, List<string>> plando,
+            bool includeUpperLandOrb, bool preserveOrbsWithoutMagic = false)
         {
             // note that lumina and sylphid seem like they've been swapped in vanilla and no one ever noticed?
             // 358 gnome = 81
@@ -281,10 +290,13 @@ namespace SoMRandomizer.processing
             // x88->x357 = dryad
             List<byte> orbElementsAvailable = GetValidOrbElements(girlExists, spriteExists);
 
-            // boy only - remove these switches in event modifier and just set them all to none
+            // Upstream removes these switches when no role can cast Orb-compatible magic. With
+            // weapon breaking active, keep their authoritative events present; the shared
+            // requirement resolver will necessarily select SpecificWeapon for them. $81 is only
+            // an inert event-generation family in that no-caster configuration.
             if(orbElementsAvailable.Count == 0)
             {
-                orbElementsAvailable.Add(0xFF);
+                orbElementsAvailable.Add(preserveOrbsWithoutMagic ? (byte)0x81 : (byte)0xFF);
             }
 
             // gnome orb to open matango cave
@@ -359,7 +371,7 @@ namespace SoMRandomizer.processing
 
             // sylphid orb in upper land overworld
             crystalOrbColorMap[ORBMAP_UPPERLAND] = 0xFF;
-            if (flammieDrumInLogic)
+            if (includeUpperLandOrb)
             {
                 if (plando.ContainsKey(KEY_UPPER_LAND_ORB_ELEMENT))
                 {
@@ -584,7 +596,7 @@ namespace SoMRandomizer.processing
             }
 
             // 25a - upper land; sylphid in vanilla
-            if (flammieDrumInLogic)
+            if (includeUpperLandOrb)
             {
                 if (crystalOrbColorMap[ORBMAP_UPPERLAND] != 0xFF)
                 {

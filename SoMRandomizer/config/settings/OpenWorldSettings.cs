@@ -63,6 +63,9 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_NUM_XMAS_GIFTS = "opXmasGifts";
         public const string PROPERTYNAME_STARTING_LEVEL = "opStartLevel";
         public const string PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC = "opFlammieDrumInLogic";
+        public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
+        public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
+        public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
         
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_EASY = "easy";
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_SORTA_EASY = "sortaeasy";
@@ -100,6 +103,9 @@ namespace SoMRandomizer.config.settings
             setInitial(PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC, false); // have to find flammie drum
 
             // enumerations
+            setInitial(PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING,
+                new string[] { PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON },
+                new string[] { "Off", "On" }, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF);
             setInitial(PROPERTYNAME_RANDOMIZE_ENEMIES, new string[] { "vanilla", "swap", "random", "oops", "none" }, new string[] { "Vanilla", "Swap", "Random spawns", "Oops! All owls", "None" }, "swap");
             setInitial(PROPERTYNAME_RANDOMIZE_BOSSES, new string[] { "vanilla", "swap", "random" }, new string[] { "Vanilla", "Swap", "Random" }, "random");
             setInitial(PROPERTYNAME_STATUS_AILMENTS, new string[] { "location", "type", "easy", "annoying", "awful" }, new string[] { "Location", "Enemy type", "Random (easy)", "Random (annoying)", "Random (awful)" }, "location");

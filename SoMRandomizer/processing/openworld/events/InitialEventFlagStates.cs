@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.common.structure;
+using SoMRandomizer.processing.hacks.openworld;
 using System.Collections.Generic;
 
 namespace SoMRandomizer.processing.openworld.events
@@ -21,6 +22,8 @@ namespace SoMRandomizer.processing.openworld.events
         {
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
             bool anySpellTriggers = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);
+            bool crystalOrbWeaponBreaking =
+                CrystalOrbRequirements.isEnabled(settings);
             string goalType = context.workingData.get(OpenWorldGoalProcessor.GOAL_SHORT_NAME);
             EventScript eventData = new EventScript();
             context.replacementEvents[0x107] = eventData;
@@ -38,9 +41,9 @@ namespace SoMRandomizer.processing.openworld.events
             eventData.SetFlag(EventFlags.PANDORA_PHANNA_FLAG, 2); // x1a: set up pandora ruins for entry & fight
             eventData.SetFlag(EventFlags.KILROY_EVENT_FLAG, 1); // x1b: enable the kilroy pit at gaia's navel
             eventData.SetFlag(EventFlags.UPPERLAND_UNLOCK_FLAG, 7); // x1e: cannon dude by potos will send you to upperland if you really want
-            if (flammieDrumInLogic) // x20: skip the moogle crap and clear the sylphid orb, unless we need it for flammie logic
+            if (flammieDrumInLogic)
             {
-                if (anySpellTriggers)
+                if (anySpellTriggers || crystalOrbWeaponBreaking)
                 {
                     eventData.SetFlag(EventFlags.UPPERLAND_MOOGLES_FLAG, 0x03); // upper land orb is there
                 }
@@ -84,7 +87,7 @@ namespace SoMRandomizer.processing.openworld.events
             }
 
             // if no characters that can cast spells are available, unlock all the element orbs
-            if (!anySpellTriggers)
+            if (!anySpellTriggers && !crystalOrbWeaponBreaking)
             {
                 foreach (byte b in EventFlags.lostContinentElementOrbFlags)
                 {

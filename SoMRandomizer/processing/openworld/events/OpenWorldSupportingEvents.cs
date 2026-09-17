@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.common.structure;
+using SoMRandomizer.processing.hacks.openworld;
 using System.Collections.Generic;
 
 namespace SoMRandomizer.processing.openworld.events
@@ -22,6 +23,10 @@ namespace SoMRandomizer.processing.openworld.events
             bool restrictiveLogic = settings.get(OpenWorldSettings.PROPERTYNAME_LOGIC_MODE) == "restrictive";
             bool anySpellsAvailable = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
+            Dictionary<int, CrystalOrbRequirement> crystalOrbRequirements =
+                CrystalOrbRequirements.isEnabled(settings)
+                ? CrystalOrbRequirements.getResolvedRequirements(context)
+                : new Dictionary<int, CrystalOrbRequirement>();
             string goal = context.workingData.get(OpenWorldGoalProcessor.GOAL_SHORT_NAME);
 
             // 0x105: rabite event - remove dialogue
@@ -811,9 +816,13 @@ namespace SoMRandomizer.processing.openworld.events
             newEvent2c1.Jsr(0x78D);
             newEvent2c1.Jsr(0x7A0);
             newEvent2c1.Sleep(0x40);
-            if (anySpellsAvailable)
+            CrystalOrbRequirement lunaRequirement = crystalOrbRequirements.ContainsKey(ElementSwaps.ORBMAP_LUNAPALACE)
+                ? crystalOrbRequirements[ElementSwaps.ORBMAP_LUNAPALACE]
+                : null;
+            if (anySpellsAvailable || lunaRequirement != null)
             {
-                newEvent2c1.AddDialogueBox("Today's orb element is:\n" + SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[35], false) + "!");
+                newEvent2c1.AddDialogueBox(getLunaOrbRequirementDialogue(
+                    crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE], lunaRequirement));
             }
             newEvent2c1.Door(0x278);
             newEvent2c1.End();
@@ -1007,6 +1016,21 @@ namespace SoMRandomizer.processing.openworld.events
             newEvent642.End();
 
             return true;
+        }
+
+        internal static string getLunaOrbRequirementDialogue(byte elementValue,
+            CrystalOrbRequirement requirement)
+        {
+            if(requirement != null)
+            {
+                string requirementKind = requirement.Type == CrystalOrbRequirementType.Magic
+                    ? "element"
+                    : "weapon";
+                return "Today's " + requirementKind + ":\n" +
+                    CrystalOrbRequirements.getDisplayName(requirement) + "!";
+            }
+            return "Today's orb element is:\n" +
+                SomVanillaValues.elementOrbByteToName(elementValue, false) + "!";
         }
     }
 }
