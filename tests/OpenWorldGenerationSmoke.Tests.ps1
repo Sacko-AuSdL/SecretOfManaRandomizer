@@ -86,14 +86,22 @@ function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
         if($section -ge 0) {
             for($i = $section + 1; $i -lt $lines.Count; $i++) {
                 if($lines[$i] -match '\[spoiler\] \[') { break }
-                if($lines[$i] -match '\[spoiler\] ([^:]+): (.+)$') { $requirements += $Matches[1] + ': ' + $Matches[2] }
+                if($lines[$i] -match '\[spoiler\] ((?:Earth Palace|Matango|Fire Palace [123]|Upper Land|Luna Palace|Grand Palace [1-7])): (.+)$') {
+                    $requirements += $Matches[1] + ': ' + $Matches[2]
+                } else {
+                    break
+                }
             }
         }
     }
     if($Enabled) {
         Assert-True ($requirements.Count -gt 0) "$Name did not log resolved Crystal Orb requirements."
+        Assert-True ($allLogText -notmatch '\[Orb elements\]') `
+            "$Name logged the legacy Orb Elements section while custom requirements were active."
     } else {
         Assert-True ($requirements.Count -eq 0) "$Name logged custom requirements while Off."
+        Assert-True ($allLogText -match '\[Orb elements\]') `
+            "$Name removed the upstream Orb Elements section while the feature was Off."
     }
 
     return [pscustomobject]@{

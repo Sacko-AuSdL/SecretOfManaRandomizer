@@ -133,8 +133,7 @@ namespace SoMRandomizer.processing.hacks.openworld
         {
             Dictionary<int, CrystalOrbRequirement> requirementsByMap =
                 new Dictionary<int, CrystalOrbRequirement>();
-            if(!context.workingData.hasSetting(RESOLVED_MARKER) ||
-                context.workingData.getInt(RESOLVED_MARKER) != 1)
+            if(!hasResolvedRequirements(context))
             {
                 return requirementsByMap;
             }
@@ -153,6 +152,16 @@ namespace SoMRandomizer.processing.hacks.openworld
                     (byte)context.workingData.getInt(valueKey));
             }
             return requirementsByMap;
+        }
+
+        /// <summary>
+        /// True only when the feature resolver published its authoritative requirement set.
+        /// This distinguishes feature On from the feature-Off marker without consuming RNG.
+        /// </summary>
+        public static bool hasResolvedRequirements(RandoContext context)
+        {
+            return context.workingData.hasSetting(RESOLVED_MARKER) &&
+                context.workingData.getInt(RESOLVED_MARKER) == 1;
         }
 
         public static string getPrizeDependency(CrystalOrbRequirement requirement)

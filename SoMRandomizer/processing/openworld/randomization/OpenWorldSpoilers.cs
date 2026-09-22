@@ -117,7 +117,9 @@ namespace SoMRandomizer.processing.openworld.randomization
 
             Dictionary<int, CrystalOrbRequirement> crystalOrbRequirements =
                 CrystalOrbRequirements.getResolvedRequirements(context);
-            if(crystalOrbRequirements.Count > 0)
+            bool crystalOrbRequirementsEnabled =
+                CrystalOrbRequirements.hasResolvedRequirements(context);
+            if(crystalOrbRequirementsEnabled)
             {
                 Logging.log("[Crystal Orb requirements]", "spoiler");
                 foreach(CrystalOrbRequirements.Route route in CrystalOrbRequirements.ROUTES)
@@ -131,25 +133,30 @@ namespace SoMRandomizer.processing.openworld.randomization
                 }
             }
 
-            // orb elements
-            Logging.log("[Orb elements]", "spoiler");
-            Logging.log("Element to open earth palace = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_EARTHPALACE] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_EARTHPALACE], false) : "none"), "spoiler");
-            Logging.log("Element to open fire palace 1 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE1] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE1], false) : "none"), "spoiler");
-            Logging.log("Element to open fire palace 2 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE2] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE2], false) : "none"), "spoiler");
-            Logging.log("Element to open fire palace 3 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE3] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE3], false) : "none"), "spoiler");
-            Logging.log("Element to open luna palace = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE], false) : "none"), "spoiler");
-            Logging.log("Element to open matango cave = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_MATANGO] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_MATANGO], false) : "none"), "spoiler");
-            if (crystalOrbColorMap.ContainsKey(41))
+            // Feature Off preserves the upstream element section exactly. When custom
+            // requirements are active, the cached requirement section above is authoritative;
+            // logging the underlying element as well is redundant and misleading for weapon Orbs.
+            if(!crystalOrbRequirementsEnabled)
             {
-                Logging.log("Element to cross upper land = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false) : "none"), "spoiler");
+                Logging.log("[Orb elements]", "spoiler");
+                Logging.log("Element to open earth palace = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_EARTHPALACE] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_EARTHPALACE], false) : "none"), "spoiler");
+                Logging.log("Element to open fire palace 1 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE1] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE1], false) : "none"), "spoiler");
+                Logging.log("Element to open fire palace 2 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE2] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE2], false) : "none"), "spoiler");
+                Logging.log("Element to open fire palace 3 = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE3] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_FIREPALACE3], false) : "none"), "spoiler");
+                Logging.log("Element to open luna palace = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_LUNAPALACE], false) : "none"), "spoiler");
+                Logging.log("Element to open matango cave = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_MATANGO] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_MATANGO], false) : "none"), "spoiler");
+                if (crystalOrbColorMap.ContainsKey(41))
+                {
+                    Logging.log("Element to cross upper land = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_UPPERLAND], false) : "none"), "spoiler");
+                }
+                Logging.log("Element to open lost continent gnome room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE1] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE1], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent undine room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE2] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE2], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent sylphid room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE3] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE3], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent salamando room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE4] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE4], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent lumina room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE5] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE5], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent shade room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE6] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE6], false) : "none"), "spoiler");
+                Logging.log("Element to open lost continent luna room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE7] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE7], false) : "none"), "spoiler");
             }
-            Logging.log("Element to open lost continent gnome room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE1] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE1], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent undine room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE2] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE2], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent sylphid room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE3] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE3], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent salamando room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE4] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE4], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent lumina room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE5] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE5], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent shade room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE6] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE6], false) : "none"), "spoiler");
-            Logging.log("Element to open lost continent luna room = " + (crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE7] != 0xFF ? SomVanillaValues.elementOrbByteToName(crystalOrbColorMap[ElementSwaps.ORBMAP_GRANDPALACE7], false) : "none"), "spoiler");
 
             Logging.log("End open world spoilers.", "spoiler");
         }
