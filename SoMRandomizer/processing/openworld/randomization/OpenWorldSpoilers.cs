@@ -1,7 +1,10 @@
 ﻿using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.hacks.openworld;
+using SoMRandomizer.processing.openworld.cannon;
 using System.Collections.Generic;
+using System.Linq;
 using static SoMRandomizer.processing.openworld.randomization.OpenWorldSimulator;
 
 namespace SoMRandomizer.processing.openworld.randomization
@@ -113,6 +116,22 @@ namespace SoMRandomizer.processing.openworld.randomization
             if (spriteStartWeaponName != "")
             {
                 Logging.log("Sprite starting weapon = " + SomVanillaValues.weaponByteToName(spriteStarterWeapon), "spoiler");
+            }
+
+            ResolvedCannonNetwork cannonNetwork = CannonTravelModel.getResolvedNetwork(context);
+            if(cannonNetwork.Mode != OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF &&
+                cannonNetwork.Offices.Count > 0)
+            {
+                Logging.log("[Cannon Travel]", "spoiler");
+                Logging.log("Mode: " + cannonNetwork.Mode, "spoiler");
+                foreach(ResolvedCannonOffice office in cannonNetwork.Offices)
+                {
+                    string destinations = office.IsClosed
+                        ? "CLOSED - " + office.ClosedMessage
+                        : string.Join(", ", office.Routes.Select(route =>
+                            route.Destination.DisplayName));
+                    Logging.log(office.Office.DisplayName + ": " + destinations, "spoiler");
+                }
             }
 
             Dictionary<int, CrystalOrbRequirement> crystalOrbRequirements =

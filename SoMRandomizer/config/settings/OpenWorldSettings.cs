@@ -66,6 +66,11 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
+        public const string PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION = "cannonTravelRandomization";
+        public const string PROPERTYVALUE_CANNON_TRAVEL_OFF = "off";
+        public const string PROPERTYVALUE_CANNON_TRAVEL_OPEN = "open";
+        public const string PROPERTYVALUE_CANNON_TRAVEL_SHUFFLE = "shuffle";
+        public const string PROPERTYVALUE_CANNON_TRAVEL_CHAOS = "chaos";
         
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_EASY = "easy";
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_SORTA_EASY = "sortaeasy";
@@ -106,6 +111,16 @@ namespace SoMRandomizer.config.settings
             setInitial(PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING,
                 new string[] { PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON },
                 new string[] { "Off", "On" }, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF);
+            setInitial(PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION,
+                new string[]
+                {
+                    PROPERTYVALUE_CANNON_TRAVEL_OFF,
+                    PROPERTYVALUE_CANNON_TRAVEL_OPEN,
+                    PROPERTYVALUE_CANNON_TRAVEL_SHUFFLE,
+                    PROPERTYVALUE_CANNON_TRAVEL_CHAOS,
+                },
+                new string[] { "Off", "Open", "Shuffle", "Chaos" },
+                PROPERTYVALUE_CANNON_TRAVEL_OFF);
             setInitial(PROPERTYNAME_RANDOMIZE_ENEMIES, new string[] { "vanilla", "swap", "random", "oops", "none" }, new string[] { "Vanilla", "Swap", "Random spawns", "Oops! All owls", "None" }, "swap");
             setInitial(PROPERTYNAME_RANDOMIZE_BOSSES, new string[] { "vanilla", "swap", "random" }, new string[] { "Vanilla", "Swap", "Random" }, "random");
             setInitial(PROPERTYNAME_STATUS_AILMENTS, new string[] { "location", "type", "easy", "annoying", "awful" }, new string[] { "Location", "Enemy type", "Random (easy)", "Random (annoying)", "Random (awful)" }, "location");

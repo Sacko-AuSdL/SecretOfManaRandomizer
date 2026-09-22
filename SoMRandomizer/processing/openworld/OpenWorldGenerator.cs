@@ -6,6 +6,7 @@ using SoMRandomizer.processing.hacks.common.other;
 using SoMRandomizer.processing.hacks.common.qol;
 using SoMRandomizer.processing.hacks.openworld;
 using SoMRandomizer.processing.openworld.events;
+using SoMRandomizer.processing.openworld.cannon;
 using SoMRandomizer.processing.openworld.randomization;
 using System;
 
@@ -53,6 +54,8 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new CrystalOrbColors());
             // set up events for open world randomization
             addModeSpecificHack(new OpenWorldEvents());
+            // resolve one Cannon network and replace its route/menu events before placement
+            addModeSpecificHack(new CannonTravelRandomization());
             // supporting hack for displaying enemy level
             addModeSpecificHack(new CustomTopOfScreenText());
             // min/max level options for open world

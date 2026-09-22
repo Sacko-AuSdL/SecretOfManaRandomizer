@@ -26,6 +26,8 @@ namespace SoMRandomizer.processing.openworld.randomization
         public string[] lockedByPrizes;
         // higher is easy to get
         public double reachability = 0;
+        // Spatial ownership used only when Cannon Travel randomization is enabled.
+        public SoMRandomizer.processing.openworld.cannon.CannonTravelRegion cannonTravelRegion;
 
         public PrizeLocation(string name, int map, int obj, int evNum, int evReplaceIndex, string[] typeOptions, string[] hints, string[] lockedBy, double locationReachability)
         {
@@ -39,6 +41,7 @@ namespace SoMRandomizer.processing.openworld.randomization
             locationHints = hints;
             lockedByPrizes = lockedBy;
             reachability = locationReachability;
+            cannonTravelRegion = SoMRandomizer.processing.openworld.cannon.CannonTravelRegions.getLocationRegion(name);
         }
 
         public PrizeLocation(string name, int evNum, int evReplaceIndex, string[] typeOptions, string[] hints, string[] lockedBy, double locationReachability) : this(name, -1, -1, evNum, evReplaceIndex, typeOptions, hints, lockedBy, locationReachability)
@@ -51,11 +54,16 @@ namespace SoMRandomizer.processing.openworld.randomization
             // no hints constructor for starting stuff
         }
 
-        public string[] getLockedByPrizes(bool flammieDrumInLogic, string upperLandOrbRequirement, string goal)
+        public string[] getLockedByPrizes(bool flammieDrumInLogic, string upperLandOrbRequirement,
+            string goal, bool cannonTravelEnabled = false)
         {
             List<string> allPrizes = new List<string>();
             allPrizes.AddRange(lockedByPrizes);
-            if (flammieDrumInLogic)
+            // The upstream lists are a coarse two-continent approximation. Cannon modes use
+            // the resolved region graph in OpenWorldSimulator instead, so retaining these
+            // additional locks would incorrectly hide destinations that the generated routes
+            // actually make reachable. Feature Off preserves the original behavior exactly.
+            if (flammieDrumInLogic && !cannonTravelEnabled)
             {
                 if (OpenWorldPrizes.flammieRequiredLocations.Contains(locationName))
                 {

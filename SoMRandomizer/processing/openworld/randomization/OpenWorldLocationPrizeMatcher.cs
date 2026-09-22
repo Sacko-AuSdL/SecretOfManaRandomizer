@@ -27,6 +27,8 @@ namespace SoMRandomizer.processing.openworld.randomization
             string goal = context.workingData.get(OpenWorldGoalProcessor.GOAL_SHORT_NAME);
             List<string> plandoLocations = new List<string>();
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
+            bool cannonTravelEnabled = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION) !=
+                OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF;
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
             bool force100PercentPossible = !settings.getBool(OpenWorldSettings.PROPERTYNAME_ALLOW_MISSED_ITEMS);
             bool anySpellTriggers = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);
@@ -127,7 +129,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                 }
 
                 // remove stuff directly locked here
-                string[] plLocked = prizeLocation.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
+                string[] plLocked = prizeLocation.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal, cannonTravelEnabled);
                 foreach (string lockPrize in plLocked)
                 {
                     removeByName(availablePrizes, lockPrize);
@@ -155,7 +157,7 @@ namespace SoMRandomizer.processing.openworld.randomization
 
                 foreach (PrizeLocation prizeLocation2 in filteredLocations)
                 {
-                    string[] pl2Locked = prizeLocation2.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
+                    string[] pl2Locked = prizeLocation2.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal, cannonTravelEnabled);
                     // don't allow the prize to go anywhere else now that we put it here.
                     allAvailablePrizes[prizeLocation2].Remove(thisPrize);
                     if (pl2Locked.ToList().Contains(thisPrize.prizeName))
@@ -215,7 +217,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                     // if we're gifting to a known location (like salamando), add his location dependencies
                     foreach (PrizeLocation pl in allLocations)
                     {
-                        string[] plLocked = pl.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
+                        string[] plLocked = pl.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal, cannonTravelEnabled);
                         if (pl.eventNum == npc.eventId)
                         {
                             foreach (string dep in plLocked)
@@ -231,7 +233,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                         {
                             foreach (PrizeLocation loc in filteredLocations)
                             {
-                                string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
+                                string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal, cannonTravelEnabled);
                                 if (loc.locationName == location.locationName)
                                 {
                                     foreach (string dep in locLocked)
@@ -254,7 +256,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                             {
                                 foreach (PrizeLocation loc in filteredLocations)
                                 {
-                                    string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
+                                    string[] locLocked = loc.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal, cannonTravelEnabled);
                                     if (loc.locationName == location.locationName)
                                     {
                                         foreach (string dep in locLocked)

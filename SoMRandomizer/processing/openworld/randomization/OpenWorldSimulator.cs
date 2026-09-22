@@ -2,6 +2,7 @@
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.hacks.openworld;
+using SoMRandomizer.processing.openworld.cannon;
 using System.Collections.Generic;
 using System.Linq;
 using static SoMRandomizer.processing.openworld.PlandoProperties;
@@ -34,6 +35,16 @@ namespace SoMRandomizer.processing.openworld.randomization
             string goal = context.workingData.get(OpenWorldGoalProcessor.GOAL_SHORT_NAME);
             int mtrManaSeeds = context.workingData.getInt(OpenWorldMtrSeedNumSelection.MANA_SEEDS_REQUIRED);
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
+            bool cannonTravelEnabled = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION) !=
+                OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF;
+            ResolvedCannonNetwork cannonNetwork = cannonTravelEnabled
+                ? CannonTravelModel.getResolvedNetwork(context)
+                : null;
+            CannonTravelRegion cannonStartingRegion =
+                goal == OpenWorldGoalProcessor.GOAL_GIFTMODE ||
+                goal == OpenWorldGoalProcessor.GOAL_REINDEER
+                    ? CannonTravelRegion.IceCountry
+                    : CannonTravelRegion.PotosArea;
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
             int boyStarterWeapon = context.workingData.getInt(StartingWeaponRandomizer.BOY_START_WEAPON_INDEX);
             int girlStarterWeapon = context.workingData.getInt(StartingWeaponRandomizer.GIRL_START_WEAPON_INDEX);
@@ -158,134 +169,35 @@ namespace SoMRandomizer.processing.openworld.randomization
                 // add here instead of the one we check to make the cycles more accurate - don't use stuff we found in this cycle to clear this cycle
                 List<string> gottenPrizesTemp = new List<string>();
 
+                HashSet<CannonTravelRegion> reachableCannonRegions = null;
+                if(cannonTravelEnabled)
+                {
+                    bool hasFlammie = !flammieDrumInLogic ||
+                        gottenPrizeNames.Contains("flammie drum");
+                    bool matangoUpperLandConnectionOpen = upperLandOrbRequirement == "no" ||
+                        haveRequirement(upperLandOrbRequirement, gottenPrizeNames,
+                            girlSpellsChars, spriteSpellsChars,
+                            girlSpellChecks, spriteSpellChecks);
+                    reachableCannonRegions = CannonTravelRegions.getReachableRegions(
+                        cannonNetwork, cannonStartingRegion, hasFlammie,
+                        matangoUpperLandConnectionOpen);
+                }
+
                 int visitedSizeBefore = visitedLocations.Count;
                 List<string> locationsVisitedThisCycle = new List<string>();
                 foreach (PrizeLocation location in itemPlacements.Keys)
                 {
                     if (!visitedLocations.Contains(location))
                     {
-                        string[] reqs = location.getLockedByPrizes(flammieDrumInLogic, upperLandOrbRequirement, goal);
-                        bool haveAllReqs = true;
+                        string[] reqs = location.getLockedByPrizes(flammieDrumInLogic,
+                            upperLandOrbRequirement, goal, cannonTravelEnabled);
+                        bool haveAllReqs = !cannonTravelEnabled ||
+                            reachableCannonRegions.Contains(location.cannonTravelRegion);
                         foreach (string req in reqs)
                         {
-                            bool haveThisReq = false;
-                            if (req == "no spells" || req == " spells")
-                            {
-                                // for boy-only
-                                haveThisReq = true;
-                            }
-                            else if (req == OpenWorldLocations.DEPENDENCY_ELINEE_ENTRY)
-                            {
-                                // axe one way, whip + cutting weapon the other
-                                if (gottenPrizeNames.Contains("axe") || (gottenPrizeNames.Contains("whip") && (gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("sword"))))
-                                {
-                                    haveThisReq = true;
-                                }
-                            }
-                            else if (req == OpenWorldLocations.DEPENDENCY_GIRL_SPELLS)
-                            {
-                                foreach (string girlCaster in girlSpellsChars)
-                                {
-                                    if (gottenPrizeNames.Contains(girlCaster))
-                                    {
-                                        haveThisReq = true;
-                                    }
-                                }
-                            }
-                            else if (req == OpenWorldLocations.DEPENDENCY_SPRITE_SPELLS)
-                            {
-                                foreach (string spriteCaster in spriteSpellsChars)
-                                {
-                                    if (gottenPrizeNames.Contains(spriteCaster))
-                                    {
-                                        haveThisReq = true;
-                                    }
-                                }
-                            } 
-                            else if (req == OpenWorldLocations.DEPENDENCY_CUTTING_WEAPON)
-                            {
-                                if (gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("sword"))
-                                {
-                                    haveThisReq = true;
-                                }
-                            }
-                            else if (req == OpenWorldLocations.DEPENDENCY_MATANGO_ENTRY)
-                            {
-                                if (gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("flammie drum"))
-                                {
-                                    haveThisReq = true;
-                                }
-                            }
-                            else
-                            {
-                                string[] girlOnlySpells = new string[] { "lumina" };
-                                string[] bothSpells = new string[] { "sylphid", "salamando" };
-                                string[] spriteOnlySpells = new string[] { "undine", "gnome", "shade", "dryad", "luna" };
-                                foreach (string item in gottenPrizeNames)
-                                {
-                                    if (item == req)
-                                    {
-                                        haveThisReq = true;
-                                        if (item.Contains(" spells"))
-                                        {
-                                            string elementName = item.Split(new char[] { ' ' })[0];
-                                            if (girlOnlySpells.Contains(elementName))
-                                            {
-                                                bool haveAny = false;
-                                                foreach (string girlCaster in girlSpellChecks)
-                                                {
-                                                    if (gottenPrizeNames.Contains(girlCaster))
-                                                    {
-                                                        haveAny = true;
-                                                    }
-                                                }
-                                                if (!haveAny)
-                                                {
-                                                    haveThisReq = false;
-                                                }
-                                            }
-                                            else if (spriteOnlySpells.Contains(elementName))
-                                            {
-                                                bool haveAny = false;
-                                                foreach (string spriteCaster in spriteSpellChecks)
-                                                {
-                                                    if (gottenPrizeNames.Contains(spriteCaster))
-                                                    {
-                                                        haveAny = true;
-                                                    }
-                                                }
-                                                if (!haveAny)
-                                                {
-                                                    haveThisReq = false;
-                                                }
-                                            }
-                                            else if (bothSpells.Contains(elementName))
-                                            {
-                                                bool haveAny = false;
-                                                foreach (string girlCaster in girlSpellChecks)
-                                                {
-                                                    if (gottenPrizeNames.Contains(girlCaster))
-                                                    {
-                                                        haveAny = true;
-                                                    }
-                                                }
-                                                foreach (string spriteCaster in spriteSpellChecks)
-                                                {
-                                                    if (gottenPrizeNames.Contains(spriteCaster))
-                                                    {
-                                                        haveAny = true;
-                                                    }
-                                                }
-                                                if (!haveAny)
-                                                {
-                                                    haveThisReq = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if (!haveThisReq)
+                            if (!haveRequirement(req, gottenPrizeNames,
+                                girlSpellsChars, spriteSpellsChars,
+                                girlSpellChecks, spriteSpellChecks))
                             {
                                 haveAllReqs = false;
                             }
@@ -393,6 +305,68 @@ namespace SoMRandomizer.processing.openworld.randomization
                 result.score = -1;
             }
             return result;
+        }
+
+        private static bool haveRequirement(string req, List<string> gottenPrizeNames,
+            List<string> girlSpellsChars, List<string> spriteSpellsChars,
+            List<string> girlSpellChecks, List<string> spriteSpellChecks)
+        {
+            if (req == "no spells" || req == " spells")
+            {
+                // Existing boy-only behavior.
+                return true;
+            }
+            if (req == OpenWorldLocations.DEPENDENCY_ELINEE_ENTRY)
+            {
+                // Axe one way, whip plus a cutting weapon the other.
+                return gottenPrizeNames.Contains("axe") ||
+                    (gottenPrizeNames.Contains("whip") &&
+                    (gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("sword")));
+            }
+            if (req == OpenWorldLocations.DEPENDENCY_GIRL_SPELLS)
+            {
+                return girlSpellsChars.Any(gottenPrizeNames.Contains);
+            }
+            if (req == OpenWorldLocations.DEPENDENCY_SPRITE_SPELLS)
+            {
+                return spriteSpellsChars.Any(gottenPrizeNames.Contains);
+            }
+            if (req == OpenWorldLocations.DEPENDENCY_CUTTING_WEAPON)
+            {
+                return gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("sword");
+            }
+            if (req == OpenWorldLocations.DEPENDENCY_MATANGO_ENTRY)
+            {
+                return gottenPrizeNames.Contains("axe") || gottenPrizeNames.Contains("flammie drum");
+            }
+            if (!gottenPrizeNames.Contains(req))
+            {
+                return false;
+            }
+
+            if (!req.Contains(" spells"))
+            {
+                return true;
+            }
+
+            string elementName = req.Split(new char[] { ' ' })[0];
+            string[] girlOnlySpells = new string[] { "lumina" };
+            string[] bothSpells = new string[] { "sylphid", "salamando" };
+            string[] spriteOnlySpells = new string[] { "undine", "gnome", "shade", "dryad", "luna" };
+            if (girlOnlySpells.Contains(elementName))
+            {
+                return girlSpellChecks.Any(gottenPrizeNames.Contains);
+            }
+            if (spriteOnlySpells.Contains(elementName))
+            {
+                return spriteSpellChecks.Any(gottenPrizeNames.Contains);
+            }
+            if (bothSpells.Contains(elementName))
+            {
+                return girlSpellChecks.Any(gottenPrizeNames.Contains) ||
+                    spriteSpellChecks.Any(gottenPrizeNames.Contains);
+            }
+            return true;
         }
     }
 }
