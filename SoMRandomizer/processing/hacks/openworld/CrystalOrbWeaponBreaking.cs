@@ -533,12 +533,23 @@ namespace SoMRandomizer.processing.hacks.openworld
             w.PatchRelative(contactMarkerReadyBranch, w.Position);
             w.Bytes(0x48); // one-byte exact-contact marker, above the saved collision word
 
-            // $E1E3,X is the player's full equipped weapon ID: family * 9 + forge rank
-            // (0..71), not a clean family ID. Range-decode it instead of masking low bits;
-            // masking aliases unrelated weapon/rank combinations and makes Glove/0 appear
-            // to act like a wildcard. X remains the owning player record at $01/D376 for
-            // melee and ranged probes.
-            w.Bytes(0xBD, 0xE3, 0xE1);
+            // $01/CD7D, $01/CD85, and $01/CD8D invoke the tile-interaction probe with
+            // X=$0000/$0200/$0400. Y at $01/D376 is only the Collision[2] table index.
+            // Vanilla's $F0 handler at $01/D389 accepts the probe only when $E02C,X (the
+            // actor's player-control number) is nonzero, then preserves that same actor with
+            // STX $1C. Apply that vanilla eligibility guard before the custom proximity path;
+            // otherwise an uncontrolled nearby party member can satisfy another actor's hit.
+            w.Bytes(0xBD, 0x2C, 0xE0); // LDA $E02C,X - player-control number
+            int eligiblePlayerBranch = w.Branch(0xD0);
+            w.Bytes(0x68); // discard exact-contact marker
+            w.Bytes(0xC2, 0x20, 0x68, 0xE2, 0x20, 0x6B); // return original collision word
+            w.PatchRelative(eligiblePlayerBranch, w.Position);
+
+            // $E1E8,X is this interaction actor's live full weapon ID (family * 9 + forge
+            // rank). $E1E3,X is a secondary combat/animation copy populated from $E1E8 and
+            // can retain the equipment that was active before an in-room weapon change.
+            // Range-decode the live full ID instead of masking its low bits.
+            w.Bytes(0xBD, 0xE8, 0xE1);
 
             // Group the resolved routes by required weapon. Runtime receives the profile's
             // already-resolved map/weapon pairs and owns no requirement-selection policy.
@@ -601,8 +612,8 @@ namespace SoMRandomizer.processing.hacks.openworld
 
             // Actor records $0600..$1600 use a $0200 stride. $E000,Y is active/existence,
             // $E1E7,Y is species, and $E002/$E004 are 16-bit map-pixel X/Y. X remains the
-            // attacking player record from $01/D293. Exact $FF contacts can queue once
-            // a live Orb actor is found; all other probes use the unchanged symmetric,
+            // vanilla-eligible interaction actor from $01/D293. Exact $FF contacts can queue
+            // once a live Orb actor is found; all other probes use the unchanged symmetric,
             // Orb-centered 40x40 fallback without changing global weapon reach.
             w.Bytes(0xC2, 0x20, 0xDA, 0x5A); // REP #$20; preserve X/Y
             w.Word(0xA0, FIRST_NONPLAYER_ACTOR_OFFSET); // LDY #first nonplayer actor
@@ -638,7 +649,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             w.Bytes(0xE2, 0x20, 0xA9, PENDING_STATE_QUEUED);
             w.Long(0x8F, CustomRamOffsets.CRYSTAL_ORB_PENDING_STATE);
             w.PatchRelative(alreadyArmedBranch, w.Position);
-            w.Bytes(0xC2, 0x20, 0x7A, 0xFA); // restore vanilla Y and attacking-player X
+            w.Bytes(0xC2, 0x20, 0x7A, 0xFA); // restore vanilla Y and interaction-actor X
             w.Bytes(0xE2, 0x20, 0x68); // discard exact-contact marker
             w.Bytes(0xC2, 0x20, 0x68, 0xE2, 0x20, 0x6B); // return original collision word
 
@@ -654,7 +665,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             w.Word(0xC0, ACTOR_TABLE_END_OFFSET);
             int loopBranch = w.Branch(0x90);
             w.PatchRelative(loopBranch, scanLoopOffset);
-            w.Bytes(0x7A, 0xFA); // restore vanilla Y and attacking-player X
+            w.Bytes(0x7A, 0xFA); // restore vanilla Y and interaction-actor X
 
             int returnOriginalOffset = w.Position;
             foreach(int branch in returnOriginalBranches)

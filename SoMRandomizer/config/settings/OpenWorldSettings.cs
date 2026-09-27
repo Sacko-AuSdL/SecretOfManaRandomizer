@@ -66,6 +66,7 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
+        public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY = "weaponOnly";
         public const string PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION = "cannonTravelRandomization";
         public const string PROPERTYVALUE_CANNON_TRAVEL_OFF = "off";
         public const string PROPERTYVALUE_CANNON_TRAVEL_OPEN = "open";
@@ -109,8 +110,14 @@ namespace SoMRandomizer.config.settings
 
             // enumerations
             setInitial(PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING,
-                new string[] { PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON },
-                new string[] { "Off", "On" }, PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF);
+                new string[]
+                {
+                    PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF,
+                    PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON,
+                    PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY,
+                },
+                new string[] { "Off", "Mixed", "Weapon Only" },
+                PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF);
             setInitial(PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION,
                 new string[]
                 {

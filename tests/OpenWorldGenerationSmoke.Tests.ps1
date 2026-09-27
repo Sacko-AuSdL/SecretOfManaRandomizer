@@ -17,7 +17,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
     if(-not $Condition) { throw $Message }
 }
 
-function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
+function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [string]$OrbMode,
     [string]$StartingCharacter = 'boy', [string]$OtherCharacters = 'findbothL1') {
     $caseDirectory = Join-Path $OutputRoot $Name
     [IO.Directory]::CreateDirectory($caseDirectory) | Out-Null
@@ -28,7 +28,7 @@ function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
     $common.set('mode', 'open') | Out-Null
     $common.set('version', '1.49') | Out-Null
     $common.set('spoilerLog', 'yes') | Out-Null
-    $settings.set('crystalOrbWeaponBreaking', $(if($Enabled) { 'on' } else { 'off' })) | Out-Null
+    $settings.set('crystalOrbWeaponBreaking', $OrbMode) | Out-Null
     $settings.set('opStartChar', $StartingCharacter) | Out-Null
     $settings.set('opCharacters', $OtherCharacters) | Out-Null
 
@@ -76,7 +76,7 @@ function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
         "$Name contains diagnostic bootstrap output."
     Assert-True ($allLogText -notmatch 'crystalOrbWeaponBreaking = sequenceBreak') `
         "$Name serialized the retired setting value."
-    Assert-True ($allLogText -match ('crystalOrbWeaponBreaking = ' + $(if($Enabled) { 'on' } else { 'off' }))) `
+    Assert-True ($allLogText -match ('crystalOrbWeaponBreaking = ' + $OrbMode)) `
         "$Name did not serialize the expected feature value."
 
     $requirements = @()
@@ -94,10 +94,17 @@ function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
             }
         }
     }
-    if($Enabled) {
+    if($OrbMode -ne 'off') {
         Assert-True ($requirements.Count -gt 0) "$Name did not log resolved Crystal Orb requirements."
         Assert-True ($allLogText -notmatch '\[Orb elements\]') `
             "$Name logged the legacy Orb Elements section while custom requirements were active."
+        if($OrbMode -eq 'weaponOnly') {
+            $weaponNames = 'Glove|Sword|Axe|Spear|Whip|Bow|Boomerang|Javelin'
+            foreach($requirement in $requirements) {
+                Assert-True ($requirement -match (': (' + $weaponNames + ')$')) `
+                    "$Name emitted a non-weapon requirement in Weapon Only: $requirement"
+            }
+        }
     } else {
         Assert-True ($requirements.Count -eq 0) "$Name logged custom requirements while Off."
         Assert-True ($allLogText -match '\[Orb elements\]') `
@@ -115,12 +122,15 @@ function Invoke-SmokeGeneration([string]$Name, [string]$Seed, [bool]$Enabled,
 
 [IO.Directory]::CreateDirectory($OutputRoot) | Out-Null
 $results = @()
-$results += Invoke-SmokeGeneration 'normal-on' 'CrystalOrb-Polish-Normal' $true
-$results += Invoke-SmokeGeneration 'boy-only-on' 'CrystalOrb-Polish-BoyOnly' $true 'boy' 'none'
-$results += Invoke-SmokeGeneration 'girl-only-on' 'CrystalOrb-Polish-GirlOnly' $true 'girl' 'none'
-$results += Invoke-SmokeGeneration 'off-control' 'CrystalOrb-Polish-Off' $false
-$results += Invoke-SmokeGeneration 'full-playthrough-a' 'CrystalOrb-FullPlaythrough-2026' $true
-$results += Invoke-SmokeGeneration 'full-playthrough-b' 'CrystalOrb-FullPlaythrough-2026' $true
+$results += Invoke-SmokeGeneration 'normal-on' 'CrystalOrb-Polish-Normal' 'on'
+$results += Invoke-SmokeGeneration 'boy-only-on' 'CrystalOrb-Polish-BoyOnly' 'on' 'boy' 'none'
+$results += Invoke-SmokeGeneration 'girl-only-on' 'CrystalOrb-Polish-GirlOnly' 'on' 'girl' 'none'
+$results += Invoke-SmokeGeneration 'weapon-only-normal' 'CrystalOrb-WeaponOnly-Normal' 'weaponOnly'
+$results += Invoke-SmokeGeneration 'weapon-only-boy' 'CrystalOrb-WeaponOnly-Boy' 'weaponOnly' 'boy' 'none'
+$results += Invoke-SmokeGeneration 'weapon-only-girl' 'CrystalOrb-WeaponOnly-Girl' 'weaponOnly' 'girl' 'none'
+$results += Invoke-SmokeGeneration 'off-control' 'CrystalOrb-Polish-Off' 'off'
+$results += Invoke-SmokeGeneration 'full-playthrough-a' 'CrystalOrb-FullPlaythrough-2026' 'on'
+$results += Invoke-SmokeGeneration 'full-playthrough-b' 'CrystalOrb-FullPlaythrough-2026' 'on'
 
 $fullA = $results | Where-Object Name -eq 'full-playthrough-a'
 $fullB = $results | Where-Object Name -eq 'full-playthrough-b'
@@ -132,4 +142,4 @@ $results | ForEach-Object {
     Write-Output ("SMOKE {0}: seed={1}; sha256={2}; requirements={3}" -f
         $_.Name, $_.Seed, $_.Sha256, ($_.Requirements -join ' | '))
 }
-Write-Output "PASS: six Open World smoke generations completed in $OutputRoot"
+Write-Output "PASS: nine Open World smoke generations completed in $OutputRoot"

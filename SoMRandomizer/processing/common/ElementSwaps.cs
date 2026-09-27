@@ -2,6 +2,7 @@
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.common.structure;
+using SoMRandomizer.processing.hacks.openworld;
 using SoMRandomizer.processing.openworld;
 using System;
 using System.Collections.Generic;
@@ -78,9 +79,7 @@ namespace SoMRandomizer.processing
                 Dictionary<int, byte> crystalOrbElementMap = new Dictionary<int, byte>();
                 bool randomizeGrandPalace = settings.getBool(OpenWorldSettings.PROPERTYNAME_RANDOMIZE_GRANDPALACE_ELEMENTS);
                 bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
-                bool preserveOrbsWithoutMagic =
-                    settings.get(OpenWorldSettings.PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING) ==
-                    OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON;
+                bool preserveOrbsWithoutMagic = CrystalOrbRequirements.isEnabled(settings);
                 processOpenWorld(outRom, context.randomFunctional, crystalOrbElementMap,
                     context.replacementEvents, girlMagicExists, spriteMagicExists,
                     randomizeGrandPalace, context.plandoSettings, flammieDrumInLogic,

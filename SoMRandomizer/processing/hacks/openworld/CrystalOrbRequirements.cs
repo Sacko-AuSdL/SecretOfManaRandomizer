@@ -76,8 +76,15 @@ namespace SoMRandomizer.processing.hacks.openworld
 
         public static bool isEnabled(RandoSettings settings)
         {
+            string mode = settings.get(OpenWorldSettings.PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING);
+            return mode == OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON ||
+                mode == OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY;
+        }
+
+        public static bool isWeaponOnly(RandoSettings settings)
+        {
             return settings.get(OpenWorldSettings.PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING) ==
-                OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON;
+                OpenWorldSettings.PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY;
         }
 
         /// <summary>
@@ -101,6 +108,7 @@ namespace SoMRandomizer.processing.hacks.openworld
 
             bool girlMagicExists = context.workingData.getBool(OpenWorldClassSelection.GIRL_MAGIC_EXISTS);
             bool spriteMagicExists = context.workingData.getBool(OpenWorldClassSelection.SPRITE_MAGIC_EXISTS);
+            bool weaponOnly = isWeaponOnly(settings);
             HashSet<byte> validOrbMagicFamilies = new HashSet<byte>(
                 ElementSwaps.GetValidOrbElements(girlMagicExists, spriteMagicExists));
             Dictionary<int, byte> elementsByMap = ElementSwaps.getCrystalOrbElementMap(context);
@@ -114,7 +122,7 @@ namespace SoMRandomizer.processing.hacks.openworld
 
                 byte element = elementsByMap[route.MapNumber];
                 bool magicIsValid = validOrbMagicFamilies.Contains(element);
-                CrystalOrbRequirementType type = magicIsValid && context.randomFunctional.Next() % 2 == 0
+                CrystalOrbRequirementType type = !weaponOnly && magicIsValid && context.randomFunctional.Next() % 2 == 0
                     ? CrystalOrbRequirementType.Magic
                     : CrystalOrbRequirementType.SpecificWeapon;
                 byte value = type == CrystalOrbRequirementType.Magic

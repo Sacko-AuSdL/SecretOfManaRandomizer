@@ -260,9 +260,12 @@ Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength ([b
 # 40x40 checks. Ranged requirements are deliberately absent and require $C2:C529 below.
 Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xC9,0xFF,0xF0)) 'Exact $FF contact route is missing.'
 Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xA3,0x05,0xD0)) 'Exact-contact marker does not bypass only the proximity checks.'
-Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE3,0xE1)) 'Authoritative full equipped-weapon ID read is missing.'
-Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE3,0xE1,0x29,0x07))) -lt 0) 'Full weapon ID is still incorrectly masked with $07.'
 Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xB9,0xE7,0xE1,0xC9,0x55)) 'Species $55 restriction is missing.'
+Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0x2C,0xE0,0xD0)) 'Vanilla $E02C,X interaction-actor eligibility guard is missing.'
+Assert-Sequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE8,0xE1)) 'Interaction actor current-weapon read is missing.'
+Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xB9,0xEC,0xE1))) -lt 0) 'Melee detector still treats the Orb $E1EC field as an attacker index.'
+Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE3,0xE1))) -lt 0) 'Melee detector still reads the stale cached weapon at $E1E3,X.'
+Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE8,0xE1,0x29,0x07))) -lt 0) 'Full current weapon ID is incorrectly masked with $07.'
 $radiusCompare = [byte[]](0xC9,0x29,0x00)
 $firstRadius = Find-ByteSequence $outputRom $proximityOffset $proximityLength $radiusCompare
 Assert-True ($firstRadius -ge 0) 'Horizontal inclusive 40px radius is missing.'
@@ -281,7 +284,7 @@ foreach($definition in $definitions) {
 
 # Decode every emitted melee full-weapon-ID range and prove each handler contains exactly the
 # maps assigned to that family. Ranged requirements must not occur in this routine.
-$weaponReadOffset = Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE3,0xE1))
+$weaponReadOffset = Find-ByteSequence $outputRom $proximityOffset $proximityLength ([byte[]](0xBD,0xE8,0xE1))
 $decodedRanges = @{}
 $meleeWeaponIds = @($definitions | Where-Object { $_.Type -eq 'SpecificWeapon' -and $_.Value -lt 5 } | ForEach-Object { $_.Value } | Sort-Object -Unique)
 foreach($weaponId in $meleeWeaponIds) {
@@ -327,6 +330,55 @@ foreach($definition in $definitions | Where-Object { $_.Type -eq 'SpecificWeapon
     Assert-True ((Find-ByteSequence $outputRom $proximityOffset $proximityLength $mapCompare) -lt 0) "Ranged requirement leaked into tile/proximity routing: $($definition.Name)."
 }
 
+# Model the byte-verified vanilla interaction-owner/current-weapon selection for party-member
+# regressions. $C1:D293 enters with X=$0000/$0200/$0400, and vanilla's $C1:D389 guard accepts
+# only actors whose $E02C,X player-control number is nonzero. Cached room-entry weapons are
+# supplied only to make the stale/current distinction explicit; the fixed routine ignores them.
+function Test-InteractionActorWeaponMatch([int]$ActorIndex, [int[]]$PlayerControlNumbers,
+    [int[]]$CurrentWeaponIds, [int[]]$CachedWeaponIds, [int]$RequiredFamily) {
+    if($ActorIndex -lt 0 -or $ActorIndex -ge 3) { return $false }
+    if($PlayerControlNumbers[$ActorIndex] -eq 0) { return $false }
+    $actorOffset = $ActorIndex * 0x200
+    Assert-True ($actorOffset -eq @(0x0000,0x0200,0x0400)[$ActorIndex]) 'Actor index to player-record offset changed.'
+    $fullWeaponId = $CurrentWeaponIds[$ActorIndex]
+    return $fullWeaponId -ge (9 * $RequiredFamily) -and $fullWeaponId -lt (9 * ($RequiredFamily + 1))
+}
+
+$boyLanceSpriteSword = [int[]]@(67,20,14)
+$roomEntrySpriteSwordCache = [int[]]@(67,20,14)
+$boyIsInteractionActor = [int[]]@(1,0,0)
+Assert-True (-not (Test-InteractionActorWeaponMatch 0 $boyIsInteractionActor $boyLanceSpriteSword $roomEntrySpriteSwordCache 1)) `
+    'Boy Lance incorrectly inherits the Sprite room-entry Sword requirement.'
+$spriteIsInteractionActor = [int[]]@(0,0,1)
+Assert-True (Test-InteractionActorWeaponMatch 2 $spriteIsInteractionActor $boyLanceSpriteSword $roomEntrySpriteSwordCache 1) `
+    'Sprite Sword does not satisfy its own Sword requirement.'
+Assert-True (-not (Test-InteractionActorWeaponMatch 2 $boyIsInteractionActor $boyLanceSpriteSword $roomEntrySpriteSwordCache 1)) `
+    'Uncontrolled Sprite probe bypasses the vanilla $E02C eligibility guard.'
+
+$spriteSwitchedToSword = [int[]]@(67,20,12)
+$spriteEnteredWithWhip = [int[]]@(67,20,39)
+Assert-True (Test-InteractionActorWeaponMatch 2 $spriteIsInteractionActor $spriteSwitchedToSword $spriteEnteredWithWhip 1) `
+    'In-room Whip-to-Sword switch does not take effect immediately.'
+$spriteSwitchedToWhip = [int[]]@(67,20,39)
+$spriteEnteredWithSword = [int[]]@(67,20,12)
+Assert-True (-not (Test-InteractionActorWeaponMatch 2 $spriteIsInteractionActor $spriteSwitchedToWhip $spriteEnteredWithSword 1)) `
+    'In-room Sword-to-Whip switch still uses the room-entry Sword cache.'
+
+foreach($family in 0..4) {
+    $attacker = $family % 3
+    $otherFamily = ($family + 1) % 5
+    $current = [int[]]@((9 * $otherFamily + 1),(9 * $otherFamily + 2),(9 * $otherFamily + 3))
+    $current[$attacker] = 9 * $family + 8
+    $otherPartyCurrent = [int[]]@((9 * $otherFamily + 1),(9 * $otherFamily + 2),(9 * $otherFamily + 3))
+    $otherPartyCurrent[($attacker + 1) % 3] = 9 * $family + 2
+    $actorControls = [int[]]@(0,0,0)
+    $actorControls[$attacker] = 1
+    Assert-True (Test-InteractionActorWeaponMatch $attacker $actorControls $current @(0,0,0) $family) `
+        "Melee family $family does not match the actual attacker's current weapon."
+    Assert-True (-not (Test-InteractionActorWeaponMatch $attacker $actorControls $otherPartyCurrent @(0,0,0) $family)) `
+        "Melee family $family was inherited from another party member."
+}
+
 # The real ranged path owns $7E:D000 projectile records. X must be one of the three players;
 # Y supplies projectile type and moving map coordinates. Projectile types map exactly to the
 # three ranged families before map-specific routing.
@@ -334,6 +386,7 @@ Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xE0,0x00,0x00,
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xE0,0x00,0x02,0xF0)) 'Projectile path does not accept player 2 as owner.'
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xE0,0x00,0x04,0xF0)) 'Projectile path does not accept player 3 as owner.'
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xE2,0x20,0xB9,0x00,0xD0)) 'Projectile type is not read from the active $D000,Y record.'
+Assert-True ((Find-ByteSequence $outputRom $rangedOffset $rangedLength ([byte[]](0xB9,0xEC,0xE1))) -lt 0) 'Ranged detector was coupled to melee last-attacker state.'
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xBD,0xE7,0xE1,0xC9,0x55)) 'Projectile detector does not require Orb species $55.'
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xB9,0x02,0xD0,0x38,0xFD,0x02,0xE0)) 'Projectile/Orb X comparison is missing.'
 Assert-Sequence $outputRom $rangedOffset $rangedLength ([byte[]](0xB9,0x04,0xD0,0x38,0xFD,0x04,0xE0)) 'Projectile/Orb Y comparison is missing.'

@@ -20,7 +20,13 @@ function New-Requirement([int]$Map, [string]$Kind, [byte]$Value) {
     return $ctor.Invoke([object[]]@($Map, 0x570, 'hint test', $enumValue, $Value))
 }
 
-$compositionMethod = $hintType.GetMethod('getGrandPalaceCompositionHint', [Reflection.BindingFlags]'Static,NonPublic')
+$enumerableRequirementType = [System.Collections.Generic.IEnumerable``1].MakeGenericType($requirementType)
+$compositionMethod = $hintType.GetMethod('getGrandPalaceCompositionHint',
+    [Reflection.BindingFlags]'Static,NonPublic', $null,
+    [Type[]]@($enumerableRequirementType), $null)
+$compositionModeMethod = $hintType.GetMethod('getGrandPalaceCompositionHint',
+    [Reflection.BindingFlags]'Static,NonPublic', $null,
+    [Type[]]@($enumerableRequirementType, [bool]), $null)
 $candidateMethod = $hintType.GetMethod('getGrandPalaceHintCandidates', [Reflection.BindingFlags]'Static,NonPublic')
 $dependencyMethod = $hintType.GetMethod('getGrandPalaceDependencyHint', [Reflection.BindingFlags]'Static,NonPublic')
 $cacheMethod = $hintType.GetMethod('getCachedGrandPalaceRequirements', [Reflection.BindingFlags]'Static,NonPublic')
@@ -46,12 +52,30 @@ $singularText = [string]$compositionMethod.Invoke($null, $oneArg)
 Assert-True ($singularText -eq 'Grand Palace requires 1 magic type and 1 weapon.') `
     'Grand Palace singular grammar is incorrect.'
 
+$weaponOnlyRequirements = [Activator]::CreateInstance($requirementListType)
+$weaponOnlyRequirements.Add((New-Requirement 420 SpecificWeapon 0))
+$weaponOnlyRequirements.Add((New-Requirement 421 SpecificWeapon 0))
+$weaponOnlyRequirements.Add((New-Requirement 422 SpecificWeapon 4))
+$weaponOnlyArgs = [object[]]@($weaponOnlyRequirements, $true)
+$weaponOnlyComposition = [string]$compositionModeMethod.Invoke($null, $weaponOnlyArgs)
+Assert-True ($weaponOnlyComposition -eq 'Grand Palace requires 2 weapons.') `
+    'Weapon Only aggregate hint does not count unique weapon requirements.'
+$weaponOnlyArgs[0] = $singular
+$weaponOnlySingular = [string]$compositionModeMethod.Invoke($null, $weaponOnlyArgs)
+Assert-True ($weaponOnlySingular -eq 'Grand Palace requires 1 weapon.') `
+    'Weapon Only aggregate hint singular grammar is incorrect.'
+
 $oneArg[0] = [byte[]](0x81,0x83,0x83)
 $candidates = $candidateMethod.Invoke($null, $oneArg)
 Assert-True ($candidates.Count -eq 10) 'Hint candidate pool did not deduplicate Magic or include all 8 weapons.'
 $weaponNames = @($candidates | Where-Object { $_.Type.ToString() -eq 'SpecificWeapon' } |
     ForEach-Object { $_.Value } | Sort-Object)
 Assert-True (($weaponNames -join ',') -eq '0,1,2,3,4,5,6,7') 'Weapon hint candidates are incomplete.'
+$oneArg[0] = [byte[]]@()
+$weaponOnlyCandidates = $candidateMethod.Invoke($null, $oneArg)
+Assert-True ($weaponOnlyCandidates.Count -eq 8) 'Weapon Only hint pool does not contain exactly eight weapons.'
+Assert-True (@($weaponOnlyCandidates | Where-Object { $_.Type.ToString() -eq 'Magic' }).Count -eq 0) `
+    'Weapon Only hint pool still includes Magic candidates.'
 
 $magic = New-Requirement 420 Magic 0x81
 $sword = New-Requirement 421 SpecificWeapon 1

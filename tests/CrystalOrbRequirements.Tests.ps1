@@ -26,21 +26,21 @@ $settingProbe = [Activator]::CreateInstance($settingsType,
     [object[]]@([Activator]::CreateInstance($commonType)))
 Assert-True ($settingProbe.getDefault('crystalOrbWeaponBreaking') -eq 'off') `
     'Crystal Orb feature default is not off.'
-Assert-True (([string[]]$settingProbe.getOptionsValues('crystalOrbWeaponBreaking') -join ',') -eq 'off,on') `
-    'Crystal Orb serialized options are not exactly off/on.'
-Assert-True (([string[]]$settingProbe.getDisplayValues('crystalOrbWeaponBreaking') -join ',') -eq 'Off,On') `
-    'Crystal Orb display options are not exactly Off/On.'
+Assert-True (([string[]]$settingProbe.getOptionsValues('crystalOrbWeaponBreaking') -join ',') -eq 'off,on,weaponOnly') `
+    'Crystal Orb serialized options are not exactly off/on/weaponOnly.'
+Assert-True (([string[]]$settingProbe.getDisplayValues('crystalOrbWeaponBreaking') -join ',') -eq 'Off,Mixed,Weapon Only') `
+    'Crystal Orb display options are not exactly Off/Mixed/Weapon Only.'
 $settingProbe.set('crystalOrbWeaponBreaking', 'sequenceBreak')
 Assert-True (-not [bool]$requirementsType.GetMethod('isEnabled').Invoke($null, [object[]]@($settingProbe))) `
     'Legacy sequenceBreak literal still enables the production feature.'
 
 function New-Resolved([int]$Seed, [bool]$GirlMagic, [bool]$SpriteMagic,
-    [int[]]$Elements = $defaultElements, [bool]$Enabled = $true) {
+    [int[]]$Elements = $defaultElements, [bool]$Enabled = $true, [string]$Mode = 'on') {
     $common = [Activator]::CreateInstance($commonType)
     $settings = [Activator]::CreateInstance($settingsType, [object[]]@($common))
     if($Enabled) {
         $settingsType.GetMethod('set', [Type[]]@([string], [string])).Invoke(
-            $settings, [object[]]@('crystalOrbWeaponBreaking', 'on')) | Out-Null
+            $settings, [object[]]@('crystalOrbWeaponBreaking', $Mode)) | Out-Null
     }
     $context = [Activator]::CreateInstance($contextType)
     $workingData = $contextType.GetField('workingData').GetValue($context)
@@ -93,6 +93,42 @@ foreach($requirement in $a[2].Values) {
     }
 }
 Assert-True ($sawMagic -and $sawWeapon) 'Selected normal-party test seed does not cover both categories.'
+
+# Weapon Only uses the same cached resolver, but skips the Magic/category roll and selects one
+# uniformly distributed weapon ID for every active Orb regardless of generated spell roles.
+$weaponOnlyA = New-Resolved 24680 $true $true $defaultElements $true 'weaponOnly'
+$weaponOnlyB = New-Resolved 24680 $true $true $defaultElements $true 'weaponOnly'
+Assert-True ((Requirement-Signature $weaponOnlyA[2]) -eq (Requirement-Signature $weaponOnlyB[2])) `
+    'Weapon Only is not deterministic for identical seed/settings.'
+$weaponOnlyRepeat = $requirementsType.GetMethod('resolveAndStore').Invoke(
+    $null, [object[]]@($weaponOnlyA[0], $weaponOnlyA[1]))
+Assert-True ((Requirement-Signature $weaponOnlyA[2]) -eq (Requirement-Signature $weaponOnlyRepeat)) `
+    'Weapon Only cached resolver call rerolled requirements.'
+Assert-True ($weaponOnlyA[1].randomFunctional.Next() -eq $weaponOnlyB[1].randomFunctional.Next()) `
+    'Weapon Only cached resolver call advanced functional RNG.'
+
+$weaponOnlyIds = [System.Collections.Generic.HashSet[int]]::new()
+$roleCases = @(
+    [pscustomobject]@{ Girl = $false; Sprite = $false },
+    [pscustomobject]@{ Girl = $true; Sprite = $false },
+    [pscustomobject]@{ Girl = $false; Sprite = $true },
+    [pscustomobject]@{ Girl = $true; Sprite = $true }
+)
+foreach($roles in $roleCases) {
+    foreach($seed in 1..40) {
+        $weaponOnly = New-Resolved $seed $roles.Girl $roles.Sprite $defaultElements $true 'weaponOnly'
+        Assert-True ($weaponOnly[2].Count -eq 14) 'Weapon Only lost an active Orb.'
+        foreach($requirement in $weaponOnly[2].Values) {
+            Assert-True ($requirement.Type.ToString() -eq 'SpecificWeapon') `
+                'Weapon Only emitted a Magic requirement.'
+            Assert-True ($requirement.Value -ge 0 -and $requirement.Value -le 7) `
+                'Weapon Only emitted a weapon outside IDs 0-7.'
+            $weaponOnlyIds.Add([int]$requirement.Value) | Out-Null
+        }
+    }
+}
+Assert-True ((@($weaponOnlyIds) | Sort-Object) -join ',' -eq '0,1,2,3,4,5,6,7') `
+    'Weapon Only sampling did not exercise all eight weapon families.'
 
 # Missing and $FF entries are intentionally absent.
 $guardElements = [int[]]$defaultElements.Clone()
@@ -157,6 +193,28 @@ foreach($map in @(291,307,348,345,240,35)) {
 Assert-True ($offData.getInt('orbElement41') -eq 0xFF -and $onData.getInt('orbElement41') -eq 0xFF) `
     'Flammie-off Upper Land production guard changed.'
 
+# Weapon Only uses the same feature-controlled Orb-existence rules as Mixed.
+$weaponOnlyCommon = [Activator]::CreateInstance($commonType)
+$weaponOnlySettings = [Activator]::CreateInstance($settingsType, [object[]]@($weaponOnlyCommon))
+$weaponOnlySettings.set('crystalOrbWeaponBreaking', 'weaponOnly') | Out-Null
+$weaponOnlyContext = [Activator]::CreateInstance($contextType)
+$weaponOnlyData = $contextType.GetField('workingData').GetValue($weaponOnlyContext)
+$weaponOnlyData.setBool('girlMagicExists', $false)
+$weaponOnlyData.setBool('spriteMagicExists', $false)
+$weaponOnlyContext.randomFunctional = [Activator]::CreateInstance($randomType, [object[]]@(500))
+$weaponOnlyProcessor = [Activator]::CreateInstance($elementSwapsType)
+[byte[]]$weaponOnlyRom = [byte[]]::new(0x400000)
+$weaponOnlyOk = $elementSwapsType.GetMethod('process', [Reflection.BindingFlags]'Instance,NonPublic').Invoke(
+    $weaponOnlyProcessor, [object[]]@($weaponOnlyRom, $weaponOnlyRom, 'weapon-only-no-caster',
+        $weaponOnlySettings, $weaponOnlyContext))
+Assert-True ([bool]$weaponOnlyOk) 'ElementSwaps rejected Weapon Only no-caster context.'
+foreach($map in @(291,307,348,345,240,35)) {
+    Assert-True ($weaponOnlyData.getInt('orbElement' + $map) -ne 0xFF) `
+        "Weapon Only did not retain no-caster map $map."
+}
+Assert-True ($weaponOnlyData.getInt('orbElement41') -eq 0xFF) `
+    'Weapon Only changed the Flammie-off Upper Land production guard.'
+
 # Actual location construction consumes the cached resolver values, including Grand Palace.
 $placement = $null
 foreach($seed in 1..1000) {
@@ -194,6 +252,28 @@ $gpResolvedMagic = @($gpExpected | Where-Object { $_ -like '* spells' })
 $gpActualMagic = @($mechRider.lockedByPrizes | Where-Object { $_ -like '* spells' })
 Assert-True ((($gpActualMagic | Sort-Object) -join ',') -eq (($gpResolvedMagic | Sort-Object) -join ',')) `
     'Grand Palace retained obsolete magic-family locks.'
+
+$weaponOnlyPlacement = New-Resolved 314159 $true $true $defaultElements $true 'weaponOnly'
+$weaponOnlyPlacementData = $contextType.GetField('workingData').GetValue($weaponOnlyPlacement[1])
+$weaponOnlyPlacementData.set('openWorldGoalShortName', 'manabeast')
+$weaponOnlyPlacementData.setBool('manaFortAccessible', $false)
+$weaponOnlyPlacementData.setBool('startSolo', $false)
+$weaponOnlyLocations = $locationsType.GetMethod('getForSelectedOptions').Invoke(
+    $null, [object[]]@($weaponOnlyPlacement[0], $weaponOnlyPlacement[1]))
+$weaponOnlyMechRider = @($weaponOnlyLocations | Where-Object { $_.locationName -eq 'mech rider 3 (new item)' })[0]
+$weaponOnlyGpDependencies = [System.Collections.Generic.HashSet[string]]::new()
+foreach($map in 420..426) {
+    $requirement = $weaponOnlyPlacement[2][$map]
+    Assert-True ($requirement.Type.ToString() -eq 'SpecificWeapon') `
+        'Weapon Only Grand Palace emitted Magic.'
+    $dependency = [string]$requirementsType.GetMethod('getPrizeDependency').Invoke(
+        $null, [object[]]@($requirement))
+    $weaponOnlyGpDependencies.Add($dependency) | Out-Null
+}
+foreach($dependency in $weaponOnlyGpDependencies) {
+    Assert-True ($weaponOnlyMechRider.lockedByPrizes -contains $dependency) `
+        "Weapon Only Grand Palace lacks $dependency."
+}
 
 # The ordinary reachability simulator must enforce the exact resolved dependency. A different
 # weapon or spell family cannot clear the gate; the matching starting inventory can.
