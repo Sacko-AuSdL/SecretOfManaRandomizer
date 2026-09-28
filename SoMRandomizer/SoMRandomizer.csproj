@@ -145,6 +145,9 @@
     <EmbeddedResource Include="Resources\difficulty_hard.properties" />
     <EmbeddedResource Include="Resources\difficulty_reallyhard.properties" />
     <EmbeddedResource Include="Resources\vineshroom_tiles.bin" />
+    <EmbeddedResource Include="Resources\manaBeast\manabeast_closeup-18.sombosstiles" />
+    <EmbeddedResource Include="Resources\manaBeast\manabeast-19.sombosstiles" />
+    <EmbeddedResource Include="Resources\manaBeast\BossPalette65.palette" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\backdrop_castle.png" />

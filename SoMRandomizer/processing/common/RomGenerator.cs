@@ -55,6 +55,8 @@ namespace SoMRandomizer.processing.common
             commonHacks.Add(new StatusLengths());
             // random color rabites
             commonHacks.Add(new RabiteColorRandomizer());
+            // optional cosmetic Mana Beast replacement
+            commonHacks.Add(new ManaBeastAppearance());
             // set player color palettes
             commonHacks.Add(new CharacterPaletteRandomizer());
             // allow p2/p3 to scroll off screen

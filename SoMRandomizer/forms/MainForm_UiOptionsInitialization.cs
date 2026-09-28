@@ -94,6 +94,7 @@ namespace SoMRandomizer.forms
             propertyManager.makeBooleanValueProperty("generalCosmetic", CommonSettings.PROPERTYNAME_FAST_TRANSITIONS, "Fast transitions", "Remove fading effect from screen transitions to make them a little faster and a little uglier.", commonSettings);
             propertyManager.makeBooleanValueProperty("generalCosmetic", CommonSettings.PROPERTYNAME_MUTE_MUSIC, "Mute all music", "Provide your own soundtrack; this mutes all in-game music. Overrides any \"Randomize music\" settings.", commonSettings);
             propertyManager.makeBooleanValueProperty("generalCosmetic", CommonSettings.PROPERTYNAME_NAME_ENTRY_CHANGES, "Name entry changes", "Extend the max length of entered names to 12, and remove an annoying delay in moving the name entry cursor around.", commonSettings);
+            propertyManager.makeMultiStringValueProperty("generalCosmetic", CommonSettings.PROPERTYNAME_MANA_BEAST_APPEARANCE, "Mana Beast Appearance", "Choose the vanilla Mana Beast appearance or the cosmetic Super Rabite variant.", commonSettings);
             Dictionary<String, Form> playerColorForms = new Dictionary<string, Form>();
             playerColorForms["Specify..."] = characterDesigner;
             propertyManager.makeMultiStringValueProperty("generalCosmetic", CommonSettings.PROPERTYNAME_RANDOMIZE_CHAR_COLORS, "Character colors", "Randomize or specify the palettes of the player characters.", commonSettings, playerColorForms);
