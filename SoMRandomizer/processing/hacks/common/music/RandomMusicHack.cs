@@ -13,6 +13,35 @@ namespace SoMRandomizer.processing.hacks.common.music
     {
         public void process(byte[] outRom, ref int newCodeOffset, Dictionary<string, List<List<byte>>> songReplacements, Dictionary<byte, string> originalSongTypes)
         {
+            // The reset vector and the L+R+Start+Select soft-reset path both enter at
+            // C1:0010.  Soft reset preserves WRAM, but the startup path resets the
+            // audio state.  Invalidate our cached vanilla song id so the first music
+            // request after loading a save cannot be mistaken for an already-playing
+            // song and skipped.
+            CodeGenerationUtils.ensureSpaceInBank(ref newCodeOffset, 12);
+            int resetMusicCacheOffset = newCodeOffset;
+            outRom[0x10010] = 0x5C;
+            outRom[0x10011] = (byte)resetMusicCacheOffset;
+            outRom[0x10012] = (byte)(resetMusicCacheOffset >> 8);
+            outRom[0x10013] = (byte)((resetMusicCacheOffset >> 16) + 0xC0);
+
+            // SEP #$20
+            outRom[newCodeOffset++] = 0xE2;
+            outRom[newCodeOffset++] = 0x20;
+            // LDA #$FF - no valid vanilla song id uses this sentinel
+            outRom[newCodeOffset++] = 0xA9;
+            outRom[newCodeOffset++] = 0xFF;
+            // STA MUSICRANDO_LASTSONG_BYTE
+            outRom[newCodeOffset++] = 0x8F;
+            outRom[newCodeOffset++] = (byte)CustomRamOffsets.MUSICRANDO_LASTSONG_BYTE;
+            outRom[newCodeOffset++] = (byte)(CustomRamOffsets.MUSICRANDO_LASTSONG_BYTE >> 8);
+            outRom[newCodeOffset++] = (byte)(CustomRamOffsets.MUSICRANDO_LASTSONG_BYTE >> 16);
+            // JML $C14CE5 - original reset target
+            outRom[newCodeOffset++] = 0x5C;
+            outRom[newCodeOffset++] = 0xE5;
+            outRom[newCodeOffset++] = 0x4C;
+            outRom[newCodeOffset++] = 0xC1;
+
             // for each song type, make a subroutine that picks a random id of a song within that type.
             Dictionary<byte, int> songSubrs = new Dictionary<byte, int>();
             foreach (byte origSong in originalSongTypes.Keys)
