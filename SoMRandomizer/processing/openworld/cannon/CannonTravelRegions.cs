@@ -29,7 +29,6 @@ namespace SoMRandomizer.processing.openworld.cannon
 
                 { "matango flammie", CannonTravelRegion.Matango },
                 { "matango inn javelin orb chest", CannonTravelRegion.Matango },
-                { "jehk", CannonTravelRegion.Matango },
 
                 { "fire seed", CannonTravelRegion.Kakkara },
                 { "kakkara (moogle belt)", CannonTravelRegion.Kakkara },

@@ -210,7 +210,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                     NpcLocationData npc = GiftDeliveryIntroEvent.DELIVERY_LOCATIONS[npcId];
 
                     // add any extra dependencies for the npc (elinee for example has axe/sword/whip to visit)
-                    foreach (string dep in npc.itemDependencies)
+                    foreach (string dep in getNpcItemDependencies(npc, flammieDrumInLogic))
                     {
                         runningItemDependencies.Add(dep);
                     }
@@ -281,6 +281,13 @@ namespace SoMRandomizer.processing.openworld.randomization
             }
 
             return true;
+        }
+
+        internal static string[] getNpcItemDependencies(NpcLocationData npc, bool flammieDrumInLogic)
+        {
+            return npc.itemDependencies
+                .Where(dependency => dependency != "flammie drum" || flammieDrumInLogic)
+                .ToArray();
         }
 
         private static PrizeItem lookupByName(List<PrizeItem> allItems, string name)
