@@ -159,13 +159,12 @@ namespace SoMRandomizer.processing.openworld
                 namesOfThings.setName(NamesOfThings.INDEX_ENEMIES_START + 109, "Gleeok");
             }
 
-            if ((r_cosmetic.Next() % 2) == 0)
+            // Species $7F has a dedicated final-boss name entry. Leave Vanilla as "Mana Beast"
+            // and let ManaBeastAppearance rename only that entry to "Manabite" when selected.
+            // Consume the historical Flammie/Falkor rolls so later cosmetic RNG remains stable.
+            if ((r_cosmetic.Next() % 2) != 0)
             {
-                namesOfThings.setName(NamesOfThings.INDEX_ENEMIES_START + 127, "Flammie");
-            }
-            else if ((r_cosmetic.Next() % 2) == 0)
-            {
-                namesOfThings.setName(NamesOfThings.INDEX_ENEMIES_START + 127, "Falkor");
+                r_cosmetic.Next();
             }
 
             return true;
