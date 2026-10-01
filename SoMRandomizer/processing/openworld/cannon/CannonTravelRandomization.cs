@@ -66,10 +66,18 @@ namespace SoMRandomizer.processing.openworld.cannon
             RandoSettings settings, RandoContext context)
         {
             string mode = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION);
+            bool freeTravel = settings.get(OpenWorldSettings.PROPERTYNAME_FREE_CANNON_TRAVEL) ==
+                OpenWorldSettings.PROPERTYVALUE_FREE_CANNON_TRAVEL_ON;
             if(mode == OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF)
             {
-                // Deliberately do not even call the resolver: Off writes no Cannon data,
-                // replaces no events, and consumes no RNG.
+                // Deliberately do not call the resolver: Travel Off uses the existing route
+                // graph and consumes no Cannon RNG. The optional fare patch changes only the
+                // seven menu events and their existing route events.
+                if(freeTravel)
+                {
+                    makeVanillaCannonTravelFree(origRom, context);
+                    return true;
+                }
                 return false;
             }
 
@@ -79,11 +87,13 @@ namespace SoMRandomizer.processing.openworld.cannon
 
             if(mode == OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OPEN)
             {
-                emitOpenEvents(origRom, outRom, context, network, routeTableOffset);
+                emitOpenEvents(origRom, outRom, context, network, routeTableOffset,
+                    freeTravel);
             }
             else
             {
-                emitSlotPreservingEvents(outRom, context, network, routeTableOffset);
+                emitSlotPreservingEvents(outRom, context, network, routeTableOffset,
+                    freeTravel);
             }
             return true;
         }
@@ -120,7 +130,7 @@ namespace SoMRandomizer.processing.openworld.cannon
         }
 
         private static void emitSlotPreservingEvents(byte[] outRom, RandoContext context,
-            ResolvedCannonNetwork network, int tableOffset)
+            ResolvedCannonNetwork network, int tableOffset, bool freeTravel)
         {
             byte routeId = FIRST_GENERATED_ROUTE_ID;
             foreach(ResolvedCannonOffice resolvedOffice in network.Offices)
@@ -152,18 +162,19 @@ namespace SoMRandomizer.processing.openworld.cannon
                     int routeEvent = office.ExistingRouteEvents[routeEvents.Count];
                     writeDescriptor(outRom, tableOffset, routeId, office, route.Destination);
                     context.replacementEvents[routeEvent] = makeRouteEvent(
-                        route.Destination, routeId);
+                        route.Destination, routeId, freeTravel);
                     routeEvents.Add(routeEvent);
                     routeId++;
                 }
                 context.replacementEvents[office.MenuEvent] = makeDestinationMenu(
                     resolvedOffice.Routes.Select(route => route.Destination).ToList(),
-                    routeEvents);
+                    routeEvents, freeTravel);
             }
         }
 
         private static void emitOpenEvents(byte[] origRom, byte[] outRom,
-            RandoContext context, ResolvedCannonNetwork network, int tableOffset)
+            RandoContext context, ResolvedCannonNetwork network, int tableOffset,
+            bool freeTravel)
         {
             int destinationsPerOffice = CannonTravelModel.DESTINATIONS.Length - 1;
             if(OPEN_PAGE_EVENTS.Length != CannonTravelModel.OFFICES.Length * 3 ||
@@ -214,7 +225,7 @@ namespace SoMRandomizer.processing.openworld.cannon
                     writeDescriptor(outRom, tableOffset, routeId,
                         resolvedOffice.Office, destination);
                     context.replacementEvents[routeEvent] = makeRouteEvent(
-                        destination, routeId);
+                        destination, routeId, freeTravel);
                     routeEvents.Add(routeEvent);
                 }
 
@@ -234,11 +245,101 @@ namespace SoMRandomizer.processing.openworld.cannon
                         firstDestination, pageDestinations, pageRouteEvents,
                         selectorEvent);
                 }
-                context.replacementEvents[selectorEvent] = makeOpenPageSelector(pageEvents);
+                context.replacementEvents[selectorEvent] = makeOpenPageSelector(pageEvents,
+                    freeTravel);
                 context.replacementEvents[resolvedOffice.Office.MenuEvent] =
                     makeOpenMenu(resolvedOffice.Routes.Select(route =>
-                        route.Destination).ToList(), selectorEvent);
+                        route.Destination).ToList(), selectorEvent, freeTravel);
             }
+        }
+
+        /// <summary>
+        /// Cannon Travel Off retains the existing Open World/vanilla events. Make only their
+        /// fare portions free: remove the menu GP window setup, change the displayed fare to
+        /// 0 GP, and remove the route's 50 GP subtraction plus insufficient-funds branch.
+        /// All launch, flight, route IDs, destinations, and post-arrival events remain byte-for-byte.
+        /// </summary>
+        private static void makeVanillaCannonTravelFree(byte[] origRom, RandoContext context)
+        {
+            byte[] setFareFlag = new byte[]
+            {
+                EventCommandEnum.SET_FLAG.Value, EventFlags.NOT_ENOUGH_GOLD_FLAG, 0x00,
+            };
+            byte[] openGpWindow = new byte[] { EventCommandEnum.OPEN_GP.Value, 0x5F };
+            byte[] paidFareText = VanillaEventUtil.getBytes("50 GP").ToArray();
+            byte[] freeFareText = VanillaEventUtil.getBytes("0 GP").ToArray();
+            byte[] insufficientFundsJump = EventScript.GetJumpCmd(0x0F8);
+            byte[] routeFare = new byte[]
+            {
+                EventCommandEnum.REMOVE_GOLD.Value, 0x32, 0x00, 0x5F,
+                EventCommandEnum.EVENT_LOGIC.Value, EventFlags.NOT_ENOUGH_GOLD_FLAG, 0x1F,
+                insufficientFundsJump[0], insufficientFundsJump[1],
+            };
+
+            foreach(CannonOffice office in CannonTravelModel.OFFICES)
+            {
+                EventScript menu = getCurrentOrVanillaEvent(origRom, context,
+                    office.MenuEvent);
+                replaceExactSequence(menu, setFareFlag, new byte[] { }, office.MenuEvent,
+                    "fare flag reset");
+                replaceExactSequence(menu, openGpWindow, new byte[] { }, office.MenuEvent,
+                    "GP window");
+                replaceExactSequence(menu, paidFareText, freeFareText, office.MenuEvent,
+                    "fare text");
+                context.replacementEvents[office.MenuEvent] = menu;
+
+                foreach(int routeEventId in office.ExistingRouteEvents)
+                {
+                    EventScript route = getCurrentOrVanillaEvent(origRom, context,
+                        routeEventId);
+                    replaceExactSequence(route, routeFare, new byte[] { }, routeEventId,
+                        "fare subtraction and affordability check");
+                    context.replacementEvents[routeEventId] = route;
+                }
+            }
+        }
+
+        private static EventScript getCurrentOrVanillaEvent(byte[] origRom,
+            RandoContext context, int eventId)
+        {
+            IEnumerable<byte> source = context.replacementEvents.ContainsKey(eventId)
+                ? context.replacementEvents[eventId]
+                : VanillaEventUtil.getVanillaEvent(origRom, eventId);
+            EventScript copy = new EventScript();
+            copy.AddRange(source);
+            return copy;
+        }
+
+        private static void replaceExactSequence(EventScript script, byte[] oldBytes,
+            byte[] newBytes, int eventId, string description)
+        {
+            int foundIndex = -1;
+            int foundCount = 0;
+            for(int index = 0; index <= script.Count - oldBytes.Length; index++)
+            {
+                bool matches = true;
+                for(int byteIndex = 0; byteIndex < oldBytes.Length; byteIndex++)
+                {
+                    if(script[index + byteIndex] != oldBytes[byteIndex])
+                    {
+                        matches = false;
+                        break;
+                    }
+                }
+                if(matches)
+                {
+                    foundIndex = index;
+                    foundCount++;
+                }
+            }
+            if(foundCount != 1)
+            {
+                throw new InvalidOperationException("Cannon event 0x" +
+                    eventId.ToString("X3") + " has " + foundCount + " matches for " +
+                    description + "; expected exactly one.");
+            }
+            script.RemoveRange(foundIndex, oldBytes.Length);
+            script.InsertRange(foundIndex, newBytes);
         }
 
         private static void writeDescriptor(byte[] outRom, int tableOffset, byte routeId,
@@ -252,10 +353,10 @@ namespace SoMRandomizer.processing.openworld.cannon
         }
 
         private static EventScript makeDestinationMenu(List<CannonDestination> destinations,
-            List<int> routeEvents)
+            List<int> routeEvents, bool freeTravel)
         {
-            EventScript menu = makePaidMenuPrefix();
-            string prompt = makeCompactDestinationPrompt(destinations);
+            EventScript menu = makeMenuPrefix(freeTravel);
+            string prompt = makeCompactDestinationPrompt(destinations, freeTravel);
             byte[] positions = Enumerable.Range(0, destinations.Count)
                 .Select(index => (byte)(2 + index * 5)).ToArray();
             string[] choices = Enumerable.Range(1, destinations.Count)
@@ -268,7 +369,7 @@ namespace SoMRandomizer.processing.openworld.cannon
         }
 
         private static EventScript makeOpenMenu(List<CannonDestination> destinations,
-            int selectorEvent)
+            int selectorEvent, bool freeTravel)
         {
             if(destinations.Count != 8)
             {
@@ -276,7 +377,7 @@ namespace SoMRandomizer.processing.openworld.cannon
                     "Open Cannon menu requires exactly eight destinations.");
             }
 
-            EventScript menu = makePaidMenuPrefix();
+            EventScript menu = makeMenuPrefix(freeTravel);
             // The runtime dialogue window reliably exposes only three lines. Show one compact,
             // fully framed overview with one line per page, then open the proven three-choice
             // page selector in a separate frame. No CLEAR_DIALOGUE continuation is used.
@@ -289,7 +390,7 @@ namespace SoMRandomizer.processing.openworld.cannon
             return menu;
         }
 
-        private static EventScript makeOpenPageSelector(int[] pageEvents)
+        private static EventScript makeOpenPageSelector(int[] pageEvents, bool freeTravel)
         {
             if(pageEvents.Length != 3)
             {
@@ -302,7 +403,9 @@ namespace SoMRandomizer.processing.openworld.cannon
             // OPEN_DIALOGUE, prompt, OPTION_SELECTION, three OPTION_AT entries,
             // OPTION_SELECTION_END, cancel jump, page jumps, END.
             selector.Add(EventCommandEnum.OPEN_DIALOGUE.Value);
-            foreach(byte value in VanillaEventUtil.getBytes("50 GP! Choose page:\n"))
+            string prompt = freeTravel ? "0 GP! Choose page:\n" :
+                "50 GP! Choose page:\n";
+            foreach(byte value in VanillaEventUtil.getBytes(prompt))
             {
                 selector.Add(value);
             }
@@ -356,17 +459,24 @@ namespace SoMRandomizer.processing.openworld.cannon
             return page;
         }
 
-        private static EventScript makePaidMenuPrefix()
+        private static EventScript makeMenuPrefix(bool freeTravel)
         {
             EventScript menu = new EventScript();
-            menu.SetFlag(EventFlags.NOT_ENOUGH_GOLD_FLAG, 0);
+            if(!freeTravel)
+            {
+                menu.SetFlag(EventFlags.NOT_ENOUGH_GOLD_FLAG, 0);
+            }
             menu.Jsr(0x408);
-            menu.Add(EventCommandEnum.OPEN_GP.Value);
-            menu.Add(0x5F);
+            if(!freeTravel)
+            {
+                menu.Add(EventCommandEnum.OPEN_GP.Value);
+                menu.Add(0x5F);
+            }
             return menu;
         }
 
-        private static EventScript makeRouteEvent(CannonDestination destination, byte routeId)
+        private static EventScript makeRouteEvent(CannonDestination destination, byte routeId,
+            bool freeTravel)
         {
             if(routeId > MAX_ROUTE_ID)
             {
@@ -374,12 +484,15 @@ namespace SoMRandomizer.processing.openworld.cannon
                     "Cannon event operand exceeds the six-bit route namespace.");
             }
             EventScript route = new EventScript();
-            // Exact common wrapper used by the existing paid Cannon route events:
-            // remove 50 GP, reject via $0F/$F8 if payment failed, launch, fly, then
-            // continue through the destination's existing post-arrival event.
-            route.Add(EventCommandEnum.REMOVE_GOLD.Value, 0x32, 0x00, 0x5F);
-            route.Logic(EventFlags.NOT_ENOUGH_GOLD_FLAG, 1, 0xF,
-                EventScript.GetJumpCmd(0x0F8));
+            // Paid routes use the existing 50 GP subtraction and $0F/$F8 rejection.
+            // Free routes omit only those two operations and retain the same launch,
+            // descriptor, flight, and destination continuation.
+            if(!freeTravel)
+            {
+                route.Add(EventCommandEnum.REMOVE_GOLD.Value, 0x32, 0x00, 0x5F);
+                route.Logic(EventFlags.NOT_ENOUGH_GOLD_FLAG, 1, 0xF,
+                    EventScript.GetJumpCmd(0x0F8));
+            }
             route.Jsr(0x797);
             route.Jsr(0x410);
             route.OpenDialogueBox();
@@ -392,20 +505,22 @@ namespace SoMRandomizer.processing.openworld.cannon
             return route;
         }
 
-        private static string makeCompactDestinationPrompt(List<CannonDestination> destinations)
+        private static string makeCompactDestinationPrompt(List<CannonDestination> destinations,
+            bool freeTravel)
         {
+            string fare = freeTravel ? "0 GP!" : "50 GP!";
             if(destinations.Count == 1)
             {
-                return "50 GP! 1:" + destinations[0].DisplayName + "\n";
+                return fare + " 1:" + destinations[0].DisplayName + "\n";
             }
             if(destinations.Count == 2)
             {
-                return "50 GP! 1:" + destinations[0].DisplayName + "\n" +
+                return fare + " 1:" + destinations[0].DisplayName + "\n" +
                     "2:" + destinations[1].DisplayName + "\n";
             }
             if(destinations.Count == 3)
             {
-                string first = "50 GP! 1:" + destinations[0].DisplayName;
+                string first = fare + " 1:" + destinations[0].DisplayName;
                 string second = "2:" + destinations[1].DisplayName + " 3:" +
                     destinations[2].DisplayName;
                 if(first.Length > DIALOGUE_LINE_WIDTH ||

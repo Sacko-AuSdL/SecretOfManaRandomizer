@@ -1,5 +1,6 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.hacks.openworld;
 using System.Collections.Generic;
 
 namespace SoMRandomizer.processing.openworld.events
@@ -168,10 +169,54 @@ namespace SoMRandomizer.processing.openworld.events
                 newEvent103.Add(EventCommandEnum.SLEEP_FOR.Value);
                 newEvent103.Add(0x0A);
                 newEvent103.Add(EventCommandEnum.CLOSE_DIALOGUE.Value);
+
+                if(settings.get(OpenWorldSettings.PROPERTYNAME_SHOW_UPPER_LAND_ORB_REQUIREMENT) ==
+                    OpenWorldSettings.PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON)
+                {
+                    string upperLandOrbRequirement = getUpperLandOrbRequirementDisplayName(settings, context);
+                    if(upperLandOrbRequirement != null)
+                    {
+                        List<byte> upperLandOrbDialogue = VanillaEventUtil.getBytesDelay(
+                            "Upper Land Orb:\n" + upperLandOrbRequirement, 10, 0);
+                        newEvent103.Add(EventCommandEnum.OPEN_DIALOGUE.Value);
+                        foreach(byte b in upperLandOrbDialogue)
+                        {
+                            newEvent103.Add(b);
+                        }
+                        newEvent103.Add(EventCommandEnum.SLEEP_FOR.Value);
+                        newEvent103.Add(0x0A);
+                        newEvent103.Add(EventCommandEnum.CLOSE_DIALOGUE.Value);
+                    }
+                }
             }
             newEvent103.Add(EventCommandEnum.END.Value);
 
             return true;
+        }
+
+        /// <summary>
+        /// Read the already-published Upper Land Orb requirement without resolving it again.
+        /// Feature Off uses ElementSwaps' cached element; Mixed and Weapon Only use the shared
+        /// CrystalOrbRequirements cache consumed by runtime, placement, and spoilers.
+        /// </summary>
+        internal static string getUpperLandOrbRequirementDisplayName(RandoSettings settings,
+            RandoContext context)
+        {
+            if(CrystalOrbRequirements.isEnabled(settings))
+            {
+                Dictionary<int, CrystalOrbRequirement> requirements =
+                    CrystalOrbRequirements.getResolvedRequirements(context);
+                return requirements.TryGetValue(ElementSwaps.ORBMAP_UPPERLAND,
+                    out CrystalOrbRequirement requirement)
+                    ? CrystalOrbRequirements.getDisplayName(requirement)
+                    : null;
+            }
+
+            Dictionary<int, byte> orbElements = ElementSwaps.getCrystalOrbElementMap(context);
+            return orbElements.TryGetValue(ElementSwaps.ORBMAP_UPPERLAND, out byte element) &&
+                element != 0xFF
+                ? SomVanillaValues.elementOrbByteToName(element, true)
+                : null;
         }
     }
 }

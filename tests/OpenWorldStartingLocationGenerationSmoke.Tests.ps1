@@ -19,7 +19,9 @@ function Assert-True([bool]$Condition, [string]$Message) {
 }
 
 function Invoke-Generation([string]$Name, [string]$Seed, [bool]$FlammieInLogic,
-    [string]$StartingLocation, [string]$CannonMode, [bool]$SetLocationExplicitly = $true) {
+    [string]$StartingLocation, [string]$CannonMode, [bool]$SetLocationExplicitly = $true,
+    [bool]$ShowOrbRequirement = $false, [bool]$FreeCannonTravel = $false,
+    [int]$StartGold = 100) {
     $caseDirectory = Join-Path $OutputRoot $Name
     [IO.Directory]::CreateDirectory($caseDirectory) | Out-Null
     $destination = Join-Path $caseDirectory ($Name + '.sfc')
@@ -31,7 +33,9 @@ function Invoke-Generation([string]$Name, [string]$Seed, [bool]$FlammieInLogic,
     $settings.set('opLogic','restrictive') | Out-Null
     $settings.set('opFlammieDrumInLogic',$(if($FlammieInLogic){'yes'}else{'no'})) | Out-Null
     $settings.set('cannonTravelRandomization',$CannonMode) | Out-Null
-    $settings.set('opStartGold','100') | Out-Null
+    $settings.set('showUpperLandOrbRequirement',$(if($ShowOrbRequirement){'on'}else{'off'})) | Out-Null
+    $settings.set('freeCannonTravel',$(if($FreeCannonTravel){'on'}else{'off'})) | Out-Null
+    $settings.set('opStartGold',$StartGold.ToString()) | Out-Null
     if($SetLocationExplicitly) {
         $settings.set('opStartingLocation',$StartingLocation) | Out-Null
     }
@@ -68,6 +72,12 @@ function Invoke-Generation([string]$Name, [string]$Seed, [bool]$FlammieInLogic,
     Assert-True ($log -match '\[general\] Done!') "$Name did not finish generation."
     Assert-True ($log -match ('opStartingLocation = ' + [regex]::Escape($StartingLocation))) `
         "$Name did not serialize the selected Starting Location."
+    Assert-True ($log -match ('showUpperLandOrbRequirement = ' +
+        $(if($ShowOrbRequirement){'on'}else{'off'}))) `
+        "$Name did not serialize the Orb startup information setting."
+    Assert-True ($log -match ('freeCannonTravel = ' +
+        $(if($FreeCannonTravel){'on'}else{'off'}))) `
+        "$Name did not serialize the Free Cannon Travel setting."
 
     [byte[]]$rom = [IO.File]::ReadAllBytes($destination)
     [int]$door82 = 0x83000 + 0x82 * 4
@@ -84,14 +94,16 @@ function Invoke-Generation([string]$Name, [string]$Seed, [bool]$FlammieInLogic,
 
     return [pscustomobject]@{
         Name=$Name; Seed=$Seed; Flammie=$FlammieInLogic; StartingLocation=$StartingLocation;
-        Cannon=$CannonMode; Rom=$destination; Log=$logPath;
+        Cannon=$CannonMode; ShowOrb=$ShowOrbRequirement; FreeCannon=$FreeCannonTravel;
+        StartGold=$StartGold; Rom=$destination; Log=$logPath;
         Spoiler=(Join-Path $caseDirectory ('log_' + $Seed + '_SPOILER.txt'));
         Sha256=(Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash
     }
 }
 
 [IO.Directory]::CreateDirectory($OutputRoot) | Out-Null
-$manual = Invoke-Generation 'Kakkara-Start-Manual-2026' 'Kakkara-Start-Manual-2026' $true 'kakkara' 'off'
+$manual = Invoke-Generation 'Kakkara-QoL-Manual-2026' 'Kakkara-QoL-Manual-2026' `
+    $true 'kakkara' 'off' $true $true $true 0
 if($ManualOnly) {
     Write-Output ("MANUAL: seed={0}; sha256={1}; rom={2}; log={3}; spoiler={4}" -f
         $manual.Seed,$manual.Sha256,$manual.Rom,$manual.Log,$manual.Spoiler)
@@ -103,7 +115,8 @@ $results += Invoke-Generation 'default-explicit' 'StartingLocation-Default-Contr
 $results += Invoke-Generation 'pedestal-default' 'StartingLocation-Pedestal-Control' $false 'default' 'off'
 $results += Invoke-Generation 'pedestal-kakkara-ignored' 'StartingLocation-Pedestal-Control' $false 'kakkara' 'off'
 $results += $manual
-$results += Invoke-Generation 'kakkara-off-b' 'Kakkara-Start-Manual-2026' $true 'kakkara' 'off'
+$results += Invoke-Generation 'kakkara-off-b' 'Kakkara-QoL-Manual-2026' $true `
+    'kakkara' 'off' $true $true $true 0
 $results += Invoke-Generation 'kakkara-open' 'Kakkara-Start-Open-2026' $true 'kakkara' 'open'
 $results += Invoke-Generation 'kakkara-shuffle' 'Kakkara-Start-Shuffle-2026' $true 'kakkara' 'shuffle'
 $results += Invoke-Generation 'kakkara-chaos' 'Kakkara-Start-Chaos-2026' $true 'kakkara' 'chaos'

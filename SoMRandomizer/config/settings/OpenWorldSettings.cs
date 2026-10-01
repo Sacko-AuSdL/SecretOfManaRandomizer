@@ -66,6 +66,9 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_STARTING_LOCATION = "opStartingLocation";
         public const string PROPERTYVALUE_STARTING_LOCATION_DEFAULT = "default";
         public const string PROPERTYVALUE_STARTING_LOCATION_KAKKARA = "kakkara";
+        public const string PROPERTYNAME_SHOW_UPPER_LAND_ORB_REQUIREMENT = "showUpperLandOrbRequirement";
+        public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_OFF = "off";
+        public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON = "on";
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
@@ -75,6 +78,9 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYVALUE_CANNON_TRAVEL_OPEN = "open";
         public const string PROPERTYVALUE_CANNON_TRAVEL_SHUFFLE = "shuffle";
         public const string PROPERTYVALUE_CANNON_TRAVEL_CHAOS = "chaos";
+        public const string PROPERTYNAME_FREE_CANNON_TRAVEL = "freeCannonTravel";
+        public const string PROPERTYVALUE_FREE_CANNON_TRAVEL_OFF = "off";
+        public const string PROPERTYVALUE_FREE_CANNON_TRAVEL_ON = "on";
         
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_EASY = "easy";
         public const string PROPERTYVALUE_STAT_GROWTH_DIFFICULTY_SORTA_EASY = "sortaeasy";
@@ -131,6 +137,22 @@ namespace SoMRandomizer.config.settings
                 },
                 new string[] { "Off", "Open", "Shuffle", "Chaos" },
                 PROPERTYVALUE_CANNON_TRAVEL_OFF);
+            setInitial(PROPERTYNAME_FREE_CANNON_TRAVEL,
+                new string[]
+                {
+                    PROPERTYVALUE_FREE_CANNON_TRAVEL_OFF,
+                    PROPERTYVALUE_FREE_CANNON_TRAVEL_ON,
+                },
+                new string[] { "Off", "On" },
+                PROPERTYVALUE_FREE_CANNON_TRAVEL_OFF);
+            setInitial(PROPERTYNAME_SHOW_UPPER_LAND_ORB_REQUIREMENT,
+                new string[]
+                {
+                    PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_OFF,
+                    PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON,
+                },
+                new string[] { "Off", "On" },
+                PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_OFF);
             setInitial(PROPERTYNAME_STARTING_LOCATION,
                 new string[]
                 {

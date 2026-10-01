@@ -13,11 +13,16 @@ $startType = $assembly.GetType('SoMRandomizer.processing.openworld.OpenWorldStar
 $newGameType = $assembly.GetType('SoMRandomizer.processing.openworld.events.NewGameEvent', $true)
 $introType = $assembly.GetType('SoMRandomizer.processing.openworld.events.FlammieLogicIntroEvent', $true)
 $swordType = $assembly.GetType('SoMRandomizer.processing.openworld.events.SwordGrabEvent', $true)
+$requirementsType = $assembly.GetType('SoMRandomizer.processing.hacks.openworld.CrystalOrbRequirements', $true)
+$vanillaEventUtilType = $assembly.GetType('SoMRandomizer.processing.common.VanillaEventUtil', $true)
 $mapChangesType = $assembly.GetType('SoMRandomizer.processing.openworld.events.OpenWorldSupportingMapChanges', $true)
 $eventScriptType = $assembly.GetType('SoMRandomizer.processing.common.structure.EventScript', $true)
 $cannonModelType = $assembly.GetType('SoMRandomizer.processing.openworld.cannon.CannonTravelModel', $true)
 $cannonRegionsType = $assembly.GetType('SoMRandomizer.processing.openworld.cannon.CannonTravelRegions', $true)
 $regionType = $assembly.GetType('SoMRandomizer.processing.openworld.cannon.CannonTravelRegion', $true)
+$getBytesDelay = $vanillaEventUtilType.GetMethods() | Where-Object {
+    $_.Name -eq 'getBytesDelay' -and $_.GetParameters().Count -eq 3
+} | Select-Object -First 1
 
 function Assert-True([bool]$Condition, [string]$Message) {
     if(-not $Condition) { throw $Message }
@@ -39,11 +44,13 @@ function Find-Bytes([byte[]]$Data, [byte[]]$Pattern) {
 }
 
 function New-Case([bool]$FlammieInLogic, [string]$Location = 'default',
-    [string]$Goal = 'manabeast') {
+    [string]$Goal = 'manabeast', [bool]$ShowOrbRequirement = $false) {
     $common = [Activator]::CreateInstance($commonType)
     $settings = [Activator]::CreateInstance($settingsType, [object[]]@($common))
     $settings.set('opFlammieDrumInLogic', $(if($FlammieInLogic) { 'yes' } else { 'no' })) | Out-Null
     $settings.set('opStartingLocation', $Location) | Out-Null
+    $settings.set('showUpperLandOrbRequirement',
+        $(if($ShowOrbRequirement) { 'on' } else { 'off' })) | Out-Null
     $context = [Activator]::CreateInstance($contextType)
     $context.workingData.set('openWorldGoalShortName', $Goal)
     $context.randomFunctional = [Random]::new(12345)
@@ -71,8 +78,35 @@ function Prepare-SwordData($Context) {
     $Context.workingData.set('startingCharacter', 'boy')
 }
 
+function Set-UpperLandOrbCache($Settings, $Context, [string]$Mode,
+    [int]$RequirementType, [int]$RequirementValue, [int]$ElementValue = 0x81) {
+    $Settings.set('crystalOrbWeaponBreaking', $Mode) | Out-Null
+    $Context.workingData.setInt('orbElement41', $ElementValue)
+    if($Mode -ne 'off') {
+        $Context.workingData.setInt('crystalOrbRequirementsResolved', 1)
+        $Context.workingData.setInt('crystalOrbRequirementType41', $RequirementType)
+        $Context.workingData.setInt('crystalOrbRequirementValue41', $RequirementValue)
+    }
+}
 
+function Get-TimedDialogueBox([string]$Text) {
+    $result = [Collections.Generic.List[byte]]::new()
+    $result.Add(0x50)
+    foreach($b in $getBytesDelay.Invoke($null, @($Text, [byte]10, 0))) {
+        $result.Add([byte]$b)
+    }
+    $result.Add(0x28)
+    $result.Add(0x0A)
+    $result.Add(0x51)
+    return $result.ToArray()
+}
 
+function Build-SwordEvent($Case) {
+    Prepare-SwordData $Case[2]
+    Assert-True (Invoke-Processor $swordType $Case[1] $Case[2] ([byte[]]$originalRom.Clone())) `
+        'Sword/startup event did not run.'
+    return Get-EventBytes $Case[2] 0x103
+}
 
 Assert-True (([Activator]::CreateInstance($settingsType, [object[]]@([Activator]::CreateInstance($commonType))).getDefault('opStartingLocation')) -eq 'default') `
     'Starting Location default is not Default.'
@@ -83,6 +117,14 @@ Assert-True ([Linq.Enumerable]::SequenceEqual(
 Assert-True ([Linq.Enumerable]::SequenceEqual(
     [string[]]$optionSettings.getDisplayValues('opStartingLocation'),
     [string[]]@('Default','Kakkara'))) 'Starting Location display values are incorrect.'
+Assert-True ($optionSettings.getDefault('showUpperLandOrbRequirement') -eq 'off') `
+    'Show Upper Land Orb Requirement default is not Off.'
+Assert-True ([Linq.Enumerable]::SequenceEqual(
+    [string[]]$optionSettings.getOptionsValues('showUpperLandOrbRequirement'),
+    [string[]]@('off','on'))) 'Orb startup information serialized values are incorrect.'
+Assert-True ([Linq.Enumerable]::SequenceEqual(
+    [string[]]$optionSettings.getDisplayValues('showUpperLandOrbRequirement'),
+    [string[]]@('Off','On'))) 'Orb startup information display values are incorrect.'
 
 $default = New-Case $true 'default'
 $kakkara = New-Case $true 'kakkara'
@@ -161,6 +203,96 @@ Assert-True ((Find-Bytes $kakkaraCommon ([byte[]](0x12,0x34,0x56,0x78,0x00))) -g
 Assert-True ((Find-Bytes $kakkaraCommon ([byte[]](0x1E,0x46))) -ge 0) 'Magic Rope is not granted.'
 Assert-True ((Find-Bytes $kakkaraCommon ([byte[]](0x1E,0x47))) -lt 0) 'Flammie Drum was granted despite being in logic.'
 
+# The opt-in startup information reports the already-cached Upper Land Orb requirement
+# immediately after the completion message for both Potos and Kakkara. No resolver or
+# RNG call is made here.
+[byte[]]$okayBox = Get-TimedDialogueBox 'Okay you can play now '
+
+$offMagic = New-Case $true 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $offMagic[1] $offMagic[2] 'off' 0 0x81 0x81
+[byte[]]$offMagicEvent = Build-SwordEvent $offMagic
+[byte[]]$gnomeBox = Get-TimedDialogueBox "Upper Land Orb:`nGnome"
+[int]$okayIndex = Find-Bytes $offMagicEvent $okayBox
+[int]$gnomeIndex = Find-Bytes $offMagicEvent $gnomeBox
+Assert-True ($okayIndex -ge 0) 'Kakkara startup lost the existing completion dialogue.'
+Assert-True ($gnomeIndex -eq ($okayIndex + $okayBox.Length)) `
+    'Upper Land Orb information was not inserted immediately after the completion dialogue.'
+
+$defaultWithOrb = New-Case $true 'default' 'manabeast' $true
+Set-UpperLandOrbCache $defaultWithOrb[1] $defaultWithOrb[2] 'off' 0 0x81 0x81
+[byte[]]$defaultWithOrbEvent = Build-SwordEvent $defaultWithOrb
+Assert-True ((Find-Bytes $defaultWithOrbEvent $gnomeBox) -ge 0) `
+    'Default/Potos startup did not receive the enabled Upper Land Orb message.'
+
+$kakkaraOptionOff = New-Case $true 'kakkara'
+Set-UpperLandOrbCache $kakkaraOptionOff[1] $kakkaraOptionOff[2] 'off' 0 0x81 0x81
+Assert-True ((Find-Bytes (Build-SwordEvent $kakkaraOptionOff) $gnomeBox) -lt 0) `
+    'Option Off emitted the Upper Land Orb message in Kakkara.'
+$defaultOptionOff = New-Case $true 'default'
+Set-UpperLandOrbCache $defaultOptionOff[1] $defaultOptionOff[2] 'off' 0 0x81 0x81
+Assert-True ((Find-Bytes (Build-SwordEvent $defaultOptionOff) $gnomeBox) -lt 0) `
+    'Option Off emitted the Upper Land Orb message in Potos.'
+$noFlammieLogic = New-Case $false 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $noFlammieLogic[1] $noFlammieLogic[2] 'off' 0 0x81 0x81
+Assert-True ((Find-Bytes (Build-SwordEvent $noFlammieLogic) $gnomeBox) -lt 0) `
+    'Flammie-out-of-logic pedestal startup emitted the Orb information message.'
+
+$mixedMagic = New-Case $true 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $mixedMagic[1] $mixedMagic[2] 'on' 0 0x82 0x82
+[byte[]]$mixedMagicEvent = Build-SwordEvent $mixedMagic
+Assert-True ((Find-Bytes $mixedMagicEvent (Get-TimedDialogueBox "Upper Land Orb:`nUndine")) -ge 0) `
+    'Mixed mode did not display its cached Magic requirement.'
+
+$mixedWeapon = New-Case $true 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $mixedWeapon[1] $mixedWeapon[2] 'on' 1 5 0x83
+[byte[]]$mixedWeaponEvent = Build-SwordEvent $mixedWeapon
+[byte[]]$bowBox = Get-TimedDialogueBox "Upper Land Orb:`nBow"
+Assert-True ((Find-Bytes $mixedWeaponEvent $bowBox) -ge 0) `
+    'Mixed mode did not display its cached weapon requirement.'
+
+$weaponOnly = New-Case $true 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $weaponOnly[1] $weaponOnly[2] 'weaponOnly' 1 1 0x84
+[byte[]]$weaponOnlyEvent = Build-SwordEvent $weaponOnly
+Assert-True ((Find-Bytes $weaponOnlyEvent (Get-TimedDialogueBox "Upper Land Orb:`nSword")) -ge 0) `
+    'Weapon Only mode did not display its cached weapon requirement.'
+
+$inactiveOrb = New-Case $true 'kakkara' 'manabeast' $true
+Set-UpperLandOrbCache $inactiveOrb[1] $inactiveOrb[2] 'off' 0 0x81 0xFF
+[byte[]]$inactiveOrbEvent = Build-SwordEvent $inactiveOrb
+Assert-Bytes $kakkaraCommon $inactiveOrbEvent `
+    'Inactive/precompleted Upper Land Orb emitted a misleading requirement message.'
+
+# The startup display must equal the same immutable requirement reconstructed for logic.
+$getResolved = $requirementsType.GetMethod('getResolvedRequirements')
+$getDisplayName = $requirementsType.GetMethod('getDisplayName')
+$getStartupDisplay = $swordType.GetMethod('getUpperLandOrbRequirementDisplayName',
+    [Reflection.BindingFlags]'Static,NonPublic')
+$cachedRequirements = $getResolved.Invoke($null, @($mixedWeapon[2]))
+$cachedRequirement = $cachedRequirements[[int]41]
+$cachedDisplay = [string]$getDisplayName.Invoke($null, @($cachedRequirement))
+$startupDisplay = [string]$getStartupDisplay.Invoke($null, @($mixedWeapon[1],$mixedWeapon[2]))
+Assert-True ($startupDisplay -eq $cachedDisplay -and $startupDisplay -eq 'Bow') `
+    'Startup message diverged from the simulator/shared cached Upper Land requirement.'
+
+# Cannon mode changes neither the cached requirement nor the generated message.
+foreach($mode in @('off','open','shuffle','chaos')) {
+    $cannonCase = New-Case $true 'kakkara' 'manabeast' $true
+    $cannonCase[1].set('cannonTravelRandomization',$mode) | Out-Null
+    Set-UpperLandOrbCache $cannonCase[1] $cannonCase[2] 'on' 1 5 0x83
+    [byte[]]$cannonEvent = Build-SwordEvent $cannonCase
+    Assert-True ((Find-Bytes $cannonEvent $bowBox) -ge 0) `
+        "Cannon mode $mode changed or removed the cached Upper Land requirement message."
+}
+
+# Building the message must not advance the functional RNG.
+$rngCase = New-Case $true 'kakkara' 'manabeast' $true
+$rngCase[2].randomFunctional = [Random]::new(24680)
+Set-UpperLandOrbCache $rngCase[1] $rngCase[2] 'on' 1 5 0x83
+[void](Build-SwordEvent $rngCase)
+$controlRng = [Random]::new(24680)
+Assert-True ($rngCase[2].randomFunctional.Next() -eq $controlRng.Next()) `
+    'Kakkara Upper Land requirement message consumed functional RNG.'
+
 # Region reachability starts from Kakkara, not Potos. An empty network proves Potos is
 # not implicit; the untouched vanilla route graph then reaches it only via actual routes.
 $emptyContext = [Activator]::CreateInstance($contextType)
@@ -190,4 +322,4 @@ foreach($mode in @('off','open','shuffle','chaos')) {
     Assert-True ($reachable.Contains($kakkaraRegion)) "Cannon mode $mode lost the Kakkara starting region."
 }
 
-Write-Output 'PASS: Kakkara uses its startup-safe door; other starts, Cannon modes, door $228, common initialization, and simulator reachability remain unchanged.'
+Write-Output 'PASS: Potos/Kakkara optionally show the cached Upper Land Orb requirement; setting Off, pedestal starts, RNG, Cannon modes, door $228, common initialization, and simulator reachability remain unchanged.'

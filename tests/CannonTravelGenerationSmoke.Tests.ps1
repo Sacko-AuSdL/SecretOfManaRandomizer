@@ -20,7 +20,7 @@ function Assert-True([bool]$Condition, [string]$Message) {
 function Invoke-CannonSmoke([string]$Name, [string]$Seed, [string]$Mode,
     [string]$Goal = 'vshort', [string]$StartCharacter = 'boy',
     [string]$OtherCharacters = 'findbothL1', [bool]$FlammieInLogic = $false,
-    [int]$StartGold = 0) {
+    [int]$StartGold = 0, [bool]$FreeCannonTravel = $false) {
     $caseDirectory = Join-Path $OutputRoot $Name
     [IO.Directory]::CreateDirectory($caseDirectory) | Out-Null
     $destination = Join-Path $caseDirectory ($Name + '.sfc')
@@ -36,6 +36,7 @@ function Invoke-CannonSmoke([string]$Name, [string]$Seed, [string]$Mode,
     $settings.set('opCharacters', $OtherCharacters) | Out-Null
     $settings.set('opFlammieDrumInLogic', $(if($FlammieInLogic) { 'yes' } else { 'no' })) | Out-Null
     $settings.set('opStartGold', $StartGold.ToString()) | Out-Null
+    $settings.set('freeCannonTravel', $(if($FreeCannonTravel){'on'}else{'off'})) | Out-Null
 
     $generator = [Activator]::CreateInstance($openGeneratorType)
     $generatorDictionaryType = [Collections.Generic.Dictionary``2].MakeGenericType(
@@ -101,6 +102,7 @@ function Invoke-CannonSmoke([string]$Name, [string]$Seed, [string]$Mode,
         Mode = $Mode
         Goal = $Goal
         FlammieInLogic = $FlammieInLogic
+        FreeCannonTravel = $FreeCannonTravel
         Rom = $destination
         Sha256 = (Get-FileHash $destination -Algorithm SHA256).Hash
         CannonSpoiler = ($sectionLines -join "`n")
@@ -166,7 +168,9 @@ function Get-ChaosTraits([string]$CannonSpoiler) {
 [IO.Directory]::CreateDirectory($OutputRoot) | Out-Null
 $results = @()
 $results += Invoke-CannonSmoke 'off-control' 'Cannon-Off-Control' 'off'
+$results += Invoke-CannonSmoke 'off-free' 'Cannon-Off-Control' 'off' 'vshort' 'boy' 'findbothL1' $false 0 $true
 $results += Invoke-CannonSmoke 'open-control' 'Cannon-Open-Control' 'open' 'vlong' 'girl' 'findbothCL' $true 1000
+$results += Invoke-CannonSmoke 'open-free' 'Cannon-Open-Control' 'open' 'vlong' 'girl' 'findbothCL' $true 1000 $true
 
 $shuffleCases = @(
     @('shuffle-a','Cannon-Shuffle-A','vshort','boy','findbothL1',$false),
@@ -178,6 +182,7 @@ foreach($case in $shuffleCases) {
     $results += Invoke-CannonSmoke $case[0] $case[1] 'shuffle' $case[2] $case[3] $case[4] $case[5]
 }
 $results += Invoke-CannonSmoke 'shuffle-a-repeat' 'Cannon-Shuffle-A' 'shuffle' 'vshort' 'boy' 'findbothL1' $false
+$results += Invoke-CannonSmoke 'shuffle-free' 'Cannon-Shuffle-A' 'shuffle' 'vshort' 'boy' 'findbothL1' $false 0 $true
 
 $chaosCases = @(
     @('chaos-a','Cannon-Chaos-A','vshort','boy','findbothL1',$true),
@@ -191,15 +196,26 @@ foreach($case in $chaosCases) {
     $results += Invoke-CannonSmoke $case[0] $case[1] 'chaos' $case[2] $case[3] $case[4] $case[5]
 }
 $results += Invoke-CannonSmoke 'chaos-a-repeat' 'Cannon-Chaos-A' 'chaos' 'vshort' 'boy' 'findbothL1' $true
+$results += Invoke-CannonSmoke 'chaos-free' 'Cannon-Chaos-A' 'chaos' 'vshort' 'boy' 'findbothL1' $true 0 $true
 
 $shuffleA = $results | Where-Object Name -eq 'shuffle-a'
 $shuffleRepeat = $results | Where-Object Name -eq 'shuffle-a-repeat'
 $chaosA = $results | Where-Object Name -eq 'chaos-a'
 $chaosRepeat = $results | Where-Object Name -eq 'chaos-a-repeat'
+$openControl = $results | Where-Object Name -eq 'open-control'
+$openFree = $results | Where-Object Name -eq 'open-free'
+$shuffleFree = $results | Where-Object Name -eq 'shuffle-free'
+$chaosFree = $results | Where-Object Name -eq 'chaos-free'
 Assert-True ($shuffleA.Sha256 -eq $shuffleRepeat.Sha256) 'Repeated Shuffle ROM hash diverged.'
 Assert-True ($shuffleA.CannonSpoiler -eq $shuffleRepeat.CannonSpoiler) 'Repeated Shuffle spoiler diverged.'
 Assert-True ($chaosA.Sha256 -eq $chaosRepeat.Sha256) 'Repeated Chaos ROM hash diverged.'
 Assert-True ($chaosA.CannonSpoiler -eq $chaosRepeat.CannonSpoiler) 'Repeated Chaos spoiler diverged.'
+Assert-True ($openControl.CannonSpoiler -eq $openFree.CannonSpoiler) `
+    'Free Cannon Travel changed the Open route topology.'
+Assert-True ($shuffleA.CannonSpoiler -eq $shuffleFree.CannonSpoiler) `
+    'Free Cannon Travel changed the Shuffle route topology.'
+Assert-True ($chaosA.CannonSpoiler -eq $chaosFree.CannonSpoiler) `
+    'Free Cannon Travel changed the Chaos route topology/closed offices.'
 
 $traits = @($results | Where-Object Mode -eq 'chaos' | ForEach-Object { Get-ChaosTraits $_.CannonSpoiler })
 Assert-True (@($traits | Where-Object Closed).Count -gt 0) 'Chaos smokes did not include a closed office.'
@@ -209,8 +225,8 @@ Assert-True (@($traits | Where-Object MultipleComponents).Count -gt 0) 'Chaos sm
 Assert-True (@($traits | Where-Object FlammieRelevant).Count -gt 0) 'Chaos smokes did not make Flammie relevant.'
 
 $results | ForEach-Object {
-    Write-Output ("SMOKE {0}: mode={1}; goal={2}; flammieLogic={3}; seed={4}; sha256={5}" -f
-        $_.Name,$_.Mode,$_.Goal,$_.FlammieInLogic,$_.Seed,$_.Sha256)
+    Write-Output ("SMOKE {0}: mode={1}; free={2}; goal={3}; flammieLogic={4}; seed={5}; sha256={6}" -f
+        $_.Name,$_.Mode,$_.FreeCannonTravel,$_.Goal,$_.FlammieInLogic,$_.Seed,$_.Sha256)
     if($_.Mode -ne 'off') { Write-Output $_.CannonSpoiler }
 }
 Write-Output "PASS: $($results.Count) Cannon Travel Open World generations completed in $OutputRoot"
