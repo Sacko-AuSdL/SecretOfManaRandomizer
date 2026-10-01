@@ -178,6 +178,33 @@ namespace SoMRandomizer.processing.openworld.cannon
             CannonTravelRegion.SouthtownEmpire,
         };
 
+        /// <summary>
+        /// Region-level representation of the untouched Open World Cannon routes. This is
+        /// used only by placement simulation when an alternate physical start makes the
+        /// original Potos-centric coarse reachability model insufficient. It emits no ROM
+        /// data and consumes no RNG.
+        /// </summary>
+        public static ResolvedCannonNetwork getVanillaRegionNetwork()
+        {
+            Dictionary<string, CannonDestination> destinations = DESTINATIONS.ToDictionary(
+                destination => destination.Id);
+            Dictionary<string, string[]> routeIds = new Dictionary<string, string[]>
+            {
+                { "upperLand", new string[] { "potos", "gaiasNavel" } },
+                { "southtown", new string[] { "kakkara" } },
+                { "iceCountry", new string[] { "matango", "kakkara" } },
+                { "kakkara", new string[] { "matango", "iceCountry", "southtown" } },
+                // Vanilla event $EC says it goes to the desert and lands at $40,$70,
+                // another Kakkara-region endpoint. Event $ED goes to Ice Country.
+                { "matango", new string[] { "kakkara", "iceCountry" } },
+                { "potos", new string[] { "waterPalace", "upperLand" } },
+                { "gaiasNavel", new string[] { "waterPalace", "pandora" } },
+            };
+            return new ResolvedCannonNetwork(OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF,
+                OFFICES.Select(office => new ResolvedCannonOffice(office,
+                    routeIds[office.Id].Select(id => destinations[id]), null)));
+        }
+
         public static ResolvedCannonNetwork resolveAndStore(RandoSettings settings, RandoContext context)
         {
             if(context.workingData.hasSetting(RESOLVED_MARKER))

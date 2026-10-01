@@ -37,14 +37,15 @@ namespace SoMRandomizer.processing.openworld.randomization
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
             bool cannonTravelEnabled = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION) !=
                 OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF;
+            bool alternateStartingRegion = OpenWorldStartingLocation.useKakkara(settings, context);
+            bool useCannonRegionModel = cannonTravelEnabled || alternateStartingRegion;
             ResolvedCannonNetwork cannonNetwork = cannonTravelEnabled
                 ? CannonTravelModel.getResolvedNetwork(context)
-                : null;
+                : alternateStartingRegion
+                    ? CannonTravelModel.getVanillaRegionNetwork()
+                    : null;
             CannonTravelRegion cannonStartingRegion =
-                goal == OpenWorldGoalProcessor.GOAL_GIFTMODE ||
-                goal == OpenWorldGoalProcessor.GOAL_REINDEER
-                    ? CannonTravelRegion.IceCountry
-                    : CannonTravelRegion.PotosArea;
+                OpenWorldStartingLocation.getStartingRegion(settings, context);
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
             int boyStarterWeapon = context.workingData.getInt(StartingWeaponRandomizer.BOY_START_WEAPON_INDEX);
             int girlStarterWeapon = context.workingData.getInt(StartingWeaponRandomizer.GIRL_START_WEAPON_INDEX);
@@ -170,7 +171,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                 List<string> gottenPrizesTemp = new List<string>();
 
                 HashSet<CannonTravelRegion> reachableCannonRegions = null;
-                if(cannonTravelEnabled)
+                if(useCannonRegionModel)
                 {
                     bool hasFlammie = !flammieDrumInLogic ||
                         gottenPrizeNames.Contains("flammie drum");
@@ -190,8 +191,8 @@ namespace SoMRandomizer.processing.openworld.randomization
                     if (!visitedLocations.Contains(location))
                     {
                         string[] reqs = location.getLockedByPrizes(flammieDrumInLogic,
-                            upperLandOrbRequirement, goal, cannonTravelEnabled);
-                        bool haveAllReqs = !cannonTravelEnabled ||
+                            upperLandOrbRequirement, goal, useCannonRegionModel);
+                        bool haveAllReqs = !useCannonRegionModel ||
                             reachableCannonRegions.Contains(location.cannonTravelRegion);
                         foreach (string req in reqs)
                         {

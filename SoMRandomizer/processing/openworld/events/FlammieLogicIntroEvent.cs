@@ -30,11 +30,19 @@ namespace SoMRandomizer.processing.openworld.events
             }
 
             EventScript eventData = (EventScript)context.replacementEvents[0x106];
-            eventData.Add(EventCommandEnum.PLAY_SOUND.Value);
-            eventData.Add(0x01);
-            eventData.Add(0x11);
-            eventData.Add(0x12);
-            eventData.Add(0x8f);
+            if(OpenWorldStartingLocation.useKakkara(settings, context))
+            {
+                // Use Kakkara's existing town-theme event after the startup door transition.
+                eventData.Jsr(OpenWorldStartingLocation.KAKKARA_MUSIC_EVENT);
+            }
+            else
+            {
+                eventData.Add(EventCommandEnum.PLAY_SOUND.Value);
+                eventData.Add(0x01);
+                eventData.Add(0x11);
+                eventData.Add(0x12);
+                eventData.Add(0x8f);
+            }
 
             eventData.AddAutoTextDialogueBox(VanillaEventUtil.wordWrapText("Starting here because flammie drum is in logic! Give it a second here it's got a lot to set up"), 0x0A);
 

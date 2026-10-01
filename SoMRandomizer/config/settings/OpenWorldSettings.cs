@@ -63,6 +63,9 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_NUM_XMAS_GIFTS = "opXmasGifts";
         public const string PROPERTYNAME_STARTING_LEVEL = "opStartLevel";
         public const string PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC = "opFlammieDrumInLogic";
+        public const string PROPERTYNAME_STARTING_LOCATION = "opStartingLocation";
+        public const string PROPERTYVALUE_STARTING_LOCATION_DEFAULT = "default";
+        public const string PROPERTYVALUE_STARTING_LOCATION_KAKKARA = "kakkara";
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
@@ -128,6 +131,14 @@ namespace SoMRandomizer.config.settings
                 },
                 new string[] { "Off", "Open", "Shuffle", "Chaos" },
                 PROPERTYVALUE_CANNON_TRAVEL_OFF);
+            setInitial(PROPERTYNAME_STARTING_LOCATION,
+                new string[]
+                {
+                    PROPERTYVALUE_STARTING_LOCATION_DEFAULT,
+                    PROPERTYVALUE_STARTING_LOCATION_KAKKARA,
+                },
+                new string[] { "Default", "Kakkara" },
+                PROPERTYVALUE_STARTING_LOCATION_DEFAULT);
             setInitial(PROPERTYNAME_RANDOMIZE_ENEMIES, new string[] { "vanilla", "swap", "random", "oops", "none" }, new string[] { "Vanilla", "Swap", "Random spawns", "Oops! All owls", "None" }, "swap");
             setInitial(PROPERTYNAME_RANDOMIZE_BOSSES, new string[] { "vanilla", "swap", "random" }, new string[] { "Vanilla", "Swap", "Random" }, "random");
             setInitial(PROPERTYNAME_STATUS_AILMENTS, new string[] { "location", "type", "easy", "annoying", "awful" }, new string[] { "Location", "Enemy type", "Random (easy)", "Random (annoying)", "Random (awful)" }, "location");

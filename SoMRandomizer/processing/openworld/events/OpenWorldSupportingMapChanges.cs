@@ -1,6 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
+using SoMRandomizer.processing.common.structure;
 using static SoMRandomizer.processing.hacks.openworld.XmasRandoData;
 using static SoMRandomizer.processing.common.SomVanillaValues;
 
@@ -45,16 +46,35 @@ namespace SoMRandomizer.processing.openworld.events
             }
             else if (flammieDrumInLogic)
             {
-                // repurpose door 82 (falling down waterfall) to put us in potos elder house
-                // don't do this if we're doing christmas modes - still start at ice country.  logic accounts for this.
                 int waterfallDoorNum = 0x82;
-                int potosHouseMapNum = MAPNUM_POTOS_INTERIOR_B;
-                outRom[0x83000 + waterfallDoorNum * 4] = (byte)(potosHouseMapNum);
-                outRom[0x83000 + waterfallDoorNum * 4 + 1] = (byte)(potosHouseMapNum >> 8);
-                outRom[0x83000 + waterfallDoorNum * 4 + 1] |= (byte)(56 << 1);
-                outRom[0x83000 + waterfallDoorNum * 4 + 2] = (byte)(13 << 1);
-                outRom[0x83000 + waterfallDoorNum * 4 + 2] |= 0x01;
-                outRom[0x83000 + waterfallDoorNum * 4 + 3] = 0;
+                if(OpenWorldStartingLocation.useKakkara(settings, context))
+                {
+                    // Door $228 supplies the proven Kakkara destination (map 89 at 29,36),
+                    // but its $81 transition first walks an actor up out of the active desert
+                    // map. A cold Open World start has no playable source-map actor for that
+                    // exit phase, so Door $82 needs the same direct $00 startup transition as
+                    // the established Potos start.
+                    Door kakkaraStartDoor = new Door();
+                    kakkaraStartDoor.setTargetMap((ushort)OpenWorldStartingLocation.KAKKARA_MAP);
+                    kakkaraStartDoor.setXpos((byte)OpenWorldStartingLocation.KAKKARA_X);
+                    kakkaraStartDoor.setYpos((byte)OpenWorldStartingLocation.KAKKARA_Y);
+                    kakkaraStartDoor.setLayer2Collision(OpenWorldStartingLocation.KAKKARA_LAYER2_COLLISION);
+                    kakkaraStartDoor.setTransitionType(OpenWorldStartingLocation.STARTUP_SAFE_TRANSITION);
+                    VanillaDoorUtil.putDoor(outRom, kakkaraStartDoor, waterfallDoorNum);
+                }
+                else
+                {
+                    // Default Flammie-in-logic start: repurpose door 82 (falling down
+                    // waterfall) to put us in Potos elder house. Christmas modes were
+                    // handled above and retain their Ice Country start.
+                    int potosHouseMapNum = MAPNUM_POTOS_INTERIOR_B;
+                    outRom[0x83000 + waterfallDoorNum * 4] = (byte)(potosHouseMapNum);
+                    outRom[0x83000 + waterfallDoorNum * 4 + 1] = (byte)(potosHouseMapNum >> 8);
+                    outRom[0x83000 + waterfallDoorNum * 4 + 1] |= (byte)(56 << 1);
+                    outRom[0x83000 + waterfallDoorNum * 4 + 2] = (byte)(13 << 1);
+                    outRom[0x83000 + waterfallDoorNum * 4 + 2] |= 0x01;
+                    outRom[0x83000 + waterfallDoorNum * 4 + 3] = 0;
+                }
 
                 // change sword event and visibility for flammie in logic mode
                 setObjectAlwaysVisible(outRom, MAPNUM_RUSTYSWORD, 0);
