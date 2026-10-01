@@ -584,9 +584,9 @@ namespace SoMRandomizer.processing.common
                         // tonpole?  set biting lizard (122) too
                         outRom[0x101C00 + BOSSID_BITINGLIZARD * 29 + eightSwapIndex] = newValue;
                     }
-                    // 108 chamber eye 126 doom eye 88 wall face 97 doom's wall
-                    // note that this depends on walls being swapped to themselves
-                    if(BOSSID_WALLFACE == 88 && oldBossNum == BOSSID_DOOMSWALL)
+                    // 108 chamber eye 126 doom eye 88 wall face 97 doom's wall.
+                    // When a wall crosses into the other wall's slot, its spawned eye must inherit that slot's stats too.
+                    if (bossNum == BOSSID_WALLFACE && oldBossNum == BOSSID_DOOMSWALL)
                     {
                         // set chamber eye
                         newValue = origRom[0x101C00 + BOSSID_DOOMSEYE * 29 + eightSwapIndex];
