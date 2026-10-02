@@ -70,6 +70,11 @@ namespace SoMRandomizer.processing.common
                 return false;
             }
 
+            if (randoMode == OpenWorldSettings.MODE_KEY)
+            {
+                context.workingData.setInt(DoomWallBossArenaRedirect.PROPERTY_ENABLED, 0);
+            }
+
             Random r = context.randomFunctional;
             
             // MOPPLE: it would be nice to eventually set up a table for these per-boss-arena so these bosses can exist on
@@ -370,25 +375,36 @@ namespace SoMRandomizer.processing.common
             foreach (VanillaBossMap testMap in swapMaps)
             {
                 byte bossNum = newBossNums[testMap];
+                bool redirectedDoomSlot = randoMode == OpenWorldSettings.MODE_KEY
+                    && testMap == VanillaBossMaps.DOOMSWALL
+                    && DoomWallBossArenaRedirect.requiresRedirect(bossNum);
+                VanillaBossMap physicalArena = redirectedDoomSlot
+                    ? DoomWallBossArenaRedirect.getPhysicalArena(bossNum)
+                    : testMap;
                 string bossName = context.namesOfThings.getOriginalName(NamesOfThings.INDEX_ENEMIES_START + bossNum);
                 Logging.log("Boss map " + testMap + " has boss " + bossName + " (" + bossNum + ")", "spoiler");
                 List<XyPos> pos = null;
                 List<XyPos> bpos = null;
-                testMap.process(outRom, bossNum);
+                // A redirected Doom-slot boss uses an untouched import of its own
+                // native arena, so do not mutate either native arena in outRom.
+                if (!redirectedDoomSlot)
+                {
+                    testMap.process(outRom, bossNum);
+                }
                 // set positions for jumps and stuff for bosses that need them
                 switch (bossNum)
                 {
                     case BOSSID_WALLFACE:
                         // wall
-                        int wallYValue = testMap.wallBossDeathYValue;
+                        int wallYValue = physicalArena.wallBossDeathYValue;
                         // 27df5
                         outRom[0x27DF5] = (byte)wallYValue;
                         outRom[0x27DF6] = (byte)(wallYValue>>8);
                         break;
                     case BOSSID_TROPICALLO:
                         // tropicallo
-                        pos = testMap.tropicalloPositions;
-                        bpos = testMap.bramblerPositions;
+                        pos = physicalArena.tropicalloPositions;
+                        bpos = physicalArena.bramblerPositions;
                         for (int i = 0; i < tropicalloXLocations.Length; i++)
                         {
                             short xpos = pos[i % pos.Count].xpos;
@@ -411,9 +427,9 @@ namespace SoMRandomizer.processing.common
                     case BOSSID_SPIKEY:
                         {
                             // spikey
-                            XyPos posC = testMap.spikeyCenterPos;
-                            XyPos posL = testMap.spikeyLeftPos;
-                            XyPos posR = testMap.spikeyRightPos;
+                            XyPos posC = physicalArena.spikeyCenterPos;
+                            XyPos posL = physicalArena.spikeyLeftPos;
+                            XyPos posR = physicalArena.spikeyRightPos;
                             outRom[spikeyMiddleXLoc] = (byte)posC.xpos;
                             outRom[spikeyMiddleXLoc + 1] = (byte)(posC.xpos >> 8);
                             outRom[spikeyMiddleYLoc] = (byte)posC.ypos;
@@ -431,13 +447,13 @@ namespace SoMRandomizer.processing.common
                     case BOSSID_SPRINGBEAK:
                         // spring beak
                         {
-                            XyPos posC = testMap.springBeakCenterPos;
+                            XyPos posC = physicalArena.springBeakCenterPos;
                             outRom[springBeakCenterXLocation] = (byte)posC.xpos;
                             outRom[springBeakCenterXLocation + 1] = (byte)(posC.xpos >> 8);
                             outRom[springBeakCenterYLocation] = (byte)posC.ypos;
                             outRom[springBeakCenterYLocation + 1] = (byte)(posC.ypos >> 8);
 
-                            List<XyPos> posP = testMap.springBeakPodiumPositions;
+                            List<XyPos> posP = physicalArena.springBeakPodiumPositions;
                             for (int i = 0; i < springBeakPodiumXLocations.Length; i++)
                             {
                                 short xpos = posP[i % posP.Count].xpos;
@@ -448,7 +464,7 @@ namespace SoMRandomizer.processing.common
                                 outRom[springBeakPodiumYLocations[i] + 1] = (byte)(ypos >> 8);
                             }
 
-                            List<XyPos> posJ = testMap.springBeakJumpPositions;
+                            List<XyPos> posJ = physicalArena.springBeakJumpPositions;
                             for (int i = 0; i < springBeakJumpXLocations.Length; i++)
                             {
                                 short xpos = posJ[i % posJ.Count].xpos;
@@ -462,8 +478,8 @@ namespace SoMRandomizer.processing.common
                         break;
                     case BOSSID_BOREAL:
                         // boreal face
-                        pos = testMap.tropicalloPositions;
-                        bpos = testMap.bramblerPositions;
+                        pos = physicalArena.tropicalloPositions;
+                        bpos = physicalArena.bramblerPositions;
                         for (int i = 0; i < borealXLocations.Length; i++)
                         {
                             short xpos = pos[i % pos.Count].xpos;
@@ -486,9 +502,9 @@ namespace SoMRandomizer.processing.common
                     case BOSSID_BLUESPIKE:
                         // blue spike
                         {
-                            XyPos posC = testMap.spikeyCenterPos;
-                            XyPos posL = testMap.spikeyLeftPos;
-                            XyPos posR = testMap.spikeyRightPos;
+                            XyPos posC = physicalArena.spikeyCenterPos;
+                            XyPos posL = physicalArena.spikeyLeftPos;
+                            XyPos posR = physicalArena.spikeyRightPos;
                             outRom[blueSpikeMiddleXLoc] = (byte)posC.xpos;
                             outRom[blueSpikeMiddleXLoc + 1] = (byte)(posC.xpos >> 8);
                             outRom[blueSpikeMiddleYLoc] = (byte)posC.ypos;
@@ -506,13 +522,13 @@ namespace SoMRandomizer.processing.common
                     case BOSSID_AXEBEAK:
                         // axe beak
                         {
-                            XyPos posC = testMap.springBeakCenterPos;
+                            XyPos posC = physicalArena.springBeakCenterPos;
                             outRom[axeBeakCenterXLocation] = (byte)posC.xpos;
                             outRom[axeBeakCenterXLocation + 1] = (byte)(posC.xpos >> 8);
                             outRom[axeBeakCenterYLocation] = (byte)posC.ypos;
                             outRom[axeBeakCenterYLocation + 1] = (byte)(posC.ypos >> 8);
 
-                            List<XyPos> posP = testMap.springBeakPodiumPositions;
+                            List<XyPos> posP = physicalArena.springBeakPodiumPositions;
                             for (int i = 0; i < axeBeakPodiumXLocations.Length; i++)
                             {
                                 short xpos = posP[i % posP.Count].xpos;
@@ -523,7 +539,7 @@ namespace SoMRandomizer.processing.common
                                 outRom[axeBeakPodiumYLocations[i] + 1] = (byte)(ypos >> 8);
                             }
 
-                            List<XyPos> posJ = testMap.springBeakJumpPositions;
+                            List<XyPos> posJ = physicalArena.springBeakJumpPositions;
                             for (int i = 0; i < axeBeakJumpXLocations.Length; i++)
                             {
                                 short xpos = posJ[i % posJ.Count].xpos;
@@ -545,7 +561,10 @@ namespace SoMRandomizer.processing.common
                 objsOffset += testMap.originalObjNum * 8;
                 objsOffset += 5; // index for id
                 byte oldBossNum = outRom[objsOffset];
-                outRom[objsOffset] = bossNum;
+                if (!redirectedDoomSlot)
+                {
+                    outRom[objsOffset] = bossNum;
+                }
 
                 // 101C00, 29 bytes apiece
                 // [0]     level 
@@ -623,6 +642,11 @@ namespace SoMRandomizer.processing.common
                         outRom[0x101C00 + BOSSID_DOOMSEYE * 29 + sixteenSwapIndex] = origRom[0x101C00 + BOSSID_CHAMBERSEYE * 29 + sixteenSwapIndex];
                         outRom[0x101C00 + BOSSID_DOOMSEYE * 29 + sixteenSwapIndex + 1] = origRom[0x101C00 + BOSSID_CHAMBERSEYE * 29 + sixteenSwapIndex + 1];
                     }
+                }
+
+                if (redirectedDoomSlot)
+                {
+                    DoomWallBossArenaRedirect.create(outRom, context, bossNum);
                 }
             }
 

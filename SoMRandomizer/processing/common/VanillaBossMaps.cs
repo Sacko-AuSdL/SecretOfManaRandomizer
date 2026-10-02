@@ -603,14 +603,7 @@ namespace SoMRandomizer.processing.common
                 /*SomVanillaValues.BOSSID_BLUEDRAGON, SomVanillaValues.BOSSID_BUFFY, SomVanillaValues.BOSSID_DARKLICH, SomVanillaValues.BOSSID_DRAGONWORM, SomVanillaValues.BOSSID_DREADSLIME, SomVanillaValues.BOSSID_THUNDERGIGAS,*/
             },
             // all supported boss ids
-            new byte[] {
-                /*SomVanillaValues.BOSSID_MANTISANT,*/ SomVanillaValues.BOSSID_WALLFACE, /*SomVanillaValues.BOSSID_TROPICALLO, SomVanillaValues.BOSSID_MINOTAUR, SomVanillaValues.BOSSID_SPIKEY, SomVanillaValues.BOSSID_JABBER,*/
-                /*SomVanillaValues.BOSSID_SPRINGBEAK, SomVanillaValues.BOSSID_FROSTGIGAS, SomVanillaValues.BOSSID_SNAPDRAGON, SomVanillaValues.BOSSID_MECHRIDER1,*/ SomVanillaValues.BOSSID_DOOMSWALL, /*SomVanillaValues.BOSSID_VAMPIRE,*/
-                /*SomVanillaValues.BOSSID_METALMANTIS, SomVanillaValues.BOSSID_MECHRIDER2, SomVanillaValues.BOSSID_KILROY, SomVanillaValues.BOSSID_GORGON, SomVanillaValues.BOSSID_BOREAL, SomVanillaValues.BOSSID_GREATVIPER,*/
-                /*SomVanillaValues.BOSSID_LIMESLIME, SomVanillaValues.BOSSID_BLUESPIKE, SomVanillaValues.BOSSID_HYDRA, SomVanillaValues.BOSSID_WATERMELON, SomVanillaValues.BOSSID_HEXAS, SomVanillaValues.BOSSID_KETTLEKIN,*/
-                /*SomVanillaValues.BOSSID_TONPOLE, SomVanillaValues.BOSSID_MECHRIDER3, SomVanillaValues.BOSSID_SNOWDRAGON, SomVanillaValues.BOSSID_FIREGIGAS, SomVanillaValues.BOSSID_REDDRAGON, SomVanillaValues.BOSSID_AXEBEAK,*/
-                /*SomVanillaValues.BOSSID_BLUEDRAGON, SomVanillaValues.BOSSID_BUFFY, SomVanillaValues.BOSSID_DARKLICH, SomVanillaValues.BOSSID_DRAGONWORM, SomVanillaValues.BOSSID_DREADSLIME, SomVanillaValues.BOSSID_THUNDERGIGAS,*/
-            },
+            DoomWallBossArenaRedirect.DOOM_SLOT_RANDOM_BOSSES,
             // spikey positions - null since we don't support spikey here
             null, null, null,
             // spring beak positions - center, jump, podium

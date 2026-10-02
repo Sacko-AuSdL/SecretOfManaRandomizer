@@ -240,6 +240,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             minLevels[MAPNUM_NTR_INTERIOR_F] = 25; // ntr
             minLevels[MAPNUM_NTR_INTERIOR_G] = 25; // ntr
             minLevels[MAPNUM_DOOMSWALL_ARENA] = 25; // ntr wall
+            minLevels[DoomWallBossArenaRedirect.GENERATED_MAP_ID] = 25; // redirected ntr wall slot arena
             minLevels[MAPNUM_VAMPIRE_ARENA] = 25; // ntr vampire
             minLevels[MAPNUM_NTR_INTERIOR_H] = 25; // ntr
             minLevels[MAPNUM_GRANDPALACE_INTERIOR_A] = 40; // sunken

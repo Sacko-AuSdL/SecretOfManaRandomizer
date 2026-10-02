@@ -534,6 +534,14 @@ namespace SoMRandomizer.processing.openworld.events
             newEvent553.IncrFlag(EventFlags.NORTHTOWN_RUINS_FLAG); // double increment this flag so we don't have to talk to dyluck after
             newEvent553.IncrFlag(EventFlags.NORTHTOWN_RUINS_FLAG);
             injectReplacementPattern(newEvent553, 0); // wall prize
+            if (context.workingData.hasSetting(DoomWallBossArenaRedirect.PROPERTY_ENABLED)
+                && context.workingData.getInt(DoomWallBossArenaRedirect.PROPERTY_ENABLED) != 0)
+            {
+                // A native wall leaves map 407 through its trigger doors after
+                // event $553.  A generated native-geometry arena has no imported
+                // doors, so the slot-owned death event performs the same return.
+                newEvent553.Door(DoomWallBossArenaRedirect.DOOM_SLOT_RETURN_DOOR);
+            }
             newEvent553.Jump(0x647); // nfi
             newEvent553.End();
 
