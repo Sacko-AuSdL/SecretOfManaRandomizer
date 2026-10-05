@@ -245,6 +245,7 @@ namespace SoMRandomizer.processing.openworld
         public const string KEY_BOSS_JABBERWOCKY = KEY_PREFIX_NONPRIZE + "jabberwocky";
         public const string KEY_BOSS_SPRINGBEAK = KEY_PREFIX_NONPRIZE + "springBeak";
         public const string KEY_BOSS_GREATVIPER = KEY_PREFIX_NONPRIZE + "greatViper";
+        public const string KEY_BOSS_LIMESLIME = KEY_PREFIX_NONPRIZE + "limeSlime";
         public const string KEY_BOSS_BOREALFACE = KEY_PREFIX_NONPRIZE + "borealFace";
         public const string KEY_BOSS_FROSTGIGAS = KEY_PREFIX_NONPRIZE + "frostGigas";
         public const string KEY_BOSS_MINOTAUR = KEY_PREFIX_NONPRIZE + "minotaur";
@@ -316,6 +317,7 @@ namespace SoMRandomizer.processing.openworld
         public const string VALUE_BOSS_JABBERWOCKY = "Jabberwocky";
         public const string VALUE_BOSS_SPRINGBEAK = "Spring-Beak";
         public const string VALUE_BOSS_GREATVIPER = "Great-Viper";
+        public const string VALUE_BOSS_LIMESLIME = "Lime-Slime";
         public const string VALUE_BOSS_BOREALFACE = "Boreal-Face";
         public const string VALUE_BOSS_FROSTGIGAS = "Frost-Gigas";
         public const string VALUE_BOSS_MINOTAUR = "Minotaur";
@@ -385,6 +387,7 @@ namespace SoMRandomizer.processing.openworld
             { VALUE_BOSS_JABBERWOCKY, 0x5C },
             { VALUE_BOSS_SPRINGBEAK, 0x5D },
             { VALUE_BOSS_GREATVIPER, 0x69 },
+            { VALUE_BOSS_LIMESLIME, 0x6A },
             { VALUE_BOSS_BOREALFACE, 0x68 },
             { VALUE_BOSS_FROSTGIGAS, 0x5E },
             { VALUE_BOSS_MINOTAUR, 0x5A },

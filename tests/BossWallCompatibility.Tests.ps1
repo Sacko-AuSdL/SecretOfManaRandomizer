@@ -95,6 +95,10 @@ function Invoke-ForcedWalls([string]$WallFaceBoss, [string]$DoomWallBoss, [int]$
         [Collections.Generic.List[string]]::new([string[]]@($WallFaceBoss))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_DOOMSWALL').GetValue($null)] =
         [Collections.Generic.List[string]]::new([string[]]@($DoomWallBoss))
+    # Keep the independent Lime Slime slot native so this focused Doom test
+    # continues to assert only the Doom redirect's generated assets.
+    $context.plandoSettings[$plandoType.GetField('KEY_BOSS_LIMESLIME').GetValue($null)] =
+        [Collections.Generic.List[string]]::new([string[]]@('Lime-Slime'))
 
     [byte[]]$outputRom = [byte[]]::new(0x400000)
     [Array]::Copy($originalRom, $outputRom, $originalRom.Length)

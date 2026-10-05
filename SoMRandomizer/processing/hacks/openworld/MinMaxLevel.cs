@@ -266,6 +266,19 @@ namespace SoMRandomizer.processing.hacks.openworld
             minLevels[MAPNUM_LIMESLIME_ARENA] = 30; // lime slime
             minLevels[MAPNUM_FIREGIGAS_ARENA] = 10; // ep fire gigas
 
+            if (context.workingData.hasSetting(LimeSlimeBossArenaRedirect.PROPERTY_LIME_IN_FOREIGN_SLOT)
+                && context.workingData.getInt(LimeSlimeBossArenaRedirect.PROPERTY_LIME_IN_FOREIGN_SLOT) != 0)
+            {
+                int sourceSlotMap = context.workingData.getInt(LimeSlimeBossArenaRedirect.PROPERTY_LIME_SLOT_MAP);
+                minLevels[LimeSlimeBossArenaRedirect.LIME_IN_FOREIGN_SLOT_MAP_ID] = minLevels[sourceSlotMap];
+            }
+            if (context.workingData.hasSetting(LimeSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_SHADE_SLOT)
+                && context.workingData.getInt(LimeSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_SHADE_SLOT) != 0)
+            {
+                minLevels[LimeSlimeBossArenaRedirect.FOREIGN_IN_SHADE_SLOT_MAP_ID] =
+                    minLevels[MAPNUM_LIMESLIME_ARENA];
+            }
+
             for (int i = 0; i < 512; i++)
             {
                 if(minLevels[i] != 0)

@@ -301,7 +301,14 @@ namespace SoMRandomizer.processing.openworld.events
             EventScript newEvent543 = new EventScript();
             context.replacementEvents[0x543] = newEvent543;
             newEvent543.Door(0x3A); // slime boss
-            newEvent543.SetFlag(EventFlags.DEATH_TYPE_FLAG, 0xF);
+            // Lime Slime needs the native Mode-7 death type.  A regular boss in
+            // the Shade slot uses ordinary Open World death/autosave handling.
+            bool foreignBossInShadeSlot = context.workingData.hasSetting(
+                LimeSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_SHADE_SLOT)
+                && context.workingData.getInt(
+                    LimeSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_SHADE_SLOT) != 0;
+            newEvent543.SetFlag(EventFlags.DEATH_TYPE_FLAG,
+                (byte)(foreignBossInShadeSlot ? 0x02 : 0x0F));
             newEvent543.Jsr(0x7C4); // boss theme
             newEvent543.End();
 
@@ -1014,6 +1021,15 @@ namespace SoMRandomizer.processing.openworld.events
             context.replacementEvents[0x642] = newEvent642;
             newEvent642.Jsr(0x7D2);
             newEvent642.End();
+
+            // BossSwaps runs before event generation and records the exact entry
+            // door used by any foreign-slot Lime fight.  Apply Lime's native
+            // death type only to that entry event after all supporting events
+            // have been assembled.
+            LimeSlimeBossArenaRedirect.patchLimeEntryEvent(context);
+            // Leave the generated Mode-7 arena before any fixed-orb or prize
+            // dialogue, matching Dread Slime's proven Open World ordering.
+            LimeSlimeBossArenaRedirect.patchLimeDeathEvent(context);
 
             return true;
         }
