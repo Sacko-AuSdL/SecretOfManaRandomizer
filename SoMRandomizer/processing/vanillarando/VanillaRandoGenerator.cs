@@ -49,6 +49,7 @@ namespace SoMRandomizer.processing.vanillarando
             addModeSpecificHack(new FirePalaceDoorFix());
             // autosave on most door transitions
             addModeSpecificHack(new Autosave());
+            addModeSpecificHack(new SaveMusicRestoration());
         }
 
         protected override void generate(byte[] origRom, byte[] outRom, String seed, RandoSettings settings, RandoContext context)

@@ -80,6 +80,16 @@ namespace SoMRandomizer.processing.common
         // next: +68
         public static int CRYSTAL_ORB_PENDING_MAP_16BIT = STATISTICS_BASE_OFFSET + 68;
         // next: +70
+        // SaveMusicRestoration: effective (post-randomization) gameplay request.
+        public const int SAVED_MUSIC_VALID = 0x7E0446;
+        public const int SAVED_MUSIC_REQUEST = 0x7E0447; // three bytes: song, parameter 1, parameter 2
+        public const int SAVED_MUSIC_EVENT_CAPTURE = 0x7E044A;
+        public const int SAVED_MUSIC_REPLAY = 0x7E044B;
+        public const int SAVED_MUSIC_PENDING = 0x7E044C;
+        public const int SAVED_MUSIC_MAP_16BIT = 0x7E044D;
+        public const int SAVED_MUSIC_SLOT_16BIT = 0x7E044F;
+        public const int SAVED_MUSIC_SCRATCH_16BIT = 0x7E0451;
+        // next: +83
 
         // /////////////////////
         // Open world enemy level stuff

@@ -68,6 +68,8 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new FirePalaceDoorFix());
             // automatically save on door transitions
             addModeSpecificHack(new Autosave());
+            // Chain Autosave's load hook; also covers ordinary saves with Autosave disabled.
+            addModeSpecificHack(new SaveMusicRestoration());
             // randomize gear in shops
             addModeSpecificHack(new ShopRandomizer());
             // fix for watts issue
