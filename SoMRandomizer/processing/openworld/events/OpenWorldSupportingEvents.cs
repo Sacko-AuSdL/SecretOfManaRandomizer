@@ -1030,6 +1030,9 @@ namespace SoMRandomizer.processing.openworld.events
             // Leave the generated Mode-7 arena before any fixed-orb or prize
             // dialogue, matching Dread Slime's proven Open World ordering.
             LimeSlimeBossArenaRedirect.patchLimeDeathEvent(context);
+            // Dread uses the same neutral presentation boundary elsewhere;
+            // a regular Fortress boss still owns the upstream $425/$42C tail.
+            DreadSlimeBossArenaRedirect.patchEvents(context);
 
             return true;
         }

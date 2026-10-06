@@ -279,6 +279,18 @@ namespace SoMRandomizer.processing.hacks.openworld
                     minLevels[MAPNUM_LIMESLIME_ARENA];
             }
 
+            if (context.workingData.hasSetting(DreadSlimeBossArenaRedirect.PROPERTY_DREAD_IN_FOREIGN_SLOT)
+                && context.workingData.getInt(DreadSlimeBossArenaRedirect.PROPERTY_DREAD_IN_FOREIGN_SLOT) != 0)
+            {
+                minLevels[DreadSlimeBossArenaRedirect.DREAD_MAP_ID] = minLevels[
+                    context.workingData.getInt(DreadSlimeBossArenaRedirect.PROPERTY_SLOT_MAP)];
+            }
+            if (context.workingData.hasSetting(DreadSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_DREAD_SLOT)
+                && context.workingData.getInt(DreadSlimeBossArenaRedirect.PROPERTY_FOREIGN_IN_DREAD_SLOT) != 0)
+            {
+                minLevels[DreadSlimeBossArenaRedirect.FORTRESS_MAP_ID] = minLevels[MAPNUM_DREADSLIME_ARENA];
+            }
+
             for (int i = 0; i < 512; i++)
             {
                 if(minLevels[i] != 0)

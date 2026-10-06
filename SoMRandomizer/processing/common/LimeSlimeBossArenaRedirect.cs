@@ -269,14 +269,66 @@ namespace SoMRandomizer.processing.common
                     "Redirected Lime Slime death event has no fixed weapon-orb message boundary.");
             }
 
-            EventScript mode7Cleanup = new EventScript();
-            mode7Cleanup.SetFlag(EventFlags.DEATH_TYPE_FLAG, 0x02);
-            mode7Cleanup.Door(LIME_REWARD_STAGING_DOOR);
-            deathEvent.InsertRange(firstOrbMessage, mode7Cleanup);
+            deathEvent.InsertRange(firstOrbMessage, getNeutralRewardStagingTransition());
         }
 
-        private static void createNeutralRewardStagingMap(byte[] outRom, RandoContext context)
+        internal static EventScript getNeutralRewardStagingTransition()
         {
+            EventScript cleanup = new EventScript();
+            cleanup.SetFlag(EventFlags.DEATH_TYPE_FLAG, 0x02);
+            cleanup.Door(LIME_REWARD_STAGING_DOOR);
+            return cleanup;
+        }
+
+        private static void installNeutralRewardDialogueReset(byte[] outRom, RandoContext context)
+        {
+            // $00:BC45 clears only $1D04 after loading the map. Mode-7's
+            // compact/OAM opener ($00:0250) leaves $A162=1 and its opener
+            // progress ($A15C) behind; $51's Mode-7 close path does not reset
+            // $A15C either. A new regular event box can reuse that layout.
+            // Reset BEFORE returning to the main loop (including level-up
+            // notifications), ONLY on our inert stage. Reuse the engine's
+            // canonical fresh-dialogue reset, $C0:0098 -> $C0:1063/$0EBF,
+            // then select regular style as $00:0FEA does. No dimensions,
+            // message-queue entries, rewards, or delays are patched.
+            byte[] original = { 0x9C, 0x04, 0x1D, 0xE2, 0x30 };
+            for (int i = 0; i < original.Length; i++)
+                if (outRom[0xBC45 + i] != original[i])
+                    throw new InvalidOperationException("Neutral reward dialogue hook ownership conflict.");
+            byte[] routine = {
+                0x08, 0xC2, 0x30, 0x48, 0xDA, 0x5A, // PHP; REP #$30; save A/X/Y
+                0xAF, 0xDC, 0x00, 0x7E,             // LDA current map
+                0xC9, (byte)(LIME_REWARD_STAGING_MAP_ID & 0xFF), (byte)(LIME_REWARD_STAGING_MAP_ID >> 8),
+                0xD0, 0x0C,                         // BNE replay original instructions
+                0xE2, 0x20,                         // vanilla reset expects 8-bit A
+                0x22, 0x98, 0x00, 0xC0,             // JSL canonical dialogue reset
+                0xA9, 0x00, 0x8F, 0x62, 0xA1, 0x7E, // regular style, not compact/GP
+                0xC2, 0x30, 0x7A, 0xFA, 0x68, 0x28, // restore A/X/Y and incoming P
+                0x9C, 0x04, 0x1D, 0xE2, 0x30, 0x6B, // displaced STZ; SEP #$30; RTL
+            };
+            CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, routine.Length);
+            int offset = context.workingOffset;
+            Array.Copy(routine, 0, outRom, offset, routine.Length);
+            context.workingOffset += routine.Length;
+            outRom[0xBC45] = 0x22;
+            outRom[0xBC46] = (byte)offset;
+            outRom[0xBC47] = (byte)(offset >> 8);
+            outRom[0xBC48] = (byte)((offset >> 16) + 0xC0);
+            outRom[0xBC49] = 0xEA;
+        }
+
+        internal static void createNeutralRewardStagingMap(byte[] outRom, RandoContext context)
+        {
+            // Dread may share the exact same inert stage in a seed containing
+            // both redirects. Reuse only our own already-created allocation.
+            const string stageOwner = "Mode7NeutralRewardStageCreated";
+            if (context.workingData.hasSetting(stageOwner) && context.workingData.getBool(stageOwner))
+            {
+                if (!context.replacementDoors.ContainsKey(LIME_REWARD_STAGING_DOOR)
+                    || context.replacementDoors[LIME_REWARD_STAGING_DOOR].getTargetMap() != LIME_REWARD_STAGING_MAP_ID)
+                    throw new InvalidOperationException("Neutral reward staging ownership conflict.");
+                return;
+            }
             FullMap stagingMap = new FullMap();
             // Reuse only the valid regular-display/tileset setup, never the
             // recognizable Mana Fortress background piece ($2F0).
@@ -320,6 +372,8 @@ namespace SoMRandomizer.processing.common
             stagingDoor.setLayer2Collision(false);
             stagingDoor.setTransitionType(0x80);
             context.replacementDoors[LIME_REWARD_STAGING_DOOR] = stagingDoor;
+            installNeutralRewardDialogueReset(outRom, context);
+            context.workingData.setBool(stageOwner, true);
         }
 
         private static void createArena(byte[] outRom, RandoContext context, byte physicalBossId,

@@ -74,6 +74,7 @@ namespace SoMRandomizer.processing.common
             {
                 context.workingData.setInt(DoomWallBossArenaRedirect.PROPERTY_ENABLED, 0);
                 LimeSlimeBossArenaRedirect.reset(context);
+                DreadSlimeBossArenaRedirect.reset(context);
             }
 
             Random r = context.randomFunctional;
@@ -174,6 +175,7 @@ namespace SoMRandomizer.processing.common
                 // Lime Slime uses generated native-geometry arenas in either
                 // direction, and remains excluded from vanilla boss rando.
                 swapMaps.Add(VanillaBossMaps.LIMESLIME);
+                swapMaps.Add(VanillaBossMaps.DREADSLIME);
             }
             swapMaps.Add(VanillaBossMaps.BLUESPIKE);
             swapMaps.Add(VanillaBossMaps.HYDRA);
@@ -212,6 +214,7 @@ namespace SoMRandomizer.processing.common
             {
                 // Only one generated Lime fight may exist in a seed.
                 restrictedPositionBosses.Add(BOSSID_LIMESLIME);
+                restrictedPositionBosses.Add(BOSSID_DREADSLIME);
             }
 
             // make vampire behave like buffy collision-wise
@@ -275,7 +278,7 @@ namespace SoMRandomizer.processing.common
                 {MAPNUM_DARKLICH_ARENA_B, KEY_BOSS_DARKLICH}, 
                 // biting lizard
                 {MAPNUM_DRAGONWORM_ARENA, KEY_BOSS_DRAGONWORM},
-                // dread slime
+                {MAPNUM_DREADSLIME_ARENA, KEY_BOSS_DREADSLIME},
                 {MAPNUM_THUNDERGIGAS_ARENA, KEY_BOSS_THUNDERGIGAS},
                 // doom's eye
                 // mana beast
@@ -323,10 +326,10 @@ namespace SoMRandomizer.processing.common
                             VanillaBossMap swapMap2 = swapMaps[r.Next() % swapMaps.Count];
                             // not having its own boss in this list should mean it never gets swapped back
                             bool firstAcceptsSecond = randoMode == OpenWorldSettings.MODE_KEY
-                                ? LimeSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap1, newBossNums[swapMap2])
+                                ? DreadSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap1, newBossNums[swapMap2])
                                 : swapMap1.supportedSwapBosses.Contains(newBossNums[swapMap2]);
                             bool secondAcceptsFirst = randoMode == OpenWorldSettings.MODE_KEY
-                                ? LimeSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap2, newBossNums[swapMap1])
+                                ? DreadSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap2, newBossNums[swapMap1])
                                 : swapMap2.supportedSwapBosses.Contains(newBossNums[swapMap1]);
                             if (firstAcceptsSecond && secondAcceptsFirst)
                             {
@@ -342,7 +345,7 @@ namespace SoMRandomizer.processing.common
                     else
                     {
                         byte[] supportedBosses = randoMode == OpenWorldSettings.MODE_KEY
-                            ? LimeSlimeBossArenaRedirect.getOpenWorldRandomPool(swapMap1)
+                            ? DreadSlimeBossArenaRedirect.getOpenWorldRandomPool(swapMap1)
                             : swapMap1.allSupportedBosses;
                         byte boss = supportedBosses[r.Next() % supportedBosses.Length];
                         // don't allow duplicates of ones with hardcoded positions
@@ -400,6 +403,13 @@ namespace SoMRandomizer.processing.common
                 bool redirectedShadeSlot = randoMode == OpenWorldSettings.MODE_KEY
                     && testMap == VanillaBossMaps.LIMESLIME
                     && bossNum != BOSSID_LIMESLIME;
+                bool redirectedDreadBoss = randoMode == OpenWorldSettings.MODE_KEY
+                    && bossNum == BOSSID_DREADSLIME && testMap != VanillaBossMaps.DREADSLIME;
+                bool redirectedFortressSlot = randoMode == OpenWorldSettings.MODE_KEY
+                    && testMap == VanillaBossMaps.DREADSLIME && bossNum != BOSSID_DREADSLIME;
+                if ((redirectedDreadBoss && !DreadSlimeBossArenaRedirect.isSafeTarget(testMap))
+                    || (redirectedFortressSlot && !DreadSlimeBossArenaRedirect.FORTRESS_BOSSES.Contains(bossNum)))
+                    throw new InvalidOperationException("Unsafe Dread Slime redirect for " + testMap.name + ".");
                 if (redirectedLimeBoss && !LimeSlimeBossArenaRedirect.isSafeLimeTargetSlot(testMap))
                 {
                     throw new InvalidOperationException("Lime Slime cannot safely use boss slot " + testMap.name + ".");
@@ -412,8 +422,13 @@ namespace SoMRandomizer.processing.common
                 bool redirectedDoomSlot = randoMode == OpenWorldSettings.MODE_KEY
                     && testMap == VanillaBossMaps.DOOMSWALL
                     && DoomWallBossArenaRedirect.requiresRedirect(bossNum);
-                bool redirectedArena = redirectedDoomSlot || redirectedLimeBoss || redirectedShadeSlot;
-                VanillaBossMap physicalArena = redirectedLimeBoss
+                bool redirectedArena = redirectedDoomSlot || redirectedLimeBoss || redirectedShadeSlot
+                    || redirectedDreadBoss || redirectedFortressSlot;
+                VanillaBossMap physicalArena = redirectedDreadBoss
+                    ? VanillaBossMaps.DREADSLIME
+                    : redirectedFortressSlot
+                    ? VanillaBossMaps.BY_VANILLA_BOSS_ID[bossNum]
+                    : redirectedLimeBoss
                     ? VanillaBossMaps.LIMESLIME
                     : redirectedShadeSlot
                     ? LimeSlimeBossArenaRedirect.isSafeShadeReplacement(bossNum)
@@ -701,6 +716,18 @@ namespace SoMRandomizer.processing.common
                 else if (redirectedShadeSlot)
                 {
                     LimeSlimeBossArenaRedirect.createForeignBossInShadeSlot(outRom, context, bossNum);
+                }
+                else if (redirectedDreadBoss)
+                {
+                    int objectOffset = VanillaMapUtil.getObjectOffset(origRom, testMap.originalMapNum)
+                        + 8 + testMap.originalObjNum * 8;
+                    ushort slotDeathEvent = (ushort)(origRom[objectOffset + 6]
+                        + ((origRom[objectOffset + 7] & 0x07) << 8));
+                    DreadSlimeBossArenaRedirect.createDreadInForeignSlot(outRom, context, testMap, slotDeathEvent);
+                }
+                else if (redirectedFortressSlot)
+                {
+                    DreadSlimeBossArenaRedirect.createForeignBossInDreadSlot(outRom, context, bossNum);
                 }
             }
 

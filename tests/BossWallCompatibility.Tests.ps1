@@ -99,6 +99,8 @@ function Invoke-ForcedWalls([string]$WallFaceBoss, [string]$DoomWallBoss, [int]$
     # continues to assert only the Doom redirect's generated assets.
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_LIMESLIME').GetValue($null)] =
         [Collections.Generic.List[string]]::new([string[]]@('Lime-Slime'))
+    $context.plandoSettings[$plandoType.GetField('KEY_BOSS_DREADSLIME').GetValue($null)] =
+        [Collections.Generic.List[string]]::new([string[]]@('Dread-Slime'))
 
     [byte[]]$outputRom = [byte[]]::new(0x400000)
     [Array]::Copy($originalRom, $outputRom, $originalRom.Length)

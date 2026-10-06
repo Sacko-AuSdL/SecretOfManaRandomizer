@@ -37,6 +37,24 @@ $doorUtilType = $assembly.GetType('SoMRandomizer.processing.common.VanillaDoorUt
 $nesoberiType = $assembly.GetType('SoMRandomizer.processing.hacks.openworld.Nesoberi', $true)
 
 [byte[]]$originalRom = [IO.File]::ReadAllBytes((Resolve-Path $SourceRom).Path)
+# Audited vanilla window lifecycle: Mode-7 selects the compact descriptor;
+# regular map loading only clears the upload/open flags, not its geometry.
+# These contracts explain why loading the stage must reset the old opener.
+Assert-True (Contains-Sequence $originalRom[0x250..0x259] ([byte[]]@(0xA9,1,0x8D,0x62,0xA1))) `
+    'Vanilla Mode-7 compact-window selection changed.'
+Assert-True (Contains-Sequence $originalRom[0xBC43..0xBC48] ([byte[]]@(0x9C,4,0x1D))) `
+    'Vanilla map-loader dialogue flag reset changed.'
+Assert-True ($originalRom[0x77147] -eq 6 -and $originalRom[0x77149] -eq 2) `
+    'Normal/compact window heights no longer match the audited descriptors.'
+$sharedTransition = $redirectType.GetMethod('getNeutralRewardStagingTransition',
+    [Reflection.BindingFlags]'Static,NonPublic').Invoke($null,@())
+Assert-True ([Linq.Enumerable]::SequenceEqual([byte[]]$sharedTransition,
+    [byte[]]@(0x30,0x0B,2,0x19,0x0B))) `
+    'Shared transition must retain the validated death-type/door ordering.'
+$eventUtilType = $assembly.GetType('SoMRandomizer.processing.common.VanillaEventUtil', $true)
+$orbTail = $eventUtilType.GetMethod('getVanillaEvent').Invoke($null,@($originalRom,0x509))
+Assert-True (Contains-Sequence $orbTail ([byte[]]@(0x28,8,0x51))) `
+    'The fixed-orb automatic 8-tick tail changed.'
 $process = $bossSwapsType.GetMethod('process', [Reflection.BindingFlags]'Instance,NonPublic')
 $mantis = $bossMapsType.GetField('MANTISANT').GetValue($null)
 $lime = $bossMapsType.GetField('LIMESLIME').GetValue($null)
@@ -53,6 +71,8 @@ function Invoke-ForcedLimeCross([int]$Seed) {
         [Collections.Generic.List[string]]::new([string[]]@('Lime-Slime'))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_LIMESLIME').GetValue($null)] =
         [Collections.Generic.List[string]]::new([string[]]@('Mantis-Ant'))
+    $context.plandoSettings[$plandoType.GetField('KEY_BOSS_DREADSLIME').GetValue($null)] =
+        [Collections.Generic.List[string]]::new([string[]]@('Dread-Slime'))
 
     [byte[]]$outputRom = [byte[]]::new(0x400000)
     [Array]::Copy($originalRom, $outputRom, $originalRom.Length)
@@ -154,6 +174,8 @@ for($mapId = 0; $mapId -lt 512; $mapId++) {
 $result = Invoke-ForcedLimeCross 424242
 [byte[]]$rom = $result[0]
 $context = $result[1]
+. (Join-Path $PSScriptRoot 'support\AssertSlimeDialogueReset.ps1')
+Assert-SlimeDialogueReset $rom $originalRom
 Assert-True ([Linq.Enumerable]::SequenceEqual([byte[]]$originalRom[0x88FB6..0x88FC9],
     [byte[]]$rom[0x88FB6..0x88FC9]) -and [Linq.Enumerable]::SequenceEqual(
     [byte[]]$originalRom[0x88FEE..0x88FFF], [byte[]]$rom[0x88FEE..0x88FFF])) `
