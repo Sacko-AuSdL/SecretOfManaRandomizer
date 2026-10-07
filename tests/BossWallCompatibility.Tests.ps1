@@ -91,6 +91,8 @@ function Invoke-ForcedWalls([string]$WallFaceBoss, [string]$DoomWallBoss, [int]$
     $context = [Activator]::CreateInstance($contextType)
     $context.randomFunctional = [Random]::new($Seed)
     $context.namesOfThings = [Activator]::CreateInstance($namesType, [object[]]@(,$originalRom))
+    $context.plandoSettings['P_tripleTonpole'] =
+        [Collections.Generic.List[string]]::new([string[]]@('Triple-Tonpole'))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_WALLFACE').GetValue($null)] =
         [Collections.Generic.List[string]]::new([string[]]@($WallFaceBoss))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_DOOMSWALL').GetValue($null)] =

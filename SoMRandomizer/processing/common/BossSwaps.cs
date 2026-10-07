@@ -75,6 +75,7 @@ namespace SoMRandomizer.processing.common
                 context.workingData.setInt(DoomWallBossArenaRedirect.PROPERTY_ENABLED, 0);
                 LimeSlimeBossArenaRedirect.reset(context);
                 DreadSlimeBossArenaRedirect.reset(context);
+                TripleTonpoleBossArenaRedirect.reset(context);
             }
 
             Random r = context.randomFunctional;
@@ -176,6 +177,7 @@ namespace SoMRandomizer.processing.common
                 // direction, and remains excluded from vanilla boss rando.
                 swapMaps.Add(VanillaBossMaps.LIMESLIME);
                 swapMaps.Add(VanillaBossMaps.DREADSLIME);
+                swapMaps.Add(VanillaBossMaps.TRIPLE_TONPOLE);
             }
             swapMaps.Add(VanillaBossMaps.BLUESPIKE);
             swapMaps.Add(VanillaBossMaps.HYDRA);
@@ -215,6 +217,7 @@ namespace SoMRandomizer.processing.common
                 // Only one generated Lime fight may exist in a seed.
                 restrictedPositionBosses.Add(BOSSID_LIMESLIME);
                 restrictedPositionBosses.Add(BOSSID_DREADSLIME);
+                restrictedPositionBosses.Add(TripleTonpoleBossArenaRedirect.BOSS_ID);
             }
 
             // make vampire behave like buffy collision-wise
@@ -268,6 +271,7 @@ namespace SoMRandomizer.processing.common
                 {MAPNUM_HEXAS_ARENA, KEY_BOSS_HEXAS},
                 {MAPNUM_KETTLEKIN_ARENA, KEY_BOSS_KETTLEKIN},
                 {MAPNUM_TONPOLE_ARENA, KEY_BOSS_TONPOLE},
+                {MAPNUM_TRIPLETONPOLE_ARENA, KEY_BOSS_TRIPLE_TONPOLE},
                 {MAPNUM_MECHRIDER3_ARENA, KEY_BOSS_MECHRIDER3},
                 {MAPNUM_SNOWDRAGON_ARENA, KEY_BOSS_SNOWDRAGON},
                 {MAPNUM_FIREGIGAS_ARENA, KEY_BOSS_FIREGIGAS},
@@ -307,9 +311,33 @@ namespace SoMRandomizer.processing.common
                 }
                 if (foundPlando)
                 {
+                    if (swapMap1 == VanillaBossMaps.TRIPLE_TONPOLE
+                        && !TripleTonpoleBossArenaRedirect.ICE_BOSSES.Contains(boss))
+                        throw new InvalidOperationException("Ice Palace plando boss is incompatible with its native arena.");
+                    if (boss == TripleTonpoleBossArenaRedirect.BOSS_ID
+                        && (randoMode != OpenWorldSettings.MODE_KEY
+                            || !TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(swapMap1).Contains(boss)
+                            || plandoMaps.Any(m => newBossNums[m] == boss)))
+                        throw new InvalidOperationException("Triple Tonpole plando is incompatible or duplicated.");
                     restrictedPositionBossesRemaining.Remove(boss);
                     newBossNums[swapMap1] = boss;
                     plandoMaps.Add(swapMap1);
+                }
+            }
+
+            // Swap mode starts from native assignments. A planned foreign
+            // trio must not leave a second, unplanned native trio behind.
+            if (randoMode == OpenWorldSettings.MODE_KEY && swapOnly
+                && !plandoMaps.Contains(VanillaBossMaps.TRIPLE_TONPOLE))
+            {
+                VanillaBossMap plannedTriple = plandoMaps.FirstOrDefault(
+                    m => newBossNums[m] == TripleTonpoleBossArenaRedirect.BOSS_ID);
+                if (plannedTriple != null)
+                {
+                    byte displacedBoss = plannedTriple.getOriginalBossId(origRom);
+                    newBossNums[VanillaBossMaps.TRIPLE_TONPOLE] =
+                        TripleTonpoleBossArenaRedirect.ICE_BOSSES.Contains(displacedBoss)
+                            ? displacedBoss : BOSSID_TONPOLE;
                 }
             }
 
@@ -324,12 +352,15 @@ namespace SoMRandomizer.processing.common
                         {
                             // pick a random one to try to swap with
                             VanillaBossMap swapMap2 = swapMaps[r.Next() % swapMaps.Count];
+                            // A new independent Ice draw must not steal any
+                            // already-planned slot's assignment during swapping.
+                            if (randoMode == OpenWorldSettings.MODE_KEY && plandoMaps.Contains(swapMap2)) continue;
                             // not having its own boss in this list should mean it never gets swapped back
                             bool firstAcceptsSecond = randoMode == OpenWorldSettings.MODE_KEY
-                                ? DreadSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap1, newBossNums[swapMap2])
+                                ? TripleTonpoleBossArenaRedirect.canSwapInOpenWorld(swapMap1, newBossNums[swapMap2])
                                 : swapMap1.supportedSwapBosses.Contains(newBossNums[swapMap2]);
                             bool secondAcceptsFirst = randoMode == OpenWorldSettings.MODE_KEY
-                                ? DreadSlimeBossArenaRedirect.canSwapInOpenWorld(swapMap2, newBossNums[swapMap1])
+                                ? TripleTonpoleBossArenaRedirect.canSwapInOpenWorld(swapMap2, newBossNums[swapMap1])
                                 : swapMap2.supportedSwapBosses.Contains(newBossNums[swapMap1]);
                             if (firstAcceptsSecond && secondAcceptsFirst)
                             {
@@ -345,7 +376,7 @@ namespace SoMRandomizer.processing.common
                     else
                     {
                         byte[] supportedBosses = randoMode == OpenWorldSettings.MODE_KEY
-                            ? DreadSlimeBossArenaRedirect.getOpenWorldRandomPool(swapMap1)
+                            ? TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(swapMap1)
                             : swapMap1.allSupportedBosses;
                         byte boss = supportedBosses[r.Next() % supportedBosses.Length];
                         // don't allow duplicates of ones with hardcoded positions
@@ -397,6 +428,26 @@ namespace SoMRandomizer.processing.common
             foreach (VanillaBossMap testMap in swapMaps)
             {
                 byte bossNum = newBossNums[testMap];
+                if (randoMode == OpenWorldSettings.MODE_KEY && testMap == VanillaBossMaps.TONPOLE)
+                {
+                    // Preserve the original cave tile fix even when this slot
+                    // redirects to the trio; never run its Ice-copy callback.
+                    outRom[0xD635F] = 0xAF;
+                    outRom[0xD636A] = 0xAF;
+                }
+                if (testMap == VanillaBossMaps.TRIPLE_TONPOLE)
+                    context.workingData.setInt(TripleTonpoleBossArenaRedirect.PROPERTY_ICE_BOSS, bossNum);
+                if (bossNum == TripleTonpoleBossArenaRedirect.BOSS_ID)
+                {
+                    Logging.log("Boss map " + testMap + " has boss Triple Tonpole (128)", "spoiler");
+                    if (testMap != VanillaBossMaps.TRIPLE_TONPOLE)
+                    {
+                        MapObject source = VanillaMapUtil.getObjects(origRom, testMap.originalMapNum)[testMap.originalObjNum];
+                        TripleTonpoleBossArenaRedirect.create(outRom, context, testMap, source.getEvent());
+                    }
+                    // Three genuine $71 actors, not a species/stat/name row $80.
+                    continue;
+                }
                 bool redirectedLimeBoss = randoMode == OpenWorldSettings.MODE_KEY
                     && bossNum == BOSSID_LIMESLIME
                     && testMap != VanillaBossMaps.LIMESLIME;
@@ -445,7 +496,8 @@ namespace SoMRandomizer.processing.common
                 // native arena, so do not mutate either native arena in outRom.
                 if (!redirectedArena)
                 {
-                    testMap.process(outRom, bossNum);
+                    if (randoMode != OpenWorldSettings.MODE_KEY || testMap != VanillaBossMaps.TONPOLE)
+                        testMap.process(outRom, bossNum);
                 }
                 // set positions for jumps and stuff for bosses that need them
                 switch (bossNum)
@@ -614,9 +666,10 @@ namespace SoMRandomizer.processing.common
                 int mapNum = testMap.originalMapNum;
                 int objsOffset = 0x80000 + outRom[0x87000 + mapNum * 2] + (outRom[0x87000 + mapNum * 2 + 1] << 8);
                 objsOffset += 8; // skip map header
-                objsOffset += testMap.originalObjNum * 8;
+                objsOffset += Math.Max(0, testMap.originalObjNum) * 8;
                 objsOffset += 5; // index for id
-                byte oldBossNum = outRom[objsOffset];
+                byte oldBossNum = testMap == VanillaBossMaps.TRIPLE_TONPOLE
+                    ? BOSSID_TONPOLE : outRom[objsOffset];
                 if (!redirectedArena)
                 {
                     outRom[objsOffset] = bossNum;
@@ -822,7 +875,8 @@ namespace SoMRandomizer.processing.common
             outRom[context.workingOffset++] = 0x00;
 
             outRom[context.workingOffset++] = 0xD0;
-            outRom[context.workingOffset++] = 0x12 + 9;
+            bool foreignTriple = TripleTonpoleBossArenaRedirect.hasForeignTriple(context);
+            outRom[context.workingOffset++] = (byte)(0x12 + 9 + (foreignTriple ? 5 : 0));
 
             // new code here
             // AF DC 00 7E         LDA 7E00DC
@@ -836,7 +890,17 @@ namespace SoMRandomizer.processing.common
             outRom[context.workingOffset++] = 0x01;
             // F0 07               BEQ over
             outRom[context.workingOffset++] = 0xF0;
-            outRom[context.workingOffset++] = 0x07;
+            outRom[context.workingOffset++] = (byte)(0x07 + (foreignTriple ? 5 : 0));
+            if (foreignTriple)
+            {
+                // Extend the existing native multi-actor $7F8 suppression
+                // to the private native-equivalent Triple arena.
+                outRom[context.workingOffset++] = 0xC9;
+                outRom[context.workingOffset++] = (byte)(TripleTonpoleBossArenaRedirect.MAP_ID & 0xFF);
+                outRom[context.workingOffset++] = (byte)(TripleTonpoleBossArenaRedirect.MAP_ID >> 8);
+                outRom[context.workingOffset++] = 0xF0;
+                outRom[context.workingOffset++] = 0x07;
+            }
             // LDA #07F8
             outRom[context.workingOffset++] = 0xA9;
             outRom[context.workingOffset++] = 0xF8;

@@ -67,6 +67,12 @@ function Invoke-ForcedLimeCross([int]$Seed) {
     $context = [Activator]::CreateInstance($contextType)
     $context.randomFunctional = [Random]::new($Seed)
     $context.namesOfThings = [Activator]::CreateInstance($namesType, [object[]]@(,$originalRom))
+    $context.plandoSettings['P_tripleTonpole'] =
+        [Collections.Generic.List[string]]::new([string[]]@('Triple-Tonpole'))
+    # The additional independent Ice draw changes later random proposals.
+    # Keep this focused cross test free of an unrelated Doom donor arena.
+    $context.plandoSettings["P_doomsWall"] =
+        [Collections.Generic.List[string]]::new([string[]]@("Doom's-Wall"))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_MANTISANT').GetValue($null)] =
         [Collections.Generic.List[string]]::new([string[]]@('Lime-Slime'))
     $context.plandoSettings[$plandoType.GetField('KEY_BOSS_LIMESLIME').GetValue($null)] =

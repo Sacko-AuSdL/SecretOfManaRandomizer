@@ -143,6 +143,14 @@ namespace SoMRandomizer.forms
             bossButtonPropertyNames[KEY_BOSS_BLUEDRAGON] = button85;
             bossButtonPropertyNames[KEY_BOSS_BUFFY] = button87;
             bossButtonPropertyNames[KEY_BOSS_DARKLICH] = button89;
+            // Separate logical Ice Palace slot; panel2 is already scrollable.
+            Label iceLabel = new Label { Text = "Ice Palace / Triple Tonpole",
+                AutoSize = true, Location = new Point(10, 978) };
+            Button iceButton = new Button { Text = "(No change)",
+                Size = button89.Size, Location = new Point(205, 975) };
+            panel2.Controls.Add(iceLabel);
+            panel2.Controls.Add(iceButton);
+            bossButtonPropertyNames[KEY_BOSS_TRIPLE_TONPOLE] = iceButton;
             foreach (string key in bossButtonPropertyNames.Keys)
             {
                 bossButtonPropertyNamesInv[bossButtonPropertyNames[key]] = key;
@@ -217,6 +225,7 @@ namespace SoMRandomizer.forms
 
         // due to hardcoded positions in vanilla game; may change later
         string[] singleInstanceBosses = new string[] {
+            VALUE_BOSS_TRIPLE_TONPOLE,
             VALUE_BOSS_SPIKEY,
             VALUE_BOSS_BLUESPIKE,
             VALUE_BOSS_TROPICALLO,
@@ -253,6 +262,7 @@ namespace SoMRandomizer.forms
             VALUE_BOSS_TROPICALLO,
             VALUE_BOSS_SPIKEY,
             VALUE_BOSS_TONPOLE,
+            VALUE_BOSS_TRIPLE_TONPOLE,
             VALUE_BOSS_FIREGIGAS,
             VALUE_BOSS_KILROY,
             VALUE_BOSS_WALLFACE,
@@ -291,6 +301,7 @@ namespace SoMRandomizer.forms
             { KEY_BOSS_TROPICALLO, VanillaBossMaps.TROPICALLO },
             { KEY_BOSS_SPIKEY, VanillaBossMaps.SPIKEY },
             { KEY_BOSS_TONPOLE, VanillaBossMaps.TONPOLE },
+            { KEY_BOSS_TRIPLE_TONPOLE, VanillaBossMaps.TRIPLE_TONPOLE },
             { KEY_BOSS_FIREGIGAS, VanillaBossMaps.FIREGIGAS },
             { KEY_BOSS_KILROY, VanillaBossMaps.KILROY },
             { KEY_BOSS_WALLFACE, VanillaBossMaps.WALLFACE },
@@ -328,6 +339,7 @@ namespace SoMRandomizer.forms
             { VanillaBossMaps.TROPICALLO, 0x59 },
             { VanillaBossMaps.SPIKEY, 0x5B },
             { VanillaBossMaps.TONPOLE, 0x71 },
+            { VanillaBossMaps.TRIPLE_TONPOLE, 0x80 },
             { VanillaBossMaps.FIREGIGAS, 0x74 },
             { VanillaBossMaps.KILROY, 0x65 },
             { VanillaBossMaps.WALLFACE, 0x58 },
@@ -1250,7 +1262,7 @@ namespace SoMRandomizer.forms
                     {
                         if (BOSS_IDS_BY_PLANDO_VALUE.ContainsKey(bossName))
                         {
-                            if (!map.allSupportedBosses.Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
+                            if (!TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
                             {
                                 valid = false;
                             }
@@ -1300,7 +1312,7 @@ namespace SoMRandomizer.forms
                     if (BOSS_IDS_BY_PLANDO_VALUE.ContainsKey(bossName))
                     {
                         VanillaBossMap map = bossmaps[bossPropertyName];
-                        if (!map.allSupportedBosses.Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
+                        if (!TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
                         {
                             valid = false;
                         }

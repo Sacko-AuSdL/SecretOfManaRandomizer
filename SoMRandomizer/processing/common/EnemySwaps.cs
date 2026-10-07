@@ -262,9 +262,11 @@ namespace SoMRandomizer.processing.common
 
             for (int mapNum = 16; mapNum < 500; mapNum++)
             {
-                // [5] is enemy type
-                int objsOffset1 = 0x80000 + outRom[0x87000 + mapNum * 2] + (outRom[0x87000 + mapNum * 2 + 1] << 8);
-                int objsOffset2 = 0x80000 + outRom[0x87000 + mapNum * 2 + 2] + (outRom[0x87000 + mapNum * 2 + 3] << 8);
+                // Native structure comes from origRom; earlier processors may publish generated-map
+                // pointers in outRom (e.g. map 500), which must not expand the preceding native map.
+                // [5] is enemy type. Only randomized results are written to outRom.
+                int objsOffset1 = 0x80000 + origRom[0x87000 + mapNum * 2] + (origRom[0x87000 + mapNum * 2 + 1] << 8);
+                int objsOffset2 = 0x80000 + origRom[0x87000 + mapNum * 2 + 2] + (origRom[0x87000 + mapNum * 2 + 3] << 8);
                 objsOffset1 += 8; // skip map header
                 while (objsOffset1 < objsOffset2)
                 {

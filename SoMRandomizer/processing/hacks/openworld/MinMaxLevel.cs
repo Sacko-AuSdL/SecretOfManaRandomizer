@@ -291,6 +291,10 @@ namespace SoMRandomizer.processing.hacks.openworld
                 minLevels[DreadSlimeBossArenaRedirect.FORTRESS_MAP_ID] = minLevels[MAPNUM_DREADSLIME_ARENA];
             }
 
+            if (TripleTonpoleBossArenaRedirect.hasForeignTriple(context))
+                minLevels[TripleTonpoleBossArenaRedirect.MAP_ID] = minLevels[
+                    context.workingData.getInt(TripleTonpoleBossArenaRedirect.PROPERTY_SLOT_MAP)];
+
             for (int i = 0; i < 512; i++)
             {
                 if(minLevels[i] != 0)

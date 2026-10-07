@@ -1,7 +1,7 @@
 ﻿using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.common.structure;
-using System.Collections.Generic;
+using System;
 using static SoMRandomizer.processing.common.SomVanillaValues;
 
 namespace SoMRandomizer.processing.hacks.openworld
@@ -21,18 +21,23 @@ namespace SoMRandomizer.processing.hacks.openworld
                 if (mapNum != MAPNUM_TASNICA_THRONE_ROOM_NPC && mapNum != MAPNUM_KARONFERRY_ENDPOINTS && 
                     mapNum != MAPNUM_KARONFERRY_TRAVELING_UP && mapNum != MAPNUM_KARONFERRY_TRAVELING_DOWN)
                 {
-                    // get all map objs
-                    List<MapObject> objs = VanillaMapUtil.getObjects(outRom, mapNum);
-                    for(int i=0; i < objs.Count; i++)
+                    // Traverse native spans only. Generated pointers in outRom must not turn
+                    // an empty native map (such as 499, before generated map 500) into code/data.
+                    int start = VanillaMapUtil.getObjectOffset(origRom, mapNum) + 8;
+                    int end = VanillaMapUtil.getObjectOffset(origRom, mapNum + 1);
+                    for (int offset = start; offset < end; offset += 8)
                     {
-                        MapObject obj = objs[i];
+                        // Keep prior output mutations; origRom supplies boundaries, not object state.
+                        byte[] objectData = new byte[8];
+                        Array.Copy(outRom, offset, objectData, 0, objectData.Length);
+                        MapObject obj = new MapObject(objectData);
                         // object species in normal enemy range
                         if(obj.getSpecies() < 84)
                         {
                             obj.setNeverVisible();
                         }
                         // write it back
-                        VanillaMapUtil.putObject(outRom, obj, mapNum, i);
+                        obj.put(outRom, offset);
                     }
                 }
             }

@@ -205,10 +205,14 @@ namespace SoMRandomizer.processing.openworld.events
             // adjust red dragon position to better fit other bosses
             setObjectXY(outRom, MAPNUM_REDDRAGON_ARENA, 0, 0x80 + 18, 10);
 
-            // triple tonpole map - make only one of them visible, with flag x25
-            setObjectVisibility(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 0, 0x25, 0x00, 0x00);
-            setObjectNeverVisible(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 1);
-            setObjectNeverVisible(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 2);
+            // Native Triple keeps all three native actors/visibility. Ordinary
+            // Ice replacements retain the proven one-object native-arena path.
+            if (!TripleTonpoleBossArenaRedirect.isNativeTriple(context))
+            {
+                setObjectVisibility(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 0, 0x25, 0x00, 0x00);
+                setObjectNeverVisible(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 1);
+                setObjectNeverVisible(outRom, MAPNUM_TRIPLETONPOLE_ARENA, 2);
+            }
 
             // iffish outside undine cave always visible
             setObjectAlwaysVisible(outRom, MAPNUM_UNDINECAVE_EXTERIOR, 0);

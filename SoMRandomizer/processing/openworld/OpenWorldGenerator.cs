@@ -62,6 +62,8 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new MinMaxLevel());
             // enemy scaling for open world
             addModeSpecificHack(new EnemiesAtYourLevel());
+            // After scaled OR unscaled loading; private/native Triple only.
+            addModeSpecificHack(new TripleTonpoleBalance());
             // do the main randomizations for open world
             addModeSpecificHack(new OpenWorldRandomizer());
             // fix issue where you get stuck on the light fixture in the minotaur room sometimes

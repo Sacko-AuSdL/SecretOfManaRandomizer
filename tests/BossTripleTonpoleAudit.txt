@@ -1,0 +1,176 @@
+Triple Tonpole / independent Open World Ice Palace reference audit
+=================================================================
+
+Scope: Open World only. Vanilla Rando retains the TONPOLE callback.
+No Sandship, Weapon Power, slime weighting, or unrelated compatibility changes.
+Static and emitted-byte verification is NOT emulator/runtime approval.
+
+OLD COUPLING
+------------
+VanillaBossMaps.TONPOLE (Undine Cave, map 277, actor 0) copied the selected
+species to all three map 361 actors in its process callback. Open World then
+hid actors 1/2 and let one death increment $25 three times in event $66A.
+Ice had no independent BossSwaps draw/plando/spoiler slot. The same callback
+also edits cave-piece bytes $D635F/$D636A to $AF; those cave edits remain.
+
+ICE NATIVE-ARENA COMPATIBILITY
+----------------------------
+The inherited 21 candidates remain direct/native map 361 replacements:
+57 Mantis Ant, 5A Minotaur, 5C Jabberwocky, 5E Frost Gigas, 5F Snap Dragon,
+60 Mech Rider 1, 62 Vampire, 63 Metal Mantis, 64 Mech Rider 2, 65 Kilroy,
+66 Gorgon Bull, 69 Great Viper, 6D Hydra, 6F Hexas, 70 Kettle Kin,
+71 Tonpole, 72 Mech Rider 3, 74 Fire Gigas, 78 Buffy, 7B Dragon Worm,
+7D Thunder Gigas. They retain actor 0 at native (11,13), its $66A event,
+the original Ice entrance/return doors, and the existing one-actor visibility.
+No new positioning fixes or geometry changes are introduced for them.
+
+Excluded independent species: Wall Face, Tropicallo, Spikey Tiger, Spring Beak,
+Doom's Wall, Boreal Face, Lime Slime, Blue Spike, Watermelon, Snow Dragon,
+Red Dragon, Axe Beak, Blue Dragon, Dark Lich, Dread Slime. These inherit the
+existing TONPOLE exclusions: fixed-position/jumping/layer-2/Mode-7 behavior
+has no supported native-Ice positioning/display contract. This is NOT new
+runtime proof that every excluded species is impossible in Ice. Biting Lizard
+and other boss child actors are not independent candidates; Mana Beast is not
+part of boss randomization. The new sentinel $80 means a three-actor encounter,
+never an enemy-stat/species row.
+
+NATIVE TRIPLE CONTRACT
+----------------------
+Map 361/$169, header at ROM $08D298:
+CE 54 8E 00 20 02 00 FF
+Objects:
+56 04 8B 0D 40 71 6A 46   (11,13)
+56 04 86 11 40 71 6A 46   ( 6,17)
+56 04 91 11 40 71 6A 46   (17,17)
+Palette $54, normal display $02; no Mode-7, walk-on, or special trigger.
+BG piece $1D7 and FG $1D8 are 24x28 and retain native placement/collision.
+All three native actors are simultaneously visible for flag $56=0..4.
+Native entry $669 resets $25; Door $2C2 is 69 17 26 80 (11,19, layer 1).
+Each actor owns death event $66A; each independently transforms $71 -> $7A.
+At $C2:6294: A9 7A 00 22 3F 00 C0; $C0:003F enters full initialization
+at $C0:55EC. This reloads Biting Lizard HP, not shared encounter HP.
+
+BALANCE
+-------
+Species data: ROM $101C00 + species * 29; shared with standalone Tonpole.
+                         Tonpole $71     Biting Lizard $7A
+Level                    11              11
+HP                       600             770
+MP                       0               6
+STR                      22              24
+AGI                      31              31
+INT/WIS                  23/23           23/23
+DEF/MDEF                 0/0             0/0
+Black/white magic power  20/20           14/14
+EXP                      50              210
+Both weapon IDs are $00, with base weapon damage 2. Status/AI/attack/spell
+behavior is the existing species behavior, not a special triple stat table.
+Three independent complete form pairs total 4,110 unscaled HP, versus 1,370
+for one standalone pair, and can exert three actors' offensive pressure.
+
+Encounter-local hook at ROM $005697 / CPU $C0:5697 replaces ONLY:
+BF 19 1C D0 99 CA E1 (LDA $D01C19,X; STA $E1CA,Y), then replays it.
+After original OR scaled HP initialization, actual Triple map + $71/$7A
+gets current/max HP = max(1, floor(initialized max HP / 2)). Thus vanilla
+values become 300 + 385 per actor, total 2,055, about 1.5 standalone pairs.
+Transformations pass the same hook. Status recalculation does not reload HP.
+No global species/stat/AI/weapon/status data, offense, EXP, or gold is nerfed.
+Existing scaling and its Tonpole AGI safeguard remain. MinMaxLevel inherits
+the foreign slot's minimum on the private map. Boss-kill-based scaling and
+three actors' simultaneous offense still require gameplay balance judgment.
+
+SELECTION / POOLS
+-----------------
+One independent Ice slot is added to the existing functional-RNG BossSwaps
+algorithm; no extra balance/event/geometry RNG draws. Existing restricted-boss
+rejection draws still apply. Random and swap modes both use the same compatible
+wrapper; planned slots cannot be stolen during Open World swapping. Plando:
+P_tripleTonpole / Triple-Tonpole. Unsupported Ice plando fails explicitly.
+In swap mode, planning a foreign trio with an unplanned Ice slot transfers
+the displaced native boss to Ice if compatible, otherwise uses standalone
+Tonpole there; this consumes no RNG and prevents a second native trio.
+
+Triple appears once in each of these random pools:
+Slot                         Before -> After     Nominal initial proposal
+Mantis Ant                   29 -> 30            1/30
+Wall Face                    34 -> 35            1/35
+Tropicallo                   29 -> 30            1/30
+Jabberwocky                  29 -> 30            1/30
+Frost Gigas                  29 -> 30            1/30
+Mech Rider 2                 25 -> 26            1/26
+Watermelon                   34 -> 35            1/35
+Undine Cave                  21 -> 22            1/22
+Mech Rider 3                 25 -> 26            1/26
+Fire Gigas                   29 -> 30            1/30
+Ice Palace                   21 -> 22            1/22
+Ice's 'before' is the formerly copied Undine pool; it had no separate draw.
+All prior pool entries (including Lime/Dread) remain unchanged. Code uses the
+upstream Random.Next() % N convention. The appended last entry's exact first
+draw probability is floor(2147483647/N)/2147483647 (negligible modulo bias).
+The existing single-instance restriction permits AT MOST ONE Triple encounter
+per seed, not one guaranteed encounter. Rejection/order therefore affects final
+marginal probability, as it already does for other restricted candidates.
+
+Excluded Open World slots: Minotaur, Spikey Tiger, Spring Beak, Snap Dragon,
+Mech Rider 1,
+Doom's Wall, Vampire, Metal Mantis, Kilroy, Gorgon Bull, Boreal Face,
+Great Viper, Lime Slime, Blue Spike, Hydra, Hexas, Kettle Kin, Snow Dragon,
+Red Dragon, Axe Beak, Blue Dragon, Buffy, Dark Lich, Dragon Worm, Dread Slime.
+No audited private-entry and original-return contract is added for them;
+slime/Fortress/special progression is deliberately not generalized. Sandship's
+existing Mech Rider 1 BossSwaps handling is unchanged. No compatibility claim
+is made for these excluded targets.
+
+EVENTS / PRIVATE ARENA
+----------------------
+Native Triple: retain native map/3 actors. $66A counts individual final deaths
+with $25, returns for counts 1/2, claims count 3 BEFORE its upstream success
+tail. Tail still sets $56=5/$26=3, awards Ice's prize, Door $2C3 -> event $715.
+Ordinary Ice: retain original three-increment/single-death success behavior.
+
+Foreign Triple: existing slot entrance points to native-equivalent map $1F4;
+three genuine $71 objects retain coordinates, priority, facing and high bits.
+Private event $6D3 clears unused chest flag $E3 and calls existing boss music
+$704. All actors use $6D2: guard $E3>=3, increment, return unless count 3,
+then jump original slot death/progression event exactly once. Ice $25/$56/$26
+are not used. Existing native multi-actor generic-$7F8 suppression is extended
+to $1F4. There is NO Mode-7/death-type/staging/display-reset machinery here.
+Undine needs its native return Door $147 appended after existing music $70B;
+$6D4 handles already-completed entry without a second reward. Its native cave
+door is not otherwise changed. Other targets keep authoritative slot tails.
+
+ALLOCATION / OWNERSHIP
+----------------------
+Maps $1F4/$1F5: private arena / empty end-pointer sentinel.
+ROM $08FF20-$08FF3F: header + three objects.
+ROM $08FF40-$08FF4B: native $1D7/$1D8 references (no new piece IDs).
+ROM $08FF4C-$08FF4D: private entry trigger.
+Events $6D2/$6D3/$6D4 are unused END-only native events with no native actor,
+trigger, or parsed event-transfer users. $E3's old unused-chest event $693 is
+not a reachable ordinary-map actor; $E3 is outside OW/Christmas prize pools.
+Reuses entry doors $08D/$032/$051/$0A0/$35D/$358/$3F6/$2CA/$14B/$144.
+Foreign entry bytes are F4 17 26 80. Native Ice door stays 69 17 26 80.
+Hook body allocates through workingOffset/ensureSpaceInBank, not fixed padding.
+
+Existing owners left intact:
+Doom objects $08E068-$08E077; refs/trigger $088FA8-$088FB5.
+Nesoberi $088FBE-$088FC9.
+Lime $08E080-$08E08F; staging $08E090-$08E097; Shade $08E098-$08E0A7.
+Lime/staging/Shade refs $088FCA-$088FED; shared empty trigger $088FEE.
+Dread $08FEE0-$08FEEF; Fortress $08FEF0-$08FEFF.
+Dread/Fortress refs $08FF00-$08FF17. Gap $08FF18-$08FF1F is untouched.
+Existing generated map pairs $1F6-$1FF remain disjoint.
+
+Guards check current-ROM padding, original pointer-slot ownership, generated
+map/door/event dictionaries and native event contracts, failing on conflict.
+Pointer ownership is checked rather than unused sentinel apparent lengths:
+Dread allocated first changes the sentinel's end pointer without owning it.
+BossSwaps writes first; supporting events/maps run later; scaling then the HP
+hook; final event/piece/door serializers and later Nesoberi are tested together.
+
+Permanent tests: BossTripleTonpoleCompatibility.Tests.ps1 plus existing
+Lime/Dread/Wall suites. They execute emitted HP/counter instructions, verify
+native/non-OW behavior, conflicts, both allocation orders, exact write whitelist,
+final serializers, deterministic output, and no duplicate prize/progression.
+Manual movement, ranged combat, transformations, returns and balance remain
+required; no emulator success is claimed by these structural tests.

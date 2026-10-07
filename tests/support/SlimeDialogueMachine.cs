@@ -61,8 +61,11 @@ public sealed class SlimeDialogueMachine
                 case 0x98: Load(Y); break;
                 case 0xAD: Load(Read((DB << 16) | Fetch(2), M)); break;
                 case 0xBD: operand = Fetch(2); Load(Read((DB << 16) | ((operand + X) & 65535), M)); break;
+                case 0xB9: operand = Fetch(2); Load(Read((DB << 16) | ((operand + Y) & 65535), M)); break;
+                case 0xBF: operand = Fetch(3); Load(Read(operand + X, M)); break;
                 case 0xAF: Load(Read(Fetch(3), M)); break;
                 case 0x8D: Write((DB << 16) | Fetch(2), A, M); break;
+                case 0x99: operand = Fetch(2); Write((DB << 16) | ((operand + Y) & 65535), A, M); break;
                 case 0x8F: Write(Fetch(3), A, M); break;
                 case 0x8E: Write((DB << 16) | Fetch(2), X, I); break;
                 case 0x9C: Write((DB << 16) | Fetch(2), 0, M); break;
@@ -74,6 +77,7 @@ public sealed class SlimeDialogueMachine
                 case 0x09: Load(A | Fetch(M)); break;
                 case 0x1C: operand = (DB << 16) | Fetch(2); value = Read(operand, M); P = (P & ~2) | ((value & A) == 0 ? 2 : 0); Write(operand, value & ~A, M); break;
                 case 0x0A: mask = M == 1 ? 255 : 65535; P = (P & ~1) | ((A & (M == 1 ? 128 : 32768)) != 0 ? 1 : 0); Load((A & mask) << 1); break;
+                case 0x4A: mask = M == 1 ? 255 : 65535; P = (P & ~1) | (A & 1); Load((A & mask) >> 1); break;
                 case 0xD0: operand = (sbyte)Fetch(1); if ((P & 2) == 0) PC += operand; break;
                 case 0xF0: operand = (sbyte)Fetch(1); if ((P & 2) != 0) PC += operand; break;
                 case 0x80: operand = (sbyte)Fetch(1); PC += operand; break;

@@ -1033,6 +1033,7 @@ namespace SoMRandomizer.processing.openworld.events
             // Dread uses the same neutral presentation boundary elsewhere;
             // a regular Fortress boss still owns the upstream $425/$42C tail.
             DreadSlimeBossArenaRedirect.patchEvents(context);
+            TripleTonpoleBossArenaRedirect.patchEvents(context);
 
             return true;
         }

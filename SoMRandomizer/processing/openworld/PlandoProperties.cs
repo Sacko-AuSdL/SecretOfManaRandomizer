@@ -239,6 +239,7 @@ namespace SoMRandomizer.processing.openworld
         public const string KEY_BOSS_TROPICALLO = KEY_PREFIX_NONPRIZE + "tropicallo";
         public const string KEY_BOSS_SPIKEY = KEY_PREFIX_NONPRIZE + "spikeyTiger";
         public const string KEY_BOSS_TONPOLE = KEY_PREFIX_NONPRIZE + "tonpole";
+        public const string KEY_BOSS_TRIPLE_TONPOLE = KEY_PREFIX_NONPRIZE + "tripleTonpole";
         public const string KEY_BOSS_FIREGIGAS = KEY_PREFIX_NONPRIZE + "fireGigas";
         public const string KEY_BOSS_KILROY = KEY_PREFIX_NONPRIZE + "kilroy";
         public const string KEY_BOSS_WALLFACE = KEY_PREFIX_NONPRIZE + "wallFace";
@@ -312,6 +313,7 @@ namespace SoMRandomizer.processing.openworld
         public const string VALUE_BOSS_TROPICALLO = "Tropicallo";
         public const string VALUE_BOSS_SPIKEY = "Spikey-Tiger";
         public const string VALUE_BOSS_TONPOLE = "Tonpole";
+        public const string VALUE_BOSS_TRIPLE_TONPOLE = "Triple-Tonpole";
         public const string VALUE_BOSS_FIREGIGAS = "Fire-Gigas";
         public const string VALUE_BOSS_KILROY = "Kilroy";
         public const string VALUE_BOSS_WALLFACE = "Wall-Face";
@@ -383,6 +385,7 @@ namespace SoMRandomizer.processing.openworld
             { VALUE_BOSS_TROPICALLO, 0x59 },
             { VALUE_BOSS_SPIKEY, 0x5B },
             { VALUE_BOSS_TONPOLE, 0x71 },
+            { VALUE_BOSS_TRIPLE_TONPOLE, 0x80 }, // multi-actor selection sentinel, not species
             { VALUE_BOSS_FIREGIGAS, 0x74 },
             { VALUE_BOSS_KILROY, 0x65 },
             { VALUE_BOSS_WALLFACE, 0x58 },
