@@ -55,6 +55,7 @@ namespace SoMRandomizer.processing.openworld.randomization
         public static List<string> upperLandOrbRequiredLocations = new string[] {
                 "fire seed",
                 "kakkara (moogle belt)",
+                "sandship captain",
                 "fire palace axe orb chest",
                 "fire palace chest 1",
                 "fire palace chest 2",

@@ -23,6 +23,7 @@ namespace SoMRandomizer.processing.openworld.randomization
         
         private static readonly Dictionary<int, string> HintEventNames = new Dictionary<int, string>
         {
+            { SandshipEvents.HINT_EVENT, "Morie at Sandship" },
             { 0x3ce, "krissie northtown" },
             { 0x3e9, "mandala orb" },
             { 0x3ea, "mandala orb" },
@@ -263,7 +264,7 @@ namespace SoMRandomizer.processing.openworld.randomization
                  * "normal" hint | more gp hints: not special hint * 66.6…% = 42.6…%
                  * "normal" hint | not more gp hints: not special hint * 80% = 51.2%                 
                  */
-                bool usefulHint = !suppressHints && r.Next(100) < 80;
+                bool usefulHint = !suppressHints && (hintEvent == SandshipEvents.HINT_EVENT || r.Next(100) < 80);
                 // normal, useful hint
                 // 80%
                 if (usefulHint)

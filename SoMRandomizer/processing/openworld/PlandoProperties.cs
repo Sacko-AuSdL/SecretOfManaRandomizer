@@ -89,6 +89,7 @@ namespace SoMRandomizer.processing.openworld
         public const string KEY_LOCATION_ANY_ICE_COUNTRY = KEY_PREFIX_PRIZE + "(Any-Ice-Country-location)";
 
         // kakkara
+        public const string KEY_LOCATION_SANDSHIP_CAPTAIN = KEY_PREFIX_PRIZE + "Sandship-Captain";
         public const string KEY_LOCATION_SEA_HARE_TAIL_GIFT = KEY_PREFIX_PRIZE + "Sea-Hare-Tail-Gift";
         public const string KEY_LOCATION_FIRE_PALACE_CHEST_1 = KEY_PREFIX_PRIZE + "Fire-Palace-Chest-1";
         public const string KEY_LOCATION_FIRE_PALACE_CHEST_2 = KEY_PREFIX_PRIZE + "Fire-Palace-Chest-2";
@@ -236,6 +237,7 @@ namespace SoMRandomizer.processing.openworld
 
         // boss type by location
         public const string KEY_BOSS_MANTISANT = KEY_PREFIX_NONPRIZE + "mantisAnt";
+        public const string KEY_BOSS_MECHRIDER1 = KEY_PREFIX_NONPRIZE + "mechRider1";
         public const string KEY_BOSS_TROPICALLO = KEY_PREFIX_NONPRIZE + "tropicallo";
         public const string KEY_BOSS_SPIKEY = KEY_PREFIX_NONPRIZE + "spikeyTiger";
         public const string KEY_BOSS_TONPOLE = KEY_PREFIX_NONPRIZE + "tonpole";

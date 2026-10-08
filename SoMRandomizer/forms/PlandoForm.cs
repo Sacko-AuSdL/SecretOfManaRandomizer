@@ -151,6 +151,13 @@ namespace SoMRandomizer.forms
             panel2.Controls.Add(iceLabel);
             panel2.Controls.Add(iceButton);
             bossButtonPropertyNames[KEY_BOSS_TRIPLE_TONPOLE] = iceButton;
+            Label shipLabel = new Label { Text = "Sandship / Mech Rider 1",
+                AutoSize = true, Location = new Point(10, 1006) };
+            Button shipButton = new Button { Text = "(No change)",
+                Size = button89.Size, Location = new Point(205, 1003) };
+            panel2.Controls.Add(shipLabel);
+            panel2.Controls.Add(shipButton);
+            bossButtonPropertyNames[KEY_BOSS_MECHRIDER1] = shipButton;
             foreach (string key in bossButtonPropertyNames.Keys)
             {
                 bossButtonPropertyNamesInv[bossButtonPropertyNames[key]] = key;
@@ -302,6 +309,7 @@ namespace SoMRandomizer.forms
             { KEY_BOSS_SPIKEY, VanillaBossMaps.SPIKEY },
             { KEY_BOSS_TONPOLE, VanillaBossMaps.TONPOLE },
             { KEY_BOSS_TRIPLE_TONPOLE, VanillaBossMaps.TRIPLE_TONPOLE },
+            { KEY_BOSS_MECHRIDER1, VanillaBossMaps.MECHRIDER1 },
             { KEY_BOSS_FIREGIGAS, VanillaBossMaps.FIREGIGAS },
             { KEY_BOSS_KILROY, VanillaBossMaps.KILROY },
             { KEY_BOSS_WALLFACE, VanillaBossMaps.WALLFACE },
@@ -340,6 +348,7 @@ namespace SoMRandomizer.forms
             { VanillaBossMaps.SPIKEY, 0x5B },
             { VanillaBossMaps.TONPOLE, 0x71 },
             { VanillaBossMaps.TRIPLE_TONPOLE, 0x80 },
+            { VanillaBossMaps.MECHRIDER1, 0x60 },
             { VanillaBossMaps.FIREGIGAS, 0x74 },
             { VanillaBossMaps.KILROY, 0x65 },
             { VanillaBossMaps.WALLFACE, 0x58 },
@@ -900,6 +909,7 @@ namespace SoMRandomizer.forms
             makeLocationSubmenu(iceCountryCategory, propertyToDisplay(KEY_LOCATION_ANY_ICE_COUNTRY), button);
 
             ToolStripMenuItem desertCategory = new ToolStripMenuItem("Kakkara");
+            makeLocationSubmenu(desertCategory, propertyToDisplay(KEY_LOCATION_SANDSHIP_CAPTAIN), button);
             makeLocationSubmenu(desertCategory, propertyToDisplay(KEY_LOCATION_SEA_HARE_TAIL_GIFT), button);
             makeLocationSubmenu(desertCategory, propertyToDisplay(KEY_LOCATION_FIRE_PALACE_CHEST_1), button);
             makeLocationSubmenu(desertCategory, propertyToDisplay(KEY_LOCATION_FIRE_PALACE_CHEST_2), button);

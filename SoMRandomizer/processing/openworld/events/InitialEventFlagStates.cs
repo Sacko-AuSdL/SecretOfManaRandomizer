@@ -60,7 +60,7 @@ namespace SoMRandomizer.processing.openworld.events
             eventData.SetFlag(EventFlags.UPPERLAND_SPRINGBEAK_FLAG, 1); // x22: skip the i'm baaaack dialogue before spring beak
             eventData.SetFlag(EventFlags.MATANGO_PROGRESS_FLAG, 3); // x24: orb present, snake alive, skip matango scenes
             eventData.SetFlag(EventFlags.SALAMANDO_STOVE_FLAG, 3); // x27: salamando map is already cold
-            eventData.SetFlag(EventFlags.DESERT_SHIP_FLAG, 0xE); // 0x28: whole ship event including mech rider 1 cleared.  we should use e->f to mark him as dead
+            eventData.SetFlag(EventFlags.DESERT_SHIP_FLAG, 0xE); // Skip capture/story; Sandship boss is available at E, cleared at F.
             eventData.SetFlag(EventFlags.NORTHTOWN_CASTLE_FLAG, 4); // x34: open the castle
             eventData.SetFlag(EventFlags.NORTHTOWN_PHANNA_FLAG, 2); // x3a: no phanna at the NT ruins
             eventData.SetFlag(EventFlags.TASNICA_FLAG, 1); // x3c: skip jema in tasnica

@@ -50,6 +50,7 @@ namespace SoMRandomizer.processing.openworld.events
             new OpenWorldSupportingEvents().add(origRom, outRom, seed, settings, context);
             // changes to object positioning etc on maps to facilitate open world progress
             new OpenWorldSupportingMapChanges().add(origRom, outRom, seed, settings, context);
+            new SandshipEvents().add(origRom, outRom, seed, settings, context);
             // stupid dialogue changes and other mostly pointless stuff
             new MiscDialogue().add(origRom, outRom, seed, settings, context);
 

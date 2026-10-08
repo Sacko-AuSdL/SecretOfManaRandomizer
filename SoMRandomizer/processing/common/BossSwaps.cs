@@ -253,7 +253,7 @@ namespace SoMRandomizer.processing.common
                 {MAPNUM_SPRINGBEAK_ARENA, KEY_BOSS_SPRINGBEAK},
                 {MAPNUM_FROSTGIGAS_ARENA, KEY_BOSS_FROSTGIGAS},
                 {MAPNUM_SNAPDRAGON_ARENA, KEY_BOSS_SNAPDRAGON},
-                // mech rider 1
+                {MAPNUM_MECHRIDER1_ARENA, KEY_BOSS_MECHRIDER1},
                 {MAPNUM_DOOMSWALL_ARENA, KEY_BOSS_DOOMSWALL},
                 {MAPNUM_VAMPIRE_ARENA, KEY_BOSS_VAMPIRE},
                 {MAPNUM_METALMANTIS_ARENA, KEY_BOSS_METALMANTIS},

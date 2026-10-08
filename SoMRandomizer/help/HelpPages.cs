@@ -567,7 +567,7 @@ namespace SoMRandomizer.help
                                 "- Potos can be re-entered freely.\n" +
                                 "- Mantis Ant can be fought via the Potos guard NPC.\n" +
                                 "- Jabberwocky must be fought to enter the Water Palace.\n" +
-                                "- The desert ship and Mech Rider 1 fight currently do not exist.\n" +
+                                "- The Sandship boss and Captain check are south of Kakkara.\n" +
                                 "- The Sunken Continent segments (3) can be done in any order,\n" +
                                 "  but the element orbs section must be completed to take on Mech Rider 3.\n" +
                                 "  Watermelon is optional but may have an item you need.\n" +

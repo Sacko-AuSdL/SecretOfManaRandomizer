@@ -123,6 +123,8 @@ namespace SoMRandomizer.processing.openworld.randomization
             }
 
             allLocations.Add(new PrizeLocation("kakkara (moogle belt)", 0x2b2, 0, new string[] { }, new string[] { "in a warm place", "in a town", "at an oasis", "in a mid-game area" }, new string[] { "sea hare tail" }, 0.5));
+            allLocations.Add(new PrizeLocation("sandship captain", 0x2A3, 0, new string[] { },
+                new string[] { "at the Sandship", "south of Kakkara", "in the desert", "after a boss fight" }, new string[] { }, 0.8));
 
             List<string> luminaRequirements = new List<string> { "gold tower key" };
             if (restrictiveLogic)

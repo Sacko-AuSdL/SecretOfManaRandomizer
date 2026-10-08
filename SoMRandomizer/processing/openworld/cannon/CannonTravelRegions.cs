@@ -32,6 +32,7 @@ namespace SoMRandomizer.processing.openworld.cannon
 
                 { "fire seed", CannonTravelRegion.Kakkara },
                 { "kakkara (moogle belt)", CannonTravelRegion.Kakkara },
+                { "sandship captain", CannonTravelRegion.Kakkara },
                 { "fire palace axe orb chest", CannonTravelRegion.Kakkara },
                 { "fire palace chest 1", CannonTravelRegion.Kakkara },
                 { "fire palace chest 2", CannonTravelRegion.Kakkara },

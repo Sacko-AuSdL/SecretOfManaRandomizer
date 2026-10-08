@@ -93,6 +93,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             plandoLocNamesToOpenWorld[KEY_LOCATION_FIRE_PALACE_CHEST_3] = "fire palace axe orb chest";
             plandoLocNamesToOpenWorld[KEY_LOCATION_FIRE_PALACE_SALAMANDO] = "fire seed";
             plandoLocNamesToOpenWorld[KEY_LOCATION_LUNA_1] = "luna item 1 (spells)";
+            plandoLocNamesToOpenWorld[KEY_LOCATION_SANDSHIP_CAPTAIN] = "sandship captain";
             plandoLocNamesToOpenWorld[KEY_LOCATION_LUNA_2] = "luna item 2 (seed)";
 
             // mountains
@@ -194,6 +195,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             }.ToList();
 
             plandoRandomLocNames[KEY_LOCATION_ANY_DESERT] = new string[] {
+            KEY_LOCATION_SANDSHIP_CAPTAIN,
             KEY_LOCATION_SEA_HARE_TAIL_GIFT,
             KEY_LOCATION_FIRE_PALACE_CHEST_1,
             KEY_LOCATION_FIRE_PALACE_CHEST_2,
@@ -252,6 +254,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             }.ToList();
 
             plandoRandomLocNames[KEY_LOCATION_ANY_BOSS] = new string[] {
+            KEY_LOCATION_SANDSHIP_CAPTAIN,
             KEY_LOCATION_MANTIS_ANT,
             KEY_LOCATION_TROPICALLO_1,
             KEY_LOCATION_TROPICALLO_2,

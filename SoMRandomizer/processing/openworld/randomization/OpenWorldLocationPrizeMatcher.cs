@@ -124,9 +124,10 @@ namespace SoMRandomizer.processing.openworld.randomization
                     // don't allow "nothing" in chests since we don't have a flag for getting it
                     removeByName(availablePrizes, "nothing");
                 }
-                else if (prizeLocation.locationName == "watts (axe)")
+                else if (prizeLocation.locationName == "watts (axe)" || prizeLocation.locationName == "sandship captain")
                 {
-                    // watts can't have nothing either, otherwise his shop never shows
+                    // Watts needs a real prize to reveal his shop. Captain needs a normal
+                    // collected-prize flag so his check cannot be repeatedly collected.
                     removeByName(availablePrizes, "nothing");
                 }
 

@@ -14,7 +14,7 @@ namespace SoMRandomizer.processing.openworld.events
     {
         public static byte[] OPENWORLD_HINT_INJECTION_PATTERN = new byte[] { 0x23, 0x45, 0x67, 0x89 };
 
-        private static void injectHintPattern(EventScript eventData)
+        internal static void injectHintPattern(EventScript eventData)
         {
             eventData.OpenDialogueBox();
             foreach (byte b in OPENWORLD_HINT_INJECTION_PATTERN)
