@@ -26,6 +26,7 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new OpenWorldGoalProcessor());
             // process character class selection
             addModeSpecificHack(new OpenWorldClassSelection());
+            addModeSpecificHack(new SpellShuffleAssignments());
             // randomize spell orb elements and publish them to the context
             addModeSpecificHack(new ElementSwaps());
             // apply resolved Crystal Orb requirements after ElementSwaps publishes Orb elements/events
@@ -102,6 +103,9 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new DontAutoResetAtFirstMenu());
             // change character "classes" - stats and spells, if specified
             addModeSpecificHack(new CharacterClasses());
+            // Install after CharacterClasses' role/menu patches; leave its native-ID calculation
+            // and learned/level routing intact, replacing only the resulting player spell IDs.
+            addModeSpecificHack(new SpellShuffle());
             // show the seed as part of the intro menu screen
             // this needs to be the LAST thing since it's printing the state of our rng
             addModeSpecificHack(new TitleMenuSeedHashDisplay());

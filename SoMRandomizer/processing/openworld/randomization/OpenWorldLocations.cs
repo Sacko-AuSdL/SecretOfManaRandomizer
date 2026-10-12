@@ -337,6 +337,22 @@ namespace SoMRandomizer.processing.openworld.randomization
                     }
                 }
             }
+            else if (SpellShuffleAssignments.hasAssignments(context) && (girlSpellsExist || spriteSpellsExist))
+            {
+                // Each family can have alternative physical casters; simulation checks their
+                // actual joined state. Do not add unrelated vanilla-archetype AND locks.
+                Dictionary<int, byte> elements = ElementSwaps.getCrystalOrbElementMap(context);
+                for(int map = ElementSwaps.ORBMAP_GRANDPALACE_FIRST; map <= ElementSwaps.ORBMAP_GRANDPALACE_LAST; map++)
+                {
+                    if(!elements.ContainsKey(map) || elements[map] == 0xFF) continue;
+                    string dependency = SomVanillaValues.elementOrbByteToName(elements[map], false) + " spells";
+                    if(!grandPalaceBossDependencies.Contains(dependency))
+                    {
+                        grandPalaceBossDependencies.Add(dependency);
+                        manafortDependencies.Add(dependency);
+                    }
+                }
+            }
             else if (randomizeGrandPalace)
             {
                 // map 420-426 for grand palace orbs

@@ -11,16 +11,18 @@ namespace SoMRandomizer.processing.hacks.common.util
     {
         // 57 xx event type -> offset to jump to process event
         private Dictionary<int, int> eventJumpOffsets = new Dictionary<int, int>();
+        private HashSet<int> nonTextCommands = new HashSet<int>();
         // type of next event to add (x57 xx)
         private int index = 3;
         // event type name to x57 xx command type to run
         private Dictionary<string, int> indexesByName = new Dictionary<string, int>();
 
-        public int registerNewEvent(string commandName, int offset)
+        public int registerNewEvent(string commandName, int offset, bool producesText = true)
         {
             int id = index;
             eventJumpOffsets[index] = offset;
             indexesByName[commandName] = index;
+            if(!producesText) nonTextCommands.Add(index);
             index++;
             return id;
         }
@@ -34,6 +36,7 @@ namespace SoMRandomizer.processing.hacks.common.util
         // must be done after everything else that registers ^
         public void process(byte[] outRom, ref int newCodeOffset)
         {
+            if(nonTextCommands.Count > 0) emitNonTextDispatch(outRom, ref newCodeOffset);
             // added anything?
             if(index > 3)
             {
@@ -165,6 +168,54 @@ namespace SoMRandomizer.processing.hacks.common.util
                 outRom[newCodeOffset++] = 0x6B;
 
             }
+        }
+
+        private void emitNonTextDispatch(byte[] rom, ref int offset)
+        {
+            // C1:E8F7 clamps ALL opcodes >= $50 (including $57) to dialogue.
+            // C0:182B then substitutes $A22F as text; $185F only customizes its
+            // contents, not that continuation. Orb state-only commands must instead
+            // advance the event cursor directly, without opening/rendering stale text.
+            if(rom[0x1E8F7] != 0xC9 || rom[0x1E8F8] != 0x50 ||
+                rom[0x1E8F9] != 0x90 || rom[0x1E8FA] != 0x02)
+                throw new System.InvalidOperationException("Custom event dispatch hook already owned.");
+            SoMRandomizer.util.CodeGenerationUtils.ensureSpaceInBank(ref offset, 96 + nonTextCommands.Count * 14);
+            int start = offset;
+            var code = new List<byte>();
+            var successBranches = new List<int>();
+            System.Action<byte[]> emit = bytes => code.AddRange(bytes);
+            System.Action<int, int> fix = (at, target) => {
+                int delta = target - at - 2;
+                code[at] = (byte)delta; code[at + 1] = (byte)(delta >> 8);
+            };
+            // Interpreter entry A8/X8, DP=0, DB=$7E. Preserve caller state and
+            // provide the existing custom-handler A8/X16 contract only for $57.
+            emit(new byte[] { 0x08,0xC2,0x30,0x48,0xDA,0x5A,0x8B,0xE2,0x20,
+                0xC9,0x57,0xF0,0x03,0x82,0,0 });
+            int not57 = code.Count - 2;
+            emit(new byte[] { 0xAF,0x05,0x00,0x7E }); // argument read by C1:E8F1
+            for(int id = 3; id < index; id++)
+            {
+                if(!nonTextCommands.Contains(id)) continue;
+                int target = eventJumpOffsets[id] + 0xC00000;
+                emit(new byte[] { 0xC9,(byte)id,0xD0,0x0A,0xA2,(byte)(id*12),(byte)(id*12>>8),
+                    0x22,(byte)target,(byte)(target>>8),(byte)(target>>16),0x82,0,0 });
+                successBranches.Add(code.Count - 2);
+            }
+            int fallback = code.Count;
+            fix(not57, fallback);
+            // Replay original CMP/BCC. Printing custom commands and player-name
+            // insertion still take their original dialogue path byte-for-byte.
+            emit(new byte[] { 0xAB,0xC2,0x30,0x7A,0xFA,0x68,0x28,
+                0xC9,0x50,0xB0,0x04,0x5C,0xFD,0xE8,0xC1,0x5C,0xFB,0xE8,0xC1 });
+            foreach(int at in successBranches) fix(at, code.Count);
+            emit(new byte[] { 0xAB,0xC2,0x30,0x7A,0xFA,0x68,0x28,
+                0x08,0xC2,0x20,0xAF,0xD1,0x00,0x7E,0x1A,0x1A,0x8F,0xD1,0x00,0x7E,
+                0x28,0x5C,0xD3,0xE8,0xC1 });
+            code.CopyTo(rom, offset); offset += code.Count;
+            rom[0x1E8F7] = 0x5C;
+            rom[0x1E8F8] = (byte)start; rom[0x1E8F9] = (byte)(start >> 8);
+            rom[0x1E8FA] = (byte)((start >> 16) + 0xC0);
         }
     }
 }

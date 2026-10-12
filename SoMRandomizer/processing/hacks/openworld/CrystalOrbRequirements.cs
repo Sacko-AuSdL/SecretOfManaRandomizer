@@ -110,7 +110,9 @@ namespace SoMRandomizer.processing.hacks.openworld
             bool spriteMagicExists = context.workingData.getBool(OpenWorldClassSelection.SPRITE_MAGIC_EXISTS);
             bool weaponOnly = isWeaponOnly(settings);
             HashSet<byte> validOrbMagicFamilies = new HashSet<byte>(
-                ElementSwaps.GetValidOrbElements(girlMagicExists, spriteMagicExists));
+                SpellShuffleAssignments.hasAssignments(context)
+                    ? SpellShuffleAssignments.getValidOrbElements(context)
+                    : ElementSwaps.GetValidOrbElements(girlMagicExists, spriteMagicExists));
             Dictionary<int, byte> elementsByMap = ElementSwaps.getCrystalOrbElementMap(context);
 
             foreach(Route route in ROUTES)

@@ -176,9 +176,9 @@ namespace SoMRandomizer.processing.openworld.randomization
                     bool hasFlammie = !flammieDrumInLogic ||
                         gottenPrizeNames.Contains("flammie drum");
                     bool matangoUpperLandConnectionOpen = upperLandOrbRequirement == "no" ||
-                        haveRequirement(upperLandOrbRequirement, gottenPrizeNames,
+                        haveRequirementWithAssignments(upperLandOrbRequirement, gottenPrizeNames,
                             girlSpellsChars, spriteSpellsChars,
-                            girlSpellChecks, spriteSpellChecks);
+                            girlSpellChecks, spriteSpellChecks, context);
                     reachableCannonRegions = CannonTravelRegions.getReachableRegions(
                         cannonNetwork, cannonStartingRegion, hasFlammie,
                         matangoUpperLandConnectionOpen);
@@ -196,9 +196,9 @@ namespace SoMRandomizer.processing.openworld.randomization
                             reachableCannonRegions.Contains(location.cannonTravelRegion);
                         foreach (string req in reqs)
                         {
-                            if (!haveRequirement(req, gottenPrizeNames,
+                            if (!haveRequirementWithAssignments(req, gottenPrizeNames,
                                 girlSpellsChars, spriteSpellsChars,
-                                girlSpellChecks, spriteSpellChecks))
+                                girlSpellChecks, spriteSpellChecks, context))
                             {
                                 haveAllReqs = false;
                             }
@@ -306,6 +306,23 @@ namespace SoMRandomizer.processing.openworld.randomization
                 result.score = -1;
             }
             return result;
+        }
+
+        private static bool haveRequirementWithAssignments(string req, List<string> gottenPrizeNames,
+            List<string> girlSpellsChars, List<string> spriteSpellsChars,
+            List<string> girlSpellChecks, List<string> spriteSpellChecks, RandoContext context)
+        {
+            // Christmas gifts consume learned spirits, not casts. Keep acquisition distinct
+            // from an Orb's targeting requirement, particularly for support-only layouts.
+            if(SpellShuffleAssignments.hasAssignments(context) &&
+                req.StartsWith(SpellShuffleAssignments.OWNED_SPIRIT_PREFIX))
+                return gottenPrizeNames.Contains(req.Substring(SpellShuffleAssignments.OWNED_SPIRIT_PREFIX.Length));
+            byte family = SpellShuffleAssignments.getDependencyFamily(req);
+            if(SpellShuffleAssignments.hasAssignments(context) && family >= 0x81 && family <= 0x88)
+                return gottenPrizeNames.Contains(req) &&
+                    SpellShuffleAssignments.getOrbCasters(context, family).Any(gottenPrizeNames.Contains);
+            return haveRequirement(req, gottenPrizeNames, girlSpellsChars, spriteSpellsChars,
+                girlSpellChecks, spriteSpellChecks);
         }
 
         private static bool haveRequirement(string req, List<string> gottenPrizeNames,

@@ -83,7 +83,9 @@ namespace SoMRandomizer.processing
                 processOpenWorld(outRom, context.randomFunctional, crystalOrbElementMap,
                     context.replacementEvents, girlMagicExists, spriteMagicExists,
                     randomizeGrandPalace, context.plandoSettings, flammieDrumInLogic,
-                    preserveOrbsWithoutMagic);
+                    preserveOrbsWithoutMagic,
+                    SpellShuffleAssignments.hasAssignments(context) && !CrystalOrbRequirements.isWeaponOnly(settings)
+                        ? SpellShuffleAssignments.getValidOrbElements(context) : null);
                 foreach(int mapNum in crystalOrbElementMap.Keys)
                 {
                     context.workingData.setInt(ORBELEMENT_PREFIX + mapNum, crystalOrbElementMap[mapNum]);
@@ -267,7 +269,8 @@ namespace SoMRandomizer.processing
         public void processOpenWorld(byte[] rom, Random r, Dictionary<int, byte> crystalOrbColorMap,
             Dictionary<int, List<byte>> replacementEvents, bool girlExists, bool spriteExists,
             bool randomizeGrandPalace, Dictionary<string, List<string>> plando,
-            bool includeUpperLandOrb, bool preserveOrbsWithoutMagic = false)
+            bool includeUpperLandOrb, bool preserveOrbsWithoutMagic = false,
+            List<byte> shuffledOrbElements = null)
         {
             // note that lumina and sylphid seem like they've been swapped in vanilla and no one ever noticed?
             // 358 gnome = 81
@@ -287,7 +290,8 @@ namespace SoMRandomizer.processing
             // x86->x355 = shade
             // x87->x356 = luna
             // x88->x357 = dryad
-            List<byte> orbElementsAvailable = GetValidOrbElements(girlExists, spriteExists);
+            List<byte> orbElementsAvailable = shuffledOrbElements == null
+                ? GetValidOrbElements(girlExists, spriteExists) : new List<byte>(shuffledOrbElements);
 
             // Upstream removes these switches when no role can cast Orb-compatible magic. With
             // weapon breaking active, keep their authoritative events present; the shared
@@ -479,6 +483,43 @@ namespace SoMRandomizer.processing
             int[] eventConversions = new int[] { 0, 1, 3, 4, 2, 5, 6, 7 };
 
 
+            // Non-randomized Grand Palace defaults and explicit plando also need actual slot
+            // coverage. Preserve valid choices and repair only impossible defaults. Never
+            // silently rescue an impossible forced Magic family with a weapon alternative.
+            if(shuffledOrbElements != null)
+            {
+                Dictionary<int, string> forcedKeys = new Dictionary<int, string>
+                {
+                    { ORBMAP_EARTHPALACE, KEY_EARTH_PALACE_ORB_ELEMENT },
+                    { ORBMAP_MATANGO, KEY_MATANGO_ORB_ELEMENT },
+                    { ORBMAP_FIREPALACE1, KEY_FIRE_PALACE_ORB_1_ELEMENT },
+                    { ORBMAP_FIREPALACE2, KEY_FIRE_PALACE_ORB_2_ELEMENT },
+                    { ORBMAP_FIREPALACE3, KEY_FIRE_PALACE_ORB_3_ELEMENT },
+                    { ORBMAP_UPPERLAND, KEY_UPPER_LAND_ORB_ELEMENT },
+                    { ORBMAP_LUNAPALACE, KEY_LUNA_PALACE_ORB_ELEMENT },
+                    { ORBMAP_GRANDPALACE1, KEY_GRAND_PALACE_ORB_1_ELEMENT },
+                    { ORBMAP_GRANDPALACE2, KEY_GRAND_PALACE_ORB_2_ELEMENT },
+                    { ORBMAP_GRANDPALACE3, KEY_GRAND_PALACE_ORB_3_ELEMENT },
+                    { ORBMAP_GRANDPALACE4, KEY_GRAND_PALACE_ORB_4_ELEMENT },
+                    { ORBMAP_GRANDPALACE5, KEY_GRAND_PALACE_ORB_5_ELEMENT },
+                    { ORBMAP_GRANDPALACE6, KEY_GRAND_PALACE_ORB_6_ELEMENT },
+                    { ORBMAP_GRANDPALACE7, KEY_GRAND_PALACE_ORB_7_ELEMENT },
+                };
+                foreach(int map in new List<int>(crystalOrbColorMap.Keys))
+                {
+                    byte family = crystalOrbColorMap[map];
+                    if(family == 0xFF || shuffledOrbElements.Contains(family)) continue;
+                    if(plando.ContainsKey(forcedKeys[map]))
+                        throw new ArgumentException("Spell Shuffle: forced " +
+                            SomVanillaValues.elementOrbByteToName(family, true) +
+                            " Orb on map " + map + " has no obtainable Orb-targetable spell slot.");
+                    // No-caster seeds retain the existing removal/weapon-only fallback.
+                    // There is no Magic default to repair, but forced Magic must still fail.
+                    if(shuffledOrbElements.Count > 0)
+                        crystalOrbColorMap[map] = shuffledOrbElements[r.Next() % shuffledOrbElements.Count];
+                }
+            }
+
             // event types 4E and 49
             // they check analyzer in there too; should be able to use that as a template
             int spellId = 0;
@@ -608,7 +649,7 @@ namespace SoMRandomizer.processing
             }
 
             // set the lost continent ones
-            if (!spriteExists || !girlExists || randomizeGrandPalace)
+            if (!spriteExists || !girlExists || randomizeGrandPalace || shuffledOrbElements != null)
             {
                 for(int mapId = ORBMAP_GRANDPALACE_FIRST; mapId <= ORBMAP_GRANDPALACE_LAST; mapId++) // skip dryad map, which is actually 419
                 {

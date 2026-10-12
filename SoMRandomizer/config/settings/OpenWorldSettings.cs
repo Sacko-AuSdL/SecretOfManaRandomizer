@@ -70,6 +70,9 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_OFF = "off";
         public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON = "on";
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
+        public const string PROPERTYNAME_SPELL_SHUFFLE = "spellShuffle";
+        public const string PROPERTYVALUE_SPELL_SHUFFLE_OFF = "off";
+        public const string PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER = "perCharacter";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY = "weaponOnly";
@@ -118,6 +121,9 @@ namespace SoMRandomizer.config.settings
             setInitial(PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC, false); // have to find flammie drum
 
             // enumerations
+            setInitial(PROPERTYNAME_SPELL_SHUFFLE,
+                new string[] { PROPERTYVALUE_SPELL_SHUFFLE_OFF, PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER },
+                new string[] { "Off", "Per Character" }, PROPERTYVALUE_SPELL_SHUFFLE_OFF);
             setInitial(PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING,
                 new string[]
                 {

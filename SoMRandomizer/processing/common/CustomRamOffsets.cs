@@ -89,7 +89,12 @@ namespace SoMRandomizer.processing.common
         public const int SAVED_MUSIC_MAP_16BIT = 0x7E044D;
         public const int SAVED_MUSIC_SLOT_16BIT = 0x7E044F;
         public const int SAVED_MUSIC_SCRATCH_16BIT = 0x7E0451;
-        // next: +83
+        // SpellShuffle: one confirmed-magic context per actor, not a global last-menu value.
+        // 12 records x 8 bytes: valid, family, actual spell, caster slot, map word, reserved.
+        // Cleared on every map load; never serialized into the immutable seed assignment.
+        public const int SPELL_SHUFFLE_ORB_CONTEXT = 0x7E0453;
+        public const int SPELL_SHUFFLE_ORB_CONTEXT_LENGTH = 96;
+        // next: +179
 
         // /////////////////////
         // Open world enemy level stuff

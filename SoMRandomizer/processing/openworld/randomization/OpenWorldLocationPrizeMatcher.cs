@@ -136,7 +136,13 @@ namespace SoMRandomizer.processing.openworld.randomization
                 foreach (string lockPrize in plLocked)
                 {
                     removeByName(availablePrizes, lockPrize);
-                    if (lockPrize == "lumina spells")
+                    if (SpellShuffleAssignments.hasAssignments(context) && lockPrize.EndsWith(" spells"))
+                    {
+                        List<string> casters = SpellShuffleAssignments.getOrbCasters(context,
+                            SpellShuffleAssignments.getDependencyFamily(lockPrize));
+                        if(casters.Count == 1) removeByName(availablePrizes, casters[0]);
+                    }
+                    else if (lockPrize == "lumina spells")
                     {
                         removeByName(availablePrizes, "girl");
                     }
@@ -252,7 +258,10 @@ namespace SoMRandomizer.processing.openworld.randomization
 
                     if (xmasGifts[i].EndsWith("spells") || xmasGifts[i] == "moogle belt" || xmasGifts[i] == "midge mallet")
                     {
-                        runningItemDependencies.Add(xmasGifts[i]);
+                        runningItemDependencies.Add(SpellShuffleAssignments.hasAssignments(context) &&
+                            xmasGifts[i].EndsWith("spells")
+                                ? SpellShuffleAssignments.OWNED_SPIRIT_PREFIX + xmasGifts[i]
+                                : xmasGifts[i]);
                         foreach (PrizeLocation location in itemPlacements.Keys)
                         {
                             if (itemPlacements[location].prizeName == xmasGifts[i])

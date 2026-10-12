@@ -88,7 +88,7 @@ namespace SoMRandomizer.processing.hacks.openworld
             emitPhysicalPassEventCommand(outRom, context, enabledRoutes);
             context.workingData.setInt(PHYSICAL_PASS_COMMAND_OFFSET_HIROM, physicalPassCommandAddress);
             int physicalPassCommandIndex = context.eventHackMgr.registerNewEvent(
-                EVENT_COMMAND_NAME_PHYSICAL_PASS, physicalPassCommandOffset);
+                EVENT_COMMAND_NAME_PHYSICAL_PASS, physicalPassCommandOffset, false);
             wrapAuthoritativeOrbEvents(context, enabledRoutes, (byte)physicalPassCommandIndex);
 
             CodeGenerationUtils.ensureSpaceInBank(ref context.workingOffset, DEFERRED_EVENT_ROUTINE_MAX_LENGTH);
