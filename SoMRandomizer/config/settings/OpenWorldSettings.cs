@@ -73,6 +73,7 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_SPELL_SHUFFLE = "spellShuffle";
         public const string PROPERTYVALUE_SPELL_SHUFFLE_OFF = "off";
         public const string PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER = "perCharacter";
+        public const string PROPERTYVALUE_SPELL_SHUFFLE_PARTY = "party";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_OFF = "off";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_ON = "on";
         public const string PROPERTYVALUE_CRYSTAL_ORB_WEAPON_BREAKING_WEAPON_ONLY = "weaponOnly";
@@ -122,8 +123,8 @@ namespace SoMRandomizer.config.settings
 
             // enumerations
             setInitial(PROPERTYNAME_SPELL_SHUFFLE,
-                new string[] { PROPERTYVALUE_SPELL_SHUFFLE_OFF, PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER },
-                new string[] { "Off", "Per Character" }, PROPERTYVALUE_SPELL_SHUFFLE_OFF);
+                new string[] { PROPERTYVALUE_SPELL_SHUFFLE_OFF, PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER, PROPERTYVALUE_SPELL_SHUFFLE_PARTY },
+                new string[] { "Off", "Per Character", "Party Shuffle" }, PROPERTYVALUE_SPELL_SHUFFLE_OFF);
             setInitial(PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING,
                 new string[]
                 {

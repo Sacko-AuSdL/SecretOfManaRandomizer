@@ -12,8 +12,8 @@ namespace SoMRandomizer.processing.openworld
     /// <summary>
     /// Seed-owned assignments, resolved after existence/roles and before Orb/placement rolls.
     /// A row is indexed by the vanilla spell ID of the destination slot, NOT by effect element.
-    /// Within one row spell IDs are unique, so its inverse also identifies a delayed cast's
-    /// source spirit without consulting another player's menu or mutable last-menu state.
+    /// Per Character rows are permutations; Party rows may contain repeated actual IDs.
+    /// Both keep physical destination slots and their spirit unlock/level semantics.
     /// </summary>
     public sealed class SpellShuffleAssignments : RandoProcessor
     {
@@ -30,16 +30,19 @@ namespace SoMRandomizer.processing.openworld
         public static bool isEnabled(RandoSettings settings)
         {
             return settings.get(CommonSettings.PROPERTYNAME_MODE) == OpenWorldSettings.MODE_KEY &&
-                settings.get(OpenWorldSettings.PROPERTYNAME_SPELL_SHUFFLE) ==
-                OpenWorldSettings.PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER;
+                (settings.get(OpenWorldSettings.PROPERTYNAME_SPELL_SHUFFLE) ==
+                    OpenWorldSettings.PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER || isParty(settings));
         }
+
+        public static bool isParty(RandoSettings settings)
+        { return settings.get(OpenWorldSettings.PROPERTYNAME_SPELL_SHUFFLE) == OpenWorldSettings.PROPERTYVALUE_SPELL_SHUFFLE_PARTY; }
 
         public static bool hasAssignments(RandoContext context)
         {
             return context.workingData.hasSetting(RESOLVED) && context.workingData.getInt(RESOLVED) == 1;
         }
 
-        protected override string getName() { return "Per-character spell assignments"; }
+        protected override string getName() { return "Seeded spell assignments"; }
         protected override bool process(byte[] origRom, byte[] outRom, string seed, RandoSettings settings, RandoContext context)
         {
             if (!isEnabled(settings)) return false; // no cache, writes, allocations, or RNG when Off
@@ -55,7 +58,8 @@ namespace SoMRandomizer.processing.openworld
             // Ally-only spells and the pinned Mana Magic entries cannot select an Orb.
             context.workingData.setIntArray(COMPATIBLE, Enumerable.Range(0, SPELL_COUNT)
                 .Where(id => (rom[0x102AD8 + id * 0x40] & 0x80) != 0).ToArray());
-            for (int slot = 0; slot < 3; slot++)
+            if (isParty(settings)) resolveParty(context);
+            else for (int slot = 0; slot < 3; slot++)
             {
                 if (!context.workingData.getBool(Slots[slot] + "Exists")) continue;
                 string role = context.workingData.get(Slots[slot] + "Class");
@@ -74,7 +78,7 @@ namespace SoMRandomizer.processing.openworld
                 context.workingData.setIntArray(ROW_PREFIX + slot, row);
             }
             context.workingData.setInt(RESOLVED, 1);
-            Logging.log("Spell Shuffle: Per Character (Mana Magic pinned)", "spoiler");
+            Logging.log("Spell Shuffle: " + (isParty(settings) ? "Party Shuffle" : "Per Character") + " (Mana Magic pinned)", "spoiler");
             for (int slot = 0; slot < 3; slot++)
             {
                 int[] row = getRow(context, slot);
@@ -89,6 +93,30 @@ namespace SoMRandomizer.processing.openworld
                     Logging.log("  " + Slots[slot] + " (" + role + ") / " + family + ": " + names, "spoiler");
                 }
             }
+        }
+
+        private static void resolveParty(RandoContext context)
+        {
+            var positions = new List<KeyValuePair<int,int>>();
+            var pool = new List<int>();
+            for(int slot=0;slot<3;slot++)
+            {
+                if(!context.workingData.getBool(Slots[slot]+"Exists")) continue;
+                int[] ids=getShuffleableSpellIds(context.workingData.get(Slots[slot]+"Class"));
+                if(ids.Length==0) continue;
+                context.workingData.setIntArray(ROW_PREFIX+slot,Enumerable.Range(0,SPELL_COUNT).ToArray());
+                foreach(int id in ids) { positions.Add(new KeyValuePair<int,int>(slot,id)); pool.Add(id); }
+            }
+            // A single Fisher-Yates permutation of INSTANCES, not distinct spell IDs.
+            // Equal IDs may land together, even three times within one spirit menu.
+            for(int i=pool.Count-1;i>0;i--)
+            {
+                int j=context.randomFunctional.Next()%(i+1);
+                int temp=pool[i]; pool[i]=pool[j]; pool[j]=temp;
+            }
+            int[][] rows=Enumerable.Range(0,3).Select(slot=>getRow(context,slot)).ToArray();
+            for(int i=0;i<positions.Count;i++) rows[positions[i].Key][positions[i].Value]=pool[i];
+            for(int slot=0;slot<3;slot++) if(rows[slot]!=null) context.workingData.setIntArray(ROW_PREFIX+slot,rows[slot]);
         }
 
         public static int[] getRow(RandoContext context, int slot)
@@ -109,6 +137,9 @@ namespace SoMRandomizer.processing.openworld
             return destinationId >= 39 ? 7 : destinationId / 6;
         }
         public static byte getSpiritFamily(int destinationId) { return Families[getSpiritIndex(destinationId)]; }
+        public static byte getSpiritFamilyByIndex(int spiritIndex) { return Families[spiritIndex]; }
+        public static int[] getShuffleableSpellIds(string role)
+        { return getRoleSpellIds(role).Where(id=>id!=0x20 && id!=0x23).ToArray(); }
         public static int getLearnedMask(int destinationId) { return 1 << (destinationId % 6); }
 
         public static List<string> getOrbCasters(RandoContext context, byte family)

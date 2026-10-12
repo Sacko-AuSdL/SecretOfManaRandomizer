@@ -14,6 +14,8 @@ public sealed class SpellShuffleMachine
     public int SpecialEvents, LastSpecialEvent, LastSpecialTarget;
     public bool ExecuteSpecialEventDispatch;
     public int EventStarts, LastEventOwner;
+    public bool EmulateMathHardware;
+    public int? FixedRandom;
     public int A, X, Y, P=0x20, S=0x1FF, DP, DB=0x7E, PC, MapLoads;
     private const int End=0xFFFFFF;
     private int W { get { return (P&0x20)!=0 ? 1 : 2; } }
@@ -33,6 +35,12 @@ public sealed class SpellShuffleMachine
     public void Write(int a,int v,int n)
     {
         for(int i=0;i<n;i++) { int at=Address(a+i); Memory[at]=(byte)(v>>(8*i)); Writes.Add(at); }
+        if(EmulateMathHardware && a==0x004203) Write(0x004216,Read(0x004202,1)*Read(0x004203,1),2);
+        if(EmulateMathHardware && a==0x004206) {
+            int dividend=Read(0x004204,2), divisor=Read(0x004206,1);
+            Write(0x004214,divisor==0 ? 65535 : dividend/divisor,2);
+            Write(0x004216,divisor==0 ? dividend : dividend%divisor,2);
+        }
     }
     private int Fetch() { return Rom[PC++-0xC00000]; }
     private int O(int n) { int v=0; for(int i=0;i<n;i++) v|=Fetch()<<(8*i); return v; }
@@ -69,6 +77,8 @@ public sealed class SpellShuffleMachine
             Visits.Add(PC);
             if(Stops.Contains(PC)) break;
             if(PC==0x02AA5C) { MapLoads++; Return(); continue; }
+            // Optional bounded RNG primitive for native effect-formula tests only.
+            if(PC==0xC03884 && FixedRandom.HasValue) { L(FixedRandom.Value); Return(); continue; }
             if(PC==0x018000) {
                 SpecialEvents++; LastSpecialEvent=A&65535; LastSpecialTarget=Y;
                 // Optional REAL native dispatcher, including its busy guard and
@@ -117,6 +127,7 @@ public sealed class SpellShuffleMachine
             case 0xB9: L(Read(Abs()+Y,W)); break;
             case 0xA5: L(Read(DP+O(1),W)); break;
             case 0xA7: L(Read(Read(DP+O(1),3),W)); break;
+            case 0xB7: L(Read(Read(DP+O(1),3)+Y,W)); break;
             case 0xB5: L(Read(DP+O(1)+X,W)); break;
             case 0xA3: L(Read(S+O(1),W)); break;
             case 0x8D: Write(Abs(),A,W); break;
@@ -145,6 +156,7 @@ public sealed class SpellShuffleMachine
             case 0x4A: v=A&Mask; P=(P&~1)|(v&1); L(v>>1); break;
             case 0x46: v=DP+O(1); int shifted=Read(v,W); P=(P&~1)|(shifted&1); Write(v,shifted>>1,W); NZ(shifted>>1,W); break;
             case 0x89: v=O(W); P=(P&~2)|((A&v&Mask)==0?2:0); break;
+            case 0x3C: v=Read(Abs()+X,W); P=(P&~0xC2)|(v&(W==1?0xC0:0xC000))>>(W==1?0:8)|((A&v&Mask)==0?2:0); break;
             case 0x29: L(A&O(W)); break;
             case 0x23: L(A&Read(S+O(1),W)); break;
             case 0x09: L(A|O(W)); break;
@@ -153,6 +165,7 @@ public sealed class SpellShuffleMachine
             case 0x69: Math(O(W),false); break;
             case 0x63: Math(Read(S+O(1),W),false); break;
             case 0x6D: Math(Read(Abs(),W),false); break;
+            case 0x7D: Math(Read(Abs()+X,W),false); break;
             case 0x65: Math(Read(DP+O(1),W),false); break;
             case 0xE9: Math(O(W),true); break;
             case 0xED: Math(Read(Abs(),W),true); break;
@@ -161,6 +174,7 @@ public sealed class SpellShuffleMachine
             case 0xCF: C(Read(O(3),W),A,W); break;
             case 0xC5: C(Read(DP+O(1),W),A,W); break;
             case 0xDF: C(Read(O(3)+X,W),A,W); break;
+            case 0xDD: C(Read(Abs()+X,W),A,W); break;
             case 0xE0: C(O(IW),X,IW); break;
             case 0xC0: C(O(IW),Y,IW); break;
             case 0x1A: L(A+1); break;
@@ -170,6 +184,7 @@ public sealed class SpellShuffleMachine
             case 0xC8: Y=(Y+1)&(IW==1?255:65535); NZ(Y,IW); break;
             case 0x88: Y=(Y-1)&(IW==1?255:65535); NZ(Y,IW); break;
             case 0xEE: v=Abs(); int r=Read(v,W)+1; Write(v,r,W); NZ(r,W); break;
+            case 0xC6: v=DP+O(1); int dec=Read(v,W)-1; Write(v,dec,W); NZ(dec,W); break;
             case 0xF0: Branch((P&2)!=0); break;
             case 0xD0: Branch((P&2)==0); break;
             case 0x90: Branch((P&1)==0); break;

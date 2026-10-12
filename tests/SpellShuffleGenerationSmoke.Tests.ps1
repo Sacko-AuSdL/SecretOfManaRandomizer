@@ -51,15 +51,15 @@ $cases = @(
     @('boy-only-orbs-off', $normal, 'off', 'none', 'off'),
     @('findable-caster', @('OGboy','OGboy','OGsprite'), 'off', 'findbothL1', 'off'))
 $count=2
-foreach($case in $cases) {
+foreach($shuffleMode in @('perCharacter','party')) { foreach($case in $cases) {
     $name=[string]$case[0]
-    $result=Generate ('SpellShuffle-Smoke-'+$name) $case[1] $case[2] $case[3] 'perCharacter' $false $case[4]
-    Write-Output "PASS: $name normal generation/simulation."
+    $result=Generate ('SpellShuffle-Smoke-'+$name) $case[1] $case[2] $case[3] $shuffleMode $false $case[4]
+    Write-Output "PASS: $shuffleMode / $name normal generation/simulation."
     $count++
     if($name -eq 'three-sprites') {
-        $repeat=Generate ('SpellShuffle-Smoke-'+$name) $case[1] $case[2] $case[3]
+        $repeat=Generate ('SpellShuffle-Smoke-'+$name) $case[1] $case[2] $case[3] $shuffleMode
         if(-not [Linq.Enumerable]::SequenceEqual([byte[]]$result.Rom, [byte[]]$repeat.Rom)) { throw 'Repeated seed/settings ROM differs.' }
         $count++
     }
-}
+} }
 Write-Output "PASS: $count in-memory Open World generations; no ROMs/per-seed logs emitted."

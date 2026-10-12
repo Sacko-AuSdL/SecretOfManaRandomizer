@@ -50,7 +50,7 @@ public static class SpellShuffleTests
     {
         assertions=0; var settings=Settings();
         Check(settings.getDefault("spellShuffle")=="off","Default must be off.");
-        Check(settings.getOptionsValues("spellShuffle").SequenceEqual(new[] {"off","perCharacter"}),"Unexpected setting values/full exposed.");
+        Check(settings.getOptionsValues("spellShuffle").SequenceEqual(new[] {"off","perCharacter","party"}),"Unexpected setting values/compatibility.");
         var off=Settings("off"); var offCtx=Context(123,new[] {"OGboy","OGgirl","OGsprite"});
         var offRom=Copy(native); var before=(byte[])offRom.Clone();
         Check(!Apply(new SpellShuffleAssignments(),native,offRom,off,offCtx),"Off assignments active.");
@@ -93,10 +93,10 @@ public static class SpellShuffleTests
         before=(byte[])rom.Clone(); int start=c.workingOffset;
         Check(Apply(new SpellShuffle(),native,rom,settings,c),"Runtime not installed.");
         Check(c.workingOffset<start+8192 && start>>16==(c.workingOffset-1)>>16,"Allocation crosses code bank.");
-        var spans=new[] {new[] {0x10CEB2,6},new[] {0x10D074,4},new[] {0x10D080,4},new[] {0x10D089,7},new[] {0x3FAA,6},new[] {0xBC14,4}};
+        var spans=new[] {new[] {0x10CEB2,6},new[] {0x10D074,4},new[] {0x10D080,4},new[] {0x10D089,7},new[] {0x3FAA,6},new[] {0xBC14,4},new[] {0x8E8A0,7}};
         for(int i=0;i<rom.Length;i++) if(rom[i]!=before[i])
             Check(i>=start && i<c.workingOffset || spans.Any(p=>i>=p[0] && i<p[0]+p[1]),"Unrelated ROM write at "+i.ToString("X6"));
-        Check(native.Skip(0x8E7EE).Take(0x900).SequenceEqual(rom.Skip(0x8E7EE).Take(0x900)),"Enemy effects/PlayerMagicDamage code touched.");
+        Check(Enumerable.Range(0x8E7EE,0x900).Where(i=>i<0x8E8A0 || i>=0x8E8A7).All(i=>native[i]==rom[i]),"Enemy effects/PlayerMagicDamage code touched outside affinity hook.");
         Check(native.Skip(0x102AD8).Take(42*64).SequenceEqual(rom.Skip(0x102AD8).Take(42*64)),"Global spell metadata changed.");
         Check(!c.replacementEvents.ContainsKey(0x42D),"Late Mana Magic unlock changed.");
         foreach(FieldInfo field in typeof(CustomRamOffsets).GetFields(BindingFlags.Public|BindingFlags.Static))
