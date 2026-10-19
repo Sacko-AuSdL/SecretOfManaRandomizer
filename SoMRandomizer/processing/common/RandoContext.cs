@@ -43,5 +43,8 @@ namespace SoMRandomizer.processing.common
         public Dictionary<int, Door> replacementDoors = new Dictionary<int, Door>();
         // generated map palette sets
         public Dictionary<int, MapPaletteSet> replacementMapPalettes = new Dictionary<int, MapPaletteSet>();
+        // Generation metadata only. The existing selector and runtime adapters
+        // remain authoritative; this is not another boss roll or runtime router.
+        public BossEncounterRegistry bossEncounters;
     }
 }

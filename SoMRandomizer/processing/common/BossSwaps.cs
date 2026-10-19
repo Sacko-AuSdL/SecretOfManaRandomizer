@@ -66,6 +66,8 @@ namespace SoMRandomizer.processing.common
 
             if(bypass)
             {
+                if (randoMode == OpenWorldSettings.MODE_KEY)
+                    BossEncounterRegistry.Capture(context, origRom, null);
                 Logging.log("Bypassing boss rando - configured not to randomize");
                 return false;
             }
@@ -76,6 +78,7 @@ namespace SoMRandomizer.processing.common
                 LimeSlimeBossArenaRedirect.reset(context);
                 DreadSlimeBossArenaRedirect.reset(context);
                 TripleTonpoleBossArenaRedirect.reset(context);
+                DoppelgangerBossArenaRedirect.reset(context);
             }
 
             Random r = context.randomFunctional;
@@ -178,6 +181,7 @@ namespace SoMRandomizer.processing.common
                 swapMaps.Add(VanillaBossMaps.LIMESLIME);
                 swapMaps.Add(VanillaBossMaps.DREADSLIME);
                 swapMaps.Add(VanillaBossMaps.TRIPLE_TONPOLE);
+                swapMaps.Add(VanillaBossMaps.DOPPELGANGERS);
             }
             swapMaps.Add(VanillaBossMaps.BLUESPIKE);
             swapMaps.Add(VanillaBossMaps.HYDRA);
@@ -272,6 +276,7 @@ namespace SoMRandomizer.processing.common
                 {MAPNUM_KETTLEKIN_ARENA, KEY_BOSS_KETTLEKIN},
                 {MAPNUM_TONPOLE_ARENA, KEY_BOSS_TONPOLE},
                 {MAPNUM_TRIPLETONPOLE_ARENA, KEY_BOSS_TRIPLE_TONPOLE},
+                {MAPNUM_DOPPEL_ARENA, KEY_BOSS_DOPPELGANGERS},
                 {MAPNUM_MECHRIDER3_ARENA, KEY_BOSS_MECHRIDER3},
                 {MAPNUM_SNOWDRAGON_ARENA, KEY_BOSS_SNOWDRAGON},
                 {MAPNUM_FIREGIGAS_ARENA, KEY_BOSS_FIREGIGAS},
@@ -311,6 +316,10 @@ namespace SoMRandomizer.processing.common
                 }
                 if (foundPlando)
                 {
+                    if ((swapMap1 == VanillaBossMaps.DOPPELGANGERS || boss == DoppelgangerBossArenaRedirect.BOSS_ID)
+                        && (randoMode != OpenWorldSettings.MODE_KEY
+                            || !BossEncounterRegistry.GetRandomPool(swapMap1).Contains(boss)))
+                        throw new InvalidOperationException("Doppelganger plando is incompatible with this slot.");
                     if (swapMap1 == VanillaBossMaps.TRIPLE_TONPOLE
                         && !TripleTonpoleBossArenaRedirect.ICE_BOSSES.Contains(boss))
                         throw new InvalidOperationException("Ice Palace plando boss is incompatible with its native arena.");
@@ -341,6 +350,14 @@ namespace SoMRandomizer.processing.common
                 }
             }
 
+            // Planned foreign shadows displace the native logical encounter
+            // in Swap mode; do not create an extra unplanned encounter copy.
+            if (randoMode == OpenWorldSettings.MODE_KEY && swapOnly
+                && !plandoMaps.Contains(VanillaBossMaps.DOPPELGANGERS)
+                && plandoMaps.Any(m => m == VanillaBossMaps.MANTISANT
+                    && newBossNums[m] == DoppelgangerBossArenaRedirect.BOSS_ID))
+                newBossNums[VanillaBossMaps.DOPPELGANGERS] = BOSSID_MANTISANT;
+
             foreach (VanillaBossMap swapMap1 in swapMaps)
             {
                 // check if already plando'ed
@@ -357,10 +374,10 @@ namespace SoMRandomizer.processing.common
                             if (randoMode == OpenWorldSettings.MODE_KEY && plandoMaps.Contains(swapMap2)) continue;
                             // not having its own boss in this list should mean it never gets swapped back
                             bool firstAcceptsSecond = randoMode == OpenWorldSettings.MODE_KEY
-                                ? TripleTonpoleBossArenaRedirect.canSwapInOpenWorld(swapMap1, newBossNums[swapMap2])
+                                ? BossEncounterRegistry.CanSwap(swapMap1, newBossNums[swapMap2])
                                 : swapMap1.supportedSwapBosses.Contains(newBossNums[swapMap2]);
                             bool secondAcceptsFirst = randoMode == OpenWorldSettings.MODE_KEY
-                                ? TripleTonpoleBossArenaRedirect.canSwapInOpenWorld(swapMap2, newBossNums[swapMap1])
+                                ? BossEncounterRegistry.CanSwap(swapMap2, newBossNums[swapMap1])
                                 : swapMap2.supportedSwapBosses.Contains(newBossNums[swapMap1]);
                             if (firstAcceptsSecond && secondAcceptsFirst)
                             {
@@ -376,7 +393,7 @@ namespace SoMRandomizer.processing.common
                     else
                     {
                         byte[] supportedBosses = randoMode == OpenWorldSettings.MODE_KEY
-                            ? TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(swapMap1)
+                            ? BossEncounterRegistry.GetRandomPool(swapMap1)
                             : swapMap1.allSupportedBosses;
                         byte boss = supportedBosses[r.Next() % supportedBosses.Length];
                         // don't allow duplicates of ones with hardcoded positions
@@ -428,6 +445,24 @@ namespace SoMRandomizer.processing.common
             foreach (VanillaBossMap testMap in swapMaps)
             {
                 byte bossNum = newBossNums[testMap];
+                if (testMap == VanillaBossMaps.DOPPELGANGERS)
+                {
+                    context.workingData.setInt(DoppelgangerBossArenaRedirect.PROPERTY_NATIVE_BOSS, bossNum);
+                    Logging.log("Boss map Doppelgangers has boss " + (bossNum == DoppelgangerBossArenaRedirect.BOSS_ID
+                        ? "Doppelgangers" : "Mantis Ant") + " (" + bossNum + ")", "spoiler");
+                    if (bossNum != DoppelgangerBossArenaRedirect.BOSS_ID)
+                        DoppelgangerBossArenaRedirect.createReverse(outRom, context, bossNum);
+                    // No synthetic stat/species lookup or ordinary one-object patch.
+                    continue;
+                }
+                if (bossNum == DoppelgangerBossArenaRedirect.BOSS_ID)
+                {
+                    if (randoMode != OpenWorldSettings.MODE_KEY || testMap != VanillaBossMaps.MANTISANT)
+                        throw new InvalidOperationException("Unsafe Doppelganger redirect.");
+                    DoppelgangerBossArenaRedirect.createForeign(outRom, context);
+                    Logging.log("Boss map " + testMap + " has boss Doppelgangers (129)", "spoiler");
+                    continue;
+                }
                 if (randoMode == OpenWorldSettings.MODE_KEY && testMap == VanillaBossMaps.TONPOLE)
                 {
                     // Preserve the original cave tile fix even when this slot
@@ -981,6 +1016,8 @@ namespace SoMRandomizer.processing.common
             // RTL
             outRom[context.workingOffset++] = 0x6B;
 
+            if (randoMode == OpenWorldSettings.MODE_KEY)
+                BossEncounterRegistry.Capture(context, origRom, newBossNums);
             return true;
         }
     }

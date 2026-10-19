@@ -158,6 +158,13 @@ namespace SoMRandomizer.forms
             panel2.Controls.Add(shipLabel);
             panel2.Controls.Add(shipButton);
             bossButtonPropertyNames[KEY_BOSS_MECHRIDER1] = shipButton;
+            Label doppelLabel = new Label { Text = "Jehk / Doppelgangers",
+                AutoSize = true, Location = new Point(10, 1034) };
+            Button doppelButton = new Button { Text = "(No change)",
+                Size = button89.Size, Location = new Point(205, 1031) };
+            panel2.Controls.Add(doppelLabel);
+            panel2.Controls.Add(doppelButton);
+            bossButtonPropertyNames[KEY_BOSS_DOPPELGANGERS] = doppelButton;
             foreach (string key in bossButtonPropertyNames.Keys)
             {
                 bossButtonPropertyNamesInv[bossButtonPropertyNames[key]] = key;
@@ -265,6 +272,7 @@ namespace SoMRandomizer.forms
         };
 
         string[] allBossNameValues = new string[] {
+            VALUE_BOSS_DOPPELGANGERS,
             VALUE_BOSS_MANTISANT,
             VALUE_BOSS_TROPICALLO,
             VALUE_BOSS_SPIKEY,
@@ -309,6 +317,7 @@ namespace SoMRandomizer.forms
             { KEY_BOSS_SPIKEY, VanillaBossMaps.SPIKEY },
             { KEY_BOSS_TONPOLE, VanillaBossMaps.TONPOLE },
             { KEY_BOSS_TRIPLE_TONPOLE, VanillaBossMaps.TRIPLE_TONPOLE },
+            { KEY_BOSS_DOPPELGANGERS, VanillaBossMaps.DOPPELGANGERS },
             { KEY_BOSS_MECHRIDER1, VanillaBossMaps.MECHRIDER1 },
             { KEY_BOSS_FIREGIGAS, VanillaBossMaps.FIREGIGAS },
             { KEY_BOSS_KILROY, VanillaBossMaps.KILROY },
@@ -348,6 +357,7 @@ namespace SoMRandomizer.forms
             { VanillaBossMaps.SPIKEY, 0x5B },
             { VanillaBossMaps.TONPOLE, 0x71 },
             { VanillaBossMaps.TRIPLE_TONPOLE, 0x80 },
+            { VanillaBossMaps.DOPPELGANGERS, DoppelgangerBossArenaRedirect.BOSS_ID },
             { VanillaBossMaps.MECHRIDER1, 0x60 },
             { VanillaBossMaps.FIREGIGAS, 0x74 },
             { VanillaBossMaps.KILROY, 0x65 },
@@ -1268,11 +1278,11 @@ namespace SoMRandomizer.forms
                 foreach(VanillaBossMap map in bossmaps.Values)
                 {
                     // doom's wall is REALLY restrictive atm, so special-case it
-                    if (map != VanillaBossMaps.DOOMSWALL)
+                    if (map != VanillaBossMaps.DOOMSWALL && map != VanillaBossMaps.DOPPELGANGERS)
                     {
                         if (BOSS_IDS_BY_PLANDO_VALUE.ContainsKey(bossName))
                         {
-                            if (!TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
+                            if (!DoppelgangerBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
                             {
                                 valid = false;
                             }
@@ -1322,7 +1332,7 @@ namespace SoMRandomizer.forms
                     if (BOSS_IDS_BY_PLANDO_VALUE.ContainsKey(bossName))
                     {
                         VanillaBossMap map = bossmaps[bossPropertyName];
-                        if (!TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
+                        if (!DoppelgangerBossArenaRedirect.getOpenWorldRandomPool(map).Contains(BOSS_IDS_BY_PLANDO_VALUE[bossName]) && bossMapOriginalIds[map] != BOSS_IDS_BY_PLANDO_VALUE[bossName])
                         {
                             valid = false;
                         }
@@ -1349,6 +1359,17 @@ namespace SoMRandomizer.forms
             ToolStripMenuItem item = (ToolStripMenuItem)sender;
             foreach (Button button in bossButtonPropertyNames.Values)
             {
+                if (bossButtonPropertyNamesInv[button] == KEY_BOSS_DOPPELGANGERS)
+                {
+                    // The new restricted slot must not remove existing bulk
+                    // choices or receive an unsupported ordinary boss.
+                    if (item.Text == propertyToDisplay(VALUE_BOSS_MANTISANT))
+                    {
+                        button.Text = item.Text;
+                        bossSettings[KEY_BOSS_DOPPELGANGERS] = VALUE_BOSS_MANTISANT;
+                    }
+                    continue;
+                }
                 if (bossButtonPropertyNamesInv[button] != KEY_BOSS_DOOMSWALL)
                 {
                     button.Text = item.Text;

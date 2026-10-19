@@ -67,6 +67,8 @@ function Invoke-ForcedLimeCross([int]$Seed) {
     $context = [Activator]::CreateInstance($contextType)
     $context.randomFunctional = [Random]::new($Seed)
     $context.namesOfThings = [Activator]::CreateInstance($namesType, [object[]]@(,$originalRom))
+    $context.plandoSettings['P_doppelgangers'] =
+        [Collections.Generic.List[string]]::new([string[]]@('Doppelgangers'))
     $context.plandoSettings['P_tripleTonpole'] =
         [Collections.Generic.List[string]]::new([string[]]@('Triple-Tonpole'))
     # The additional independent Ice draw changes later random proposals.

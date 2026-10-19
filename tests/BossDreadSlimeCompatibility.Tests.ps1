@@ -37,6 +37,7 @@ function New-Case([int]$Seed=424242,[bool]$Coexist=$false,[string]$BossMode='ran
     $context=[Activator]::CreateInstance($contextType)
     $context.randomFunctional=[Random]::new($Seed)
     $context.namesOfThings=[Activator]::CreateInstance($namesType,[object[]]@(,$original))
+    $context.plandoSettings['P_doppelgangers']=[Collections.Generic.List[string]]::new([string[]]@('Doppelgangers'))
     $context.plandoSettings['P_tripleTonpole']=[Collections.Generic.List[string]]::new([string[]]@('Triple-Tonpole'))
     $context.plandoSettings['P_mantisAnt']=[Collections.Generic.List[string]]::new([string[]]@('Dread-Slime'))
     $context.plandoSettings['P_dreadSlime']=[Collections.Generic.List[string]]::new([string[]]@('Mantis-Ant'))

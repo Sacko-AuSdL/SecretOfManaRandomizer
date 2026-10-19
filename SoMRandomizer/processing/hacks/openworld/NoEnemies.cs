@@ -32,7 +32,8 @@ namespace SoMRandomizer.processing.hacks.openworld
                         Array.Copy(outRom, offset, objectData, 0, objectData.Length);
                         MapObject obj = new MapObject(objectData);
                         // object species in normal enemy range
-                        if(obj.getSpecies() < 84)
+                        if(obj.getSpecies() < 84
+                            && !DoppelgangerBossArenaRedirect.preserveNativeShadow(context, mapNum, obj.getSpecies()))
                         {
                             obj.setNeverVisible();
                         }

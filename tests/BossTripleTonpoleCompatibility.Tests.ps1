@@ -37,7 +37,7 @@ function New-Case([string]$Target='MANTISANT',[string]$Ice='Mantis-Ant',[string]
     $idNames=@{}
     foreach($pair in $p.GetField('BOSS_IDS_BY_PLANDO_VALUE').GetValue($null).GetEnumerator()) { $idNames[[int]$pair.Value]=$pair.Key }
     $pins=@{
-        mantisAnt='Mantis-Ant'; wallFace='Wall-Face'; tropicallo='Tropicallo'; minotaur='Minotaur';
+        mantisAnt='Mantis-Ant'; doppelgangers='Doppelgangers'; wallFace='Wall-Face'; tropicallo='Tropicallo'; minotaur='Minotaur';
         spikeyTiger='Spikey-Tiger'; jabberwocky='Jabberwocky'; springBeak='Spring-Beak'; frostGigas='Frost-Gigas';
         snapDragon='Snap-Dragon'; doomsWall="Doom's-Wall"; vampire='Vampire'; metalMantis='Metal-Mantis';
         mechRider2='Mech-Rider-2'; kilroy='Kilroy'; gorgonBull='Gorgon-Bull'; borealFace='Boreal-Face';

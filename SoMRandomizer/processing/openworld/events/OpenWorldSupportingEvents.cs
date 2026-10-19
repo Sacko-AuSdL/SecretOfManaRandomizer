@@ -1034,6 +1034,7 @@ namespace SoMRandomizer.processing.openworld.events
             // a regular Fortress boss still owns the upstream $425/$42C tail.
             DreadSlimeBossArenaRedirect.patchEvents(context);
             TripleTonpoleBossArenaRedirect.patchEvents(context);
+            DoppelgangerBossArenaRedirect.patchEvents(context);
 
             return true;
         }

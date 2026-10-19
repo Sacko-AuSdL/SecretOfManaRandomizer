@@ -1,0 +1,6 @@
+# Freeze the verified RC2 build-input bytes, including existing mixed EOLs.
+# These paths are checked against RELEASE-SOURCE-MANIFEST.json before release.
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+SoMRandomizer/** -text
+SoMRandomizer.sln -text
+LICENSE -text

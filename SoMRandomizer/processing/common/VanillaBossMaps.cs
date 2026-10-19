@@ -2165,6 +2165,16 @@ namespace SoMRandomizer.processing.common
             }
             );
 
+        // Open World logical encounter only. Do not add its synthetic ID to the
+        // native-species dictionary used by Ancient Cave/Boss Rush importers.
+        public static VanillaBossMap DOPPELGANGERS = new VanillaBossMap(
+            "Doppelgangers", MAPNUM_DOPPEL_ARENA, -2,
+            new byte[] { DoppelgangerBossArenaRedirect.BOSS_ID, BOSSID_MANTISANT },
+            new byte[] { DoppelgangerBossArenaRedirect.BOSS_ID, BOSSID_MANTISANT },
+            null, null, null, null, null, null, null, null, 0,
+            new XyPos(16, 20), new XyPos(15, 13), new int[] { }, new int[] { },
+            false, (rom, bossId, bossMap) => { });
+
         public static Dictionary<byte, VanillaBossMap> BY_VANILLA_BOSS_ID = new Dictionary<byte, VanillaBossMap>
         {
             { 0x57, MANTISANT },
@@ -2273,6 +2283,8 @@ namespace SoMRandomizer.processing.common
 
             public byte getOriginalBossId(byte[] rom)
             {
+                if (originalObjNum == -2 && originalMapNum == MAPNUM_DOPPEL_ARENA)
+                    return DoppelgangerBossArenaRedirect.BOSS_ID;
                 if(originalObjNum == -1)
                 {
                     // special case triple tonpole to differentiate it from single tonpole map
