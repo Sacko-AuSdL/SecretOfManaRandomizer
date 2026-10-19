@@ -1,6 +1,6 @@
 param(
  [string]$AssemblyPath=(Join-Path $PSScriptRoot '..\.codex-build\alpha-audit\out\SoMRandomizer.exe'),
- [string]$SourceRom='D:\views\tools\bots\Secret of Mana (US) (1993) (Action Role Playing Game) (Super Nes).sfc',
+ [string]$SourceRom='',
  [string]$OutputRoot=(Join-Path $PSScriptRoot '..\.codex-build\alpha-audit\production-worlds')
 )
 $ErrorActionPreference='Stop'

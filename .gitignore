@@ -3,3 +3,13 @@ SoMRandomizer/bin
 SoMRandomizer/obj
 SoMRandomizer.sln.DotSettings.user
 packages/
+
+# Local release verification and user-owned game data are never source assets.
+.codex-build/
+.codex-generation-results-*/
+*.sfc
+*.smc
+*.srm
+*.state
+*.log
+log_*.txt

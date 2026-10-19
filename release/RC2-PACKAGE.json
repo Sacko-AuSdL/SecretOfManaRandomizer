@@ -1,0 +1,47 @@
+﻿{
+    "Version":  "Alpha 0.1 RC2",
+    "Status":  "unofficial experimental candidate; awaiting approval and clean Windows smoke test",
+    "BaseCommit":  "1fabbb3741a4b6843d25ef933a6a0985c5fe2f1f",
+    "IncludesUncommittedProductionIntegration":  true,
+    "TargetFramework":  "net462",
+    "ApplicationSha256":  "F62B9E8AE903034012822A1F44CCFC41ABE15751B2298173B5635D4420ED1BD2",
+    "SystemTextJsonPackage":  "8.0.6",
+    "SystemTextJsonBinaryProductVersion":  "8.0.18",
+    "KnownVulnerabilitiesReported":  0,
+    "AuditDateUtc":  "2026-10-18",
+    "FocusedSuitesPassed":  37,
+    "RemovedPrototypeSuites":  5,
+    "StandaloneGenerationCases":  3,
+    "DeterministicRepeat":  "passed",
+    "CleanWindows":  "not tested",
+    "FullGameplay":  "volunteer coverage pending, not an invitation prerequisite",
+    "WeaponPower":  "excluded",
+    "ManualHarnesses":  "excluded",
+    "ExperimentalPilotCode":  "removed",
+    "ManabitePermission":  "Tomm (Discord); creator permission for use and redistribution confirmed by maintainer 2026-10-18; no additional conditions supplied",
+    "Profiles":  [
+                     {
+                         "Name":  "Short",
+                         "Seed":  "Alpha01-RC1-Short",
+                         "Goal":  "Vanilla Short",
+                         "ExpectedRomSha256":  "0B946F5CBE0DD80804F57370D0769365C84021A564944A481ED95F1644DA07A9",
+                         "OptionsFile":  "StarterSettings/Short.options.txt"
+                     },
+                     {
+                         "Name":  "Long",
+                         "Seed":  "Alpha01-RC1-Long",
+                         "Goal":  "Vanilla Long",
+                         "ExpectedRomSha256":  "27884D0C8D3B06E9E5F16CE35E52DCE90E8ACA1E3DA2CC07AED83F365503FF52",
+                         "OptionsFile":  "StarterSettings/Long.options.txt"
+                     },
+                     {
+                         "Name":  "ThreeSprites",
+                         "Seed":  "Alpha01-RC1-ThreeSprites",
+                         "Goal":  "Vanilla Short",
+                         "ExpectedRomSha256":  "8BD7CB6DBFD6808D09887D3692136557B8F58717CABEF00C2490752DCA6AC62F",
+                         "OptionsFile":  "StarterSettings/ThreeSprites.options.txt"
+                     }
+                 ],
+    "SourceArchiveSha256":  "30EE4E3BE0AFFCE76A21FF6F87CE10A9E50741652418B10301E425336D63DFD4",
+    "SourceManifestSha256":  "22E854AB32903F56C1C9C7C17A7DB50F306E498CA1EC081855F3B1C444D730E3"
+}

@@ -1,0 +1,1 @@
+﻿version=1.49 cannonTravelRandomization=chaos crystalOrbWeaponBreaking=on freeCannonTravel=on mode=open opBoyRole=OGsprite opCharacters=startboth opFlammieDrumInLogic=yes opGirlRole=OGsprite opLogic=restrictive showUpperLandOrbRequirement=on spellShuffle=party weaponUpgradeCosts=reduced

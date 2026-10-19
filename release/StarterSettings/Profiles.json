@@ -1,0 +1,26 @@
+﻿[
+    {
+        "Name":  "Short",
+        "Seed":  "Alpha01-RC1-Short",
+        "Goal":  "Vanilla Short",
+        "Options":  "version=1.49 cannonTravelRandomization=shuffle crystalOrbWeaponBreaking=on manaBeastAppearance=superRabite mode=open opFlammieDrumInLogic=yes opLogic=restrictive showUpperLandOrbRequirement=on spellShuffle=perCharacter weaponUpgradeCosts=reduced",
+        "Expectations":  "Normal Sword acquisition; find the other characters and Flammie through checks; obey the cached Mixed Orb requirements and shuffled spirit slots; Short goal uses the shortened Fortress route to Mana Beast.",
+        "Limitations":  "Destination-owned boss returns must be checked; no newly generated full playthrough has been completed."
+    },
+    {
+        "Name":  "Long",
+        "Seed":  "Alpha01-RC1-Long",
+        "Goal":  "Vanilla Long",
+        "Options":  "version=1.49 cannonTravelRandomization=open crystalOrbWeaponBreaking=weaponOnly freeCannonTravel=on mode=open opBosses=swap opFlammieDrumInLogic=yes opGoal=vlong opLogic=restrictive opStartingLocation=kakkara showUpperLandOrbRequirement=on spellShuffle=party weaponUpgradeCosts=reduced",
+        "Expectations":  "Normal Kakkara startup Door 082, no manual teleport; Upper Land information is informational, not necessarily mandatory. Cannon works at zero GP. Complete Long-goal Palace/Fortress progression and the final Mana Magic/Mana Beast sequence.",
+        "Limitations":  "Weapon-family Orb requirements do not use Weapon Power. Test both ordinary and autosave reloads before and after special bosses."
+    },
+    {
+        "Name":  "ThreeSprites",
+        "Seed":  "Alpha01-RC1-ThreeSprites",
+        "Goal":  "Vanilla Short",
+        "Options":  "version=1.49 cannonTravelRandomization=chaos crystalOrbWeaponBreaking=on freeCannonTravel=on mode=open opBoyRole=OGsprite opCharacters=startboth opFlammieDrumInLogic=yes opGirlRole=OGsprite opLogic=restrictive showUpperLandOrbRequirement=on spellShuffle=party weaponUpgradeCosts=reduced",
+        "Expectations":  "All three physical characters start with Sprite gameplay roles using the normal party setting, not debug grants. Spirit slots/layouts remain per physical caster. Follow the simulated Chaos Cannon/Flammie network; confirm reserved Dryad Mana Magic and normal party defeat.",
+        "Limitations":  "A defeated shadow may leave a nonblocking ghost visual. Three Sprite roles are not three Sprite appearance sprites. No new direct-arena prototype is enabled."
+    }
+]
