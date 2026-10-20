@@ -1,6 +1,6 @@
 # Alpha 0.1 release readiness
 
-The proposed public Alpha is the verified RC2 build and its exact source on
+The proposed public Alpha is the RC3 build and its exact source on
 `release/alpha-0.1`, based on `1fabbb3`. It is an unofficial experimental fork,
 not a stable or upstream release.
 
@@ -16,9 +16,11 @@ Weapon Power, direct-arena prototypes and the Frost/Jehk pilot are excluded from
 both source and compiled production code. Public Random/Swap/plando eligibility
 is not expanded. Native map/data ownership protections remain intact.
 
-RC2's recorded 37-suite verification and package hashes remain valid.
-The isolated committed-source check uses 36 production suites; only the excluded
-manual-profile scaffolding test is omitted. Source hashes, registry pairings,
+RC2's package is archived unchanged but superseded due to its known Kakkara
+progression softlock. RC3 changes only the geographic ownership of physical
+Potos/Pandora checks; Luna remains Flammie-gated. The isolated source check uses
+38 production suites, adding Kakkara and Luna regressions to the inherited 36.
+Only the excluded manual-profile scaffolding test is omitted. Source hashes, registry pairings,
 four fixtures, normal control worlds, starter worlds, serialization and dependency
 checks are required before declaring the local release tip verified.
 

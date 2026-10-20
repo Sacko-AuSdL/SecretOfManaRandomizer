@@ -1,10 +1,33 @@
-# Alpha 0.1 RC2 source and package provenance
+# Alpha 0.1 RC3 source and package provenance
 
-This isolated release branch records RC2's exact production source.
+This isolated release branch records RC3 production source.
 Local release commits are authorized; push, tags, publication and announcements
-remain unauthorized. The original development checkout and RC2 ZIP are unchanged.
+remain unauthorized. RC2 remains archived unchanged.
 
-## Approved artifact
+## Current candidate: RC3
+
+Only one of RC2's 487 production inputs changes: CannonTravelRegions.cs.
+The physical Potos pedestal ($532) and Pandora ($188) checks use PotosArea,
+not unrestricted startup ownership. Real startup weapons remain unrestricted.
+Luna's intended Flammie, Orb and restrictive Moon Seed gates remain unchanged.
+The placement algorithm, Cannon routes/fares and RNG algorithms are untouched.
+
+The reported seed `370385E350F7D294` has its Drum in the first Fire Palace
+chest. The corrected hotfix has maintainer Mesen acceptance. RC3 itself is
+repository/CLI verified; no new clean Windows GUI or full-playthrough claim.
+38 production suites cover the inherited integration plus Kakkara/Luna cases.
+Six of seven production control hashes and all starter/repeat hashes stay RC2;
+the Kakkara Chaos control intentionally changes. See AlphaProduction.RC3.csv.
+
+The final handoff and generated ZIP sidecar identify the RC3 artifact/hash.
+RELEASE.json inside the ZIP records the local release commit, EXE/source/archive
+hashes and verification counts. Source and runtime are exported from this branch,
+not reconstructed from the dirty development tree. No ROM/build is committed.
+
+The remaining sections below record immutable RC2 provenance/history, not
+authorization to publish the obsolete RC2 package.
+
+## Archived RC2 artifact (superseded; do not publish)
 
 - Filename: `SecretOfManaRandomizer-Alpha-0.1-RC2.zip`
 - Size: 5,664,295 bytes; 171 files.
@@ -13,8 +36,9 @@ remain unauthorized. The original development checkout and RC2 ZIP are unchanged
 - Source archive SHA-256: `30EE4E3BE0AFFCE76A21FF6F87CE10A9E50741652418B10301E425336D63DFD4`
 - Manifest SHA-256: `22E854AB32903F56C1C9C7C17A7DB50F306E498CA1EC081855F3B1C444D730E3`
 
-`RELEASE-SOURCE-MANIFEST.json` is copied unchanged from that package and lists
-all 487 exact build inputs. `release/RC2-PACKAGE.json` retains the original
+RC2's archived manifest listed all 487 exact build inputs. The current
+`RELEASE-SOURCE-MANIFEST.json` records the single RC3 input update and parent hash.
+`release/RC2-PACKAGE.json` retains the original
 package metadata and starter ROM hashes. No ZIP/EXE/ROM is committed.
 
 ## History and cleanup
@@ -48,8 +72,8 @@ and four baseline fixtures passed; seven production controls and all three
 starter/repeat outputs matched RC1. Fresh extraction verified 170 checksums.
 Both Release builds passed with 0 errors / 25 existing warnings.
 
-The public branch excludes the manual-equipment profile and its one profile-only
-test. Its **36 production suites** preserve all relevant production coverage and
+The RC2 public branch excluded the manual-equipment profile and its one profile-only
+test. Its **36 production suites** preserved all relevant production coverage and
 add no manual teleport or debug grants. Run committed-source verification as
 documented in `release/README.md`; results identify the verified local Git tip.
 The permanent fixtures contain hashes/admission metadata only, not ROM data.
@@ -57,13 +81,14 @@ The permanent fixtures contain hashes/admission metadata only, not ROM data.
 `release/New-AlphaSourceSnapshot.ps1` verifies and exports all 487 inputs from
 this checkout, refusing hash mismatches or extra compiled C# files. Restore/build
 the exported source independently to verify committed build provenance.
-Normal ROM hashes must match RC2; source-scope tests require excluded types/APIs
+Normal ROM hashes must match the RC3 fixture (six RC2 controls unchanged);
+source-scope tests require excluded types/APIs
 and settings to be absent.
 
 The target remains net462 and System.Text.Json remains 8.0.6 with a locked graph.
 The original wildcard version/Deterministic=false mean a new EXE hash may differ
 because of build metadata even when input bytes and ROM behavior match.
-The approved ZIP must not be replaced with the new verification build.
+The archived RC2 ZIP must not be overwritten. RC3 is packaged separately.
 
 ## Credits and pending acceptance
 

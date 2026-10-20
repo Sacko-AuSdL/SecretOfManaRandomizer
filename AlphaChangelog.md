@@ -1,9 +1,20 @@
-# Open World Alpha 0.1 RC2 changelog
+# Open World Alpha 0.1 RC3 changelog
 
-Unofficial experimental candidate **Alpha 0.1 RC2**. Fork changes relative to the upstream
+Unofficial experimental candidate **Alpha 0.1 RC3**. Fork changes relative to the upstream
 1.49 experience, not a claim that these were all introduced in one commit.
 Awaiting release approval and clean Windows GUI smoke testing; volunteer
 complete-run coverage is still being gathered. Nothing has been published.
+
+## RC3 Kakkara progression correction
+
+- Physical Potos sword-pedestal ($532) and Pandora ($188) rewards no longer
+  count as portable startup rewards. Kakkara/closed Chaos seeds must actually
+  reach them; only the real startup weapon prizes remain unrestricted.
+- Reported seed `370385E350F7D294` now places the Drum in the first Fire Palace
+  chest, not the inaccessible Potos pedestal. Corrected hotfix manually tested.
+- Luna rewards retain their intended Flammie, Orb and restrictive Moon Seed
+  gates. Cannon networks, fares and RNG algorithms are unchanged.
+- RC2 remains archived, but must not be published with this known softlock.
 
 ## RC2 source cleanup
 

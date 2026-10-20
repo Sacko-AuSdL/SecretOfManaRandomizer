@@ -3,7 +3,7 @@
 Local release branch: `release/alpha-0.1`.
 Base: `1fabbb3741a4b6843d25ef933a6a0985c5fe2f1f`.
 Proposed first public Alpha tag: `v0.1.0-alpha.1`.
-The attached artifact is RC2; candidate numbering and public tag numbering are
+The intended artifact is RC3; candidate numbering and public tag numbering are
 separate. No tag, push, publication or Discord posting is authorized yet.
 
 The source manifest, package hashes, eligibility and exclusions are documented
@@ -18,7 +18,7 @@ handoff. From the isolated release checkout, run these as individual commands:
 
 ```powershell
 git push -u origin release/alpha-0.1
-git tag -a v0.1.0-alpha.1 release/alpha-0.1 -m "Alpha 0.1 — unofficial RC2"
+git tag -a v0.1.0-alpha.1 release/alpha-0.1 -m "Alpha 0.1 — unofficial RC3"
 git push origin refs/tags/v0.1.0-alpha.1
 ```
 
@@ -28,13 +28,14 @@ origin tracking without changing the development branch's upstream.
 
 In https://github.com/Sacko-AuSdL/SecretOfManaRandomizer open Releases and draft
 a new release using the EXISTING approved tag. Title:
-**Alpha 0.1 — unofficial Open World playtest (RC2)**.
+**Alpha 0.1 — unofficial Open World playtest (RC3)**.
 Paste `release/GitHubReleaseNotes.md`, mark **Pre-release**, and do not mark it
-the latest stable release. Upload the existing RC2 ZIP and its SHA-256 sidecar,
+the latest stable release. Upload the new RC3 ZIP and its SHA-256 sidecar,
 not the rebuilt verification executable or any ROM/log. Check the expected ZIP
 hash before upload:
 
-`7EE6E1B5A82B0C0EFBB8B7E375126844823CF9BF9E451038606EB5EF3B63B98F`
+Use the exact RC3 hash in the final handoff and ZIP sidecar. Do not upload RC2;
+it retains the known Kakkara progression softlock and is archived only.
 
 Publish only after the clean Windows GUI smoke check and explicit approval.
 Copy the actual resulting release/download link into

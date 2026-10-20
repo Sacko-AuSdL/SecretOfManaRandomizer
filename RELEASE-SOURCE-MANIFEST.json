@@ -1,9 +1,9 @@
 ﻿{
-    "Candidate":  "Alpha 0.1 RC2",
+    "Candidate":  "Alpha 0.1 RC3",
     "BaseCommit":  "1fabbb3741a4b6843d25ef933a6a0985c5fe2f1f",
-    "ParentCandidate":  "Alpha 0.1 RC1",
-    "ParentPackageSha256":  "54F9DD44DD9CF637EB25E50A837F8B28B245E005E7B8D4704B69104ECF36E580",
-    "ProductionIntegration":  "Current working-tree sources, including uncommitted Doppelganger, registry and NoEnemies fix",
+    "ParentCandidate":  "Alpha 0.1 RC2",
+    "ParentPackageSha256":  "7EE6E1B5A82B0C0EFBB8B7E375126844823CF9BF9E451038606EB5EF3B63B98F",
+    "ProductionIntegration":  "Clean release branch; RC2 inputs plus verified geographic Kakkara softlock correction",
     "IncludedFeatures":  [
                              "Conservative Open World boss pools and redirects",
                              "Sandship",
@@ -2124,8 +2124,8 @@
                       "Path":  "SoMRandomizer/processing/openworld/cannon/CannonTravelRegions.cs",
                       "OriginalSha256":  "D86BEAB2F02A3D4526DDD4BBFBAC4F1BF2FFBDDED4135F1097646B2191C7E77E",
                       "ParentSnapshotSha256":  "D86BEAB2F02A3D4526DDD4BBFBAC4F1BF2FFBDDED4135F1097646B2191C7E77E",
-                      "SnapshotSha256":  "D86BEAB2F02A3D4526DDD4BBFBAC4F1BF2FFBDDED4135F1097646B2191C7E77E",
-                      "Transform":  "RC1 bytes unchanged"
+                      "SnapshotSha256":  "E9F89A60933CDB4CA87F4B2AA3CF757C3849C46D9A08CA1B22584B61B2B8B830",
+                      "Transform":  "RC3: retain geographic ownership of physical Potos/Pandora checks; Luna unchanged"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/CharacterJoinChanges.cs",

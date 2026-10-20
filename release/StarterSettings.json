@@ -1,0 +1,26 @@
+[
+  {
+    "Name": "Short",
+    "Seed": "Alpha01-RC1-Short",
+    "Goal": "Vanilla Short",
+    "Options": "opGoal=vshort opBosses=random opLogic=restrictive opComplexity=dontcare opFlammieDrumInLogic=yes opStartingLocation=default crystalOrbWeaponBreaking=on spellShuffle=perCharacter cannonTravelRandomization=shuffle freeCannonTravel=off showUpperLandOrbRequirement=on weaponUpgradeCosts=reduced manaBeastAppearance=superRabite playerMagicDamage=vanilla opStartLevel=1 opStartGold=0 opAllWeaponOrbs=no opCharacters=findbothL1 opBoyRole=OGboy opGirlRole=OGgirl opSpriteRole=OGsprite opAutosave=yes spoilerLog=yes",
+    "Expectations": "Normal Sword acquisition; find the other characters and Flammie through checks; obey the cached Mixed Orb requirements and shuffled spirit slots; Short goal uses the shortened Fortress route to Mana Beast.",
+    "Limitations": "Destination-owned boss returns must be checked; no newly generated full playthrough has been completed."
+  },
+  {
+    "Name": "Long",
+    "Seed": "Alpha01-RC1-Long",
+    "Goal": "Vanilla Long",
+    "Options": "opGoal=vlong opBosses=swap opLogic=restrictive opComplexity=dontcare opFlammieDrumInLogic=yes opStartingLocation=kakkara crystalOrbWeaponBreaking=weaponOnly spellShuffle=party cannonTravelRandomization=open freeCannonTravel=on showUpperLandOrbRequirement=on weaponUpgradeCosts=reduced playerMagicDamage=vanilla opStartLevel=1 opStartGold=0 opAllWeaponOrbs=no opCharacters=findbothL1 opBoyRole=OGboy opGirlRole=OGgirl opSpriteRole=OGsprite opAutosave=yes spoilerLog=yes",
+    "Expectations": "Normal Kakkara startup Door 082, no manual teleport; Upper Land information is informational, not necessarily mandatory. Cannon works at zero GP. Complete Long-goal Palace/Fortress progression and the final Mana Magic/Mana Beast sequence.",
+    "Limitations": "Weapon-family Orb requirements do not use Weapon Power. Test both ordinary and autosave reloads before and after special bosses."
+  },
+  {
+    "Name": "ThreeSprites",
+    "Seed": "Alpha01-RC1-ThreeSprites",
+    "Goal": "Vanilla Short",
+    "Options": "opGoal=vshort opBosses=random opLogic=restrictive opComplexity=dontcare opFlammieDrumInLogic=yes opStartingLocation=default crystalOrbWeaponBreaking=on spellShuffle=party cannonTravelRandomization=chaos freeCannonTravel=on showUpperLandOrbRequirement=on weaponUpgradeCosts=reduced playerMagicDamage=vanilla opStartLevel=1 opStartGold=0 opAllWeaponOrbs=no opCharacters=startboth opBoyRole=OGsprite opGirlRole=OGsprite opSpriteRole=OGsprite opEnemies=swap opStatGrowth=player opAutosave=yes spoilerLog=yes",
+    "Expectations": "All three physical characters start with Sprite gameplay roles using the normal party setting, not debug grants. Spirit slots/layouts remain per physical caster. Follow the simulated Chaos Cannon/Flammie network; confirm reserved Dryad Mana Magic and normal party defeat.",
+    "Limitations": "A defeated shadow may leave a nonblocking ghost visual. Three Sprite roles are not three Sprite appearance sprites. No new direct-arena prototype is enabled."
+  }
+]

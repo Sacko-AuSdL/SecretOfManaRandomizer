@@ -15,7 +15,7 @@ $assembly=(Resolve-Path $AssemblyPath).Path
 $sets=@(
  @('BossEncounterRegistry','BossDoppelgangerCompatibility','BossLimeSlimeCompatibility','BossDreadSlimeCompatibility','BossWallCompatibility','BossTripleTonpoleCompatibility','EnemySwapsNativeMapBounds'),
  @('SpellShuffle','PartySpellShuffle','SpellShuffleAffinity','CrystalOrbDialog','CrystalOrbRequirements','CrystalOrbWeaponBreaking','CrystalOrbHints','PlayerMagicDamage','WeaponUpgradeCosts','ManaBeastAppearance','SaveMusicRestoration','SoftResetMusic','AutosaveMusic','AlphaSettings','AlphaBossSafety','AlphaReleaseScope'),
- @('BossDoppelgangerGenerationSmoke','SpellShuffleGenerationSmoke','OpenWorldGenerationSmoke','OpenWorldStartingLocation','OpenWorldStartingLocationGenerationSmoke','OpenWorldStartingPrizes','FreeCannonTravel','CannonTravelRandomization','CannonTravelGenerationSmoke','Sandship','ChristmasFlammieLogic','ChristmasFlammieGenerationSmoke','AlphaProductionGeneration')
+ @('BossDoppelgangerGenerationSmoke','SpellShuffleGenerationSmoke','OpenWorldGenerationSmoke','OpenWorldStartingLocation','OpenWorldStartingLocationGenerationSmoke','OpenWorldStartingPrizes','FreeCannonTravel','CannonTravelRandomization','CannonTravelGenerationSmoke','Sandship','ChristmasFlammieLogic','ChristmasFlammieGenerationSmoke','KakkaraChaosReachability','KakkaraProgression','AlphaProductionGeneration')
 )
 $results=@(); $run=[Guid]::NewGuid().ToString('N')
 foreach($name in $sets[$Group]) {
@@ -33,11 +33,11 @@ foreach($name in $sets[$Group]) {
  & powershell @arguments *> (Join-Path $output ($name+'.log'))
  $code=$LASTEXITCODE; $ErrorActionPreference=$previousPolicy; $watch.Stop()
  if($code -eq 0 -and $name -eq 'AlphaProductionGeneration') {
-  $baseline=Import-Csv (Join-Path $repo 'tests\fixtures\AlphaProduction.RC2.csv')
+  $baseline=Import-Csv (Join-Path $repo 'tests\fixtures\AlphaProduction.RC3.csv')
   $generated=Get-Content (Join-Path $caseOutput 'results.json') -Raw | ConvertFrom-Json
   foreach($case in $generated) {
    $expected=@($baseline | Where-Object Name -eq $case.Name)
-   if($expected.Count -ne 1 -or $case.Sha256 -notmatch '^[A-F0-9]{64}$' -or $case.Sha256 -cne $expected[0].Sha256) { throw ('Committed source changed RC2 ROM: '+$case.Name) }
+   if($expected.Count -ne 1 -or $case.Sha256 -notmatch '^[A-F0-9]{64}$' -or $case.Sha256 -cne $expected[0].Sha256) { throw ('Source changed RC3 ROM: '+$case.Name) }
   }
  }
  $results += [pscustomobject]@{Test=$name;ExitCode=$code;Seconds=[math]::Round($watch.Elapsed.TotalSeconds,2)}

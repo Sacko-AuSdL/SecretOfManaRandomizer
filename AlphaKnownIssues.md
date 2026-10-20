@@ -1,4 +1,4 @@
-# Alpha 0.1 RC2 known issues
+# Alpha 0.1 RC3 known issues
 
 **Unofficial experimental candidate; explicit release approval and clean Windows
 GUI smoke testing remain pending.** Full runs are volunteer coverage, not a
@@ -13,7 +13,7 @@ separate from other ROMs and Alpha versions.
 - Weapon Power, Weapon Master/Fortress weapon gates and harder Manabite combat
   are not included. Manabite is cosmetic.
 - The application and ROM still show upstream numeric version 1.49. Use the
-  **Alpha 0.1 RC2 package identifier and EXE hash** in reports; do not mistake the
+  **Alpha 0.1 RC3 package identifier and EXE hash** in reports; do not mistake the
   upstream update link/banner for an Alpha update channel.
 - Only Open World is in this playtest's acceptance scope. Cannon Chaos is not
   the separate legacy Chaos game mode. Other existing UI modes have not been

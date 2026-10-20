@@ -1,6 +1,6 @@
 # Open World Alpha player guide
 
-Candidate: **Unofficial Alpha 0.1 RC2 — experimental, awaiting release approval**.
+Candidate: **Unofficial Alpha 0.1 RC3 — experimental, awaiting release approval**.
 The goal is volunteer testing of normal Open World progression, not shortcut
 boss-test ROMs. Clean Windows GUI smoke testing remains pending. Complete personal
 playthroughs are not required before inviting volunteers after technical checks

@@ -13,11 +13,15 @@ namespace SoMRandomizer.processing.openworld.cannon
         private static readonly HashSet<string> UNRESTRICTED_LOCATIONS =
             new HashSet<string>
             {
-                "girl",
                 "starter weapon (alt)",
                 "starter weapon (main)",
-                "sword pedestal",
             };
+
+        // Only rewards injected into startup event $103 travel with the starting party.
+        // The "girl" check is Pandora event $188; the sword-pedestal check is event
+        // $532 on the physical Potos sword map. Both must use PotosArea ownership,
+        // even when Kakkara/Christmas starts or disconnected Chaos routes are used.
+        // Otherwise simulation can award an unreachable Flammie Drum in cycle zero.
 
         private static readonly Dictionary<string, CannonTravelRegion> REGION_OVERRIDES =
             new Dictionary<string, CannonTravelRegion>
