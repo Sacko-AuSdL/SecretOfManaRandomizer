@@ -133,10 +133,18 @@ function Invoke-Case([string]$Name, [string]$Options) {
     }
     $cycle0 = [regex]::Match($spoiler,'(?s)Collection cycle:0(.*?)Collection cycle:1').Groups[1].Value
     if($Name -in @('reported','reported-repeat','paid')) {
-        Assert-True ($closedCount -eq 7) 'Reproduction graph changed instead of correcting placement.'
-        Assert-True ($cycle0 -notmatch 'girl ->|sword pedestal ->') 'Remote check still credited at Kakkara start.'
-        Assert-True ($cycle0 -match 'fire palace chest 1 -> flammie drum') 'Reported seed lacks its proven local escape.'
-        $rewardPointer = $table + 3*0x68A
+        # Approved boss-pool changes consume a different deterministic RNG stream
+        # before Cannon/placement. Preserve the escape invariant, not RC3's
+        # incidental seven closed offices / Fire Palace chest assignment.
+        $drum=[regex]::Match($spoiler,'(?m)\[spoiler\]\s+([^\r\n]+?) -> flammie drum \[event 0x([0-9A-Fa-f]+)\]')
+        Assert-True $drum.Success 'Generated world has no reported Flammie Drum reward.'
+        if($cannon -match '(?m)^Kakkara: CLOSED') {
+            Assert-True ($cycle0 -notmatch 'girl ->|sword pedestal ->') 'Remote check still credited at closed Kakkara start.'
+            Assert-True ($cycle0 -match ' -> flammie drum \[event') 'Closed Kakkara start has no initial escape.'
+            $region=(T 'processing.openworld.cannon.CannonTravelRegions').GetMethod('getLocationRegion').Invoke($null,@($drum.Groups[1].Value.Trim()))
+            Assert-True ($region.ToString() -eq 'Kakkara') 'Closed Kakkara credits a nonlocal Drum.'
+        }
+        $rewardPointer = $table + 3*[Convert]::ToInt32($drum.Groups[2].Value,16)
         $rewardAt = ([int]$rom[$rewardPointer] + ([int]$rom[$rewardPointer+1] -shl 8) + ([int]$rom[$rewardPointer+2] -shl 16)) - 0xC00000
         $nextAt = $rom.Length
         for($id=0;$id -lt 0xA01;$id++) {

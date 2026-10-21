@@ -1,10 +1,11 @@
 param(
  [Parameter(Mandatory=$true)][string]$CandidateRoot,
- [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9-]*$')][string]$StageName='package'
+ [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9-]*$')][string]$StageName='package',
+ [string]$SourceRoot=''
 )
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')); $root=[IO.Path]::GetFullPath($CandidateRoot)
-$snapshot=Join-Path $root 'source'; $build=Join-Path $root 'build-release'; $stage=Join-Path $root $StageName
+$snapshot=if($SourceRoot){[IO.Path]::GetFullPath($SourceRoot)}else{$repo}; $build=Join-Path $root 'build-release'; $stage=Join-Path $root $StageName
 if(Test-Path $stage) { throw 'Package staging already exists; use a new candidate directory.' }
 $manifest=Get-Content (Join-Path $snapshot 'RELEASE-SOURCE-MANIFEST.json') -Raw | ConvertFrom-Json
 foreach($inputFile in $manifest.Files) { if((Get-FileHash (Join-Path $snapshot $inputFile.Path)).Hash -ne $inputFile.SnapshotSha256) { throw ('Source inventory mismatch: '+$inputFile.Path) } }
@@ -19,7 +20,7 @@ Copy-Item -LiteralPath (Join-Path $snapshot 'RELEASE-SOURCE-MANIFEST.json') -Des
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $sourceDir=Join-Path $stage 'Source'; [void][IO.Directory]::CreateDirectory($sourceDir)
-$archive=[IO.Compression.ZipFile]::Open((Join-Path $sourceDir 'Alpha-0.1-RC3-source.zip'),[IO.Compression.ZipArchiveMode]::Create)
+$archive=[IO.Compression.ZipFile]::Open((Join-Path $sourceDir 'Alpha-0.1-RC4-source.zip'),[IO.Compression.ZipArchiveMode]::Create)
 try {
  foreach($inputFile in $manifest.Files) { [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,(Join-Path $snapshot $inputFile.Path),$inputFile.Path,[IO.Compression.CompressionLevel]::Optimal) }
  [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive,(Join-Path $snapshot 'RELEASE-SOURCE-MANIFEST.json'),'RELEASE-SOURCE-MANIFEST.json',[IO.Compression.CompressionLevel]::Optimal)
@@ -81,7 +82,7 @@ function New-ProfileBindings([string[]]$Keys) {
  }
  return [pscustomobject]@{Common=$common;Settings=$settings;Manager=$manager;Controls=$controls}
 }
-$readme=@('# Unofficial Alpha 0.1 RC3 normal gameplay configurations','','Volunteer full-run coverage is pending; personal completion is not a prerequisite for joining the playtest. Paste the entire corresponding .options.txt line into the Open World options box.','Seed strings intentionally retain RC1 labels for exact comparison. These are RC3 package profiles, not RC1 binaries.','Files use the actual UI options serializer, with version=1.49 and mode=open; omitted options reset to this package''s defaults.','The exact source/build/hash fixes those default definitions; no plando, bootstrap or manual teleport is enabled.','All three options strings passed headless UI-binding save/load round trips, not a clean-machine visual UI test.','')
+$readme=@('# Unofficial Alpha 0.1 RC4 normal gameplay configurations','','Volunteer full-run coverage is pending; personal completion is not a prerequisite for joining the playtest. Paste the entire corresponding .options.txt line into the Open World options box.','These are normal RC4 profiles with expanded boss pools; RC3 ROM hashes are not retained.','Files use the actual UI options serializer, with version=1.49 and mode=open; omitted options reset to this package''s defaults.','The exact source/build/hash fixes those default definitions; no plando, bootstrap or manual teleport is enabled.','All three options strings passed headless UI-binding save/load round trips, not a clean-machine visual UI test.','')
 $resolved=@()
 foreach($profile in $profiles) {
  $wanted=@{mode='open'}

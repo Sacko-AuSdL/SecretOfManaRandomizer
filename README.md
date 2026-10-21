@@ -1,51 +1,26 @@
-# Secret of Mana Randomizer — unofficial Alpha 0.1
+# Secret of Mana Randomizer — Expanded Open World Alpha 0.1
 
-This is Sacko's experimental Open World fork of
-[Moppleton's Secret of Mana Randomizer](https://github.com/Moppu/SecretOfManaRandomizer),
-not an official upstream release. The source on `release/alpha-0.1` corresponds
-to the verified **Alpha 0.1 RC2** package. Publication is still pending approval.
+Unofficial community expansion of [Moppleton's randomizer](https://github.com/Moppu/SecretOfManaRandomizer).
+The existing release branch now contains the **RC4 review integration**, based
+on RC3 commit a421186. It is uncommitted pending separate authorization; no
+published/tagged commit has been rewritten.
 
-See [the tester guide](AlphaTesterGuide.md), [changelog](AlphaChangelog.md),
-[known issues](AlphaKnownIssues.md), and [RC2 provenance](AlphaReleaseCandidate.md).
-New direct-arena experiments and Weapon Power are not included.
+Read [the player guide](AlphaTesterGuide.md), [changelog](AlphaChangelog.md),
+[known limitations](AlphaKnownIssues.md) and [release maintenance](release/README.md).
 
-## Playing
+Highlights: Kakkara Start, Cannon modes/free travel, Sandship, conservative
+special-boss randomization, Doppelgangers at 18 locations, expanded Jehk trials,
+Death Link, Spell Shuffle, weapon Crystal Orbs, unusual party roles, player
+magic-damage choices, cosmetic Manabite and persistent music restoration.
+Weapon Power and unsupported direct-placement prototypes are not included.
 
-Extract the complete approved Windows ZIP. Requires .NET Framework 4.6.2 or a
-compatible later 4.x runtime and your own unmodified US Secret of Mana v1.0 ROM
-(2 MiB, optionally a 512-byte copier header). No ROM or external music pack is
-supplied. Keep separate saves per seed/version. Start with
-`release/StarterSettings/Short.options.txt` and seed `Alpha01-RC1-Short`.
-RC1 labels in seed strings are intentional for paired RC1/RC2 verification.
+Windows/.NET Framework 4.6.2 or compatible later 4.x runtime. Supply your own
+unmodified US Secret of Mana v1.0 ROM; no game ROM is included. Start a new game
+with separate saves. Upstream numeric version 1.49 is retained; report the RC4
+package identifier, seed, complete options and emulator version.
 
-The Alpha focuses on Open World: conservative special-boss integrations,
-Sandship, Crystal Orb modes, Per Character/Party Spell Shuffle, Cannon networks,
-travel QoL, reduced forging, player magic scaling, cosmetic Manabite and music
-restoration. Other upstream modes remain outside this playtest's acceptance scope.
+Use normal StarterSettings profiles from the extracted package. Manual-profile
+supplies/teleports and experimental code are not compiled into the application.
 
-## Building and verification
-
-On Windows with a compatible SDK/MSBuild and .NET Framework targeting references:
-
-```powershell
-dotnet restore .\SoMRandomizer.sln --locked-mode
-dotnet build .\SoMRandomizer.sln -c Release --no-restore
-```
-
-[Release maintenance](release/README.md) documents exact source export,
-the 36 production suites, required user-supplied test ROM and starter hash checks.
-Build outputs and generated ROMs are ignored, not source inputs.
-The pre-existing wildcard assembly version prevents a promise of reproducible
-EXE timestamps; all 487 build-input bytes are pinned by the source manifest.
-
-## Credits and support
-
-Moppleton and upstream contributors retain their original authorship.
-Manabite artwork/palette by **Tomm (Discord)**; creator permission for use and
-redistribution is confirmed by the maintainer. Existing credits/licenses remain;
-no additional creator URL or asset license is invented.
-
-See [LICENSE](LICENSE) and [third-party notices](THIRD-PARTY-NOTICES.md).
-Report seed, complete options, emulator/version and reproducible steps in the
-[fork's Issues](https://github.com/Sacko-AuSdL/SecretOfManaRandomizer/issues).
-Never upload ROMs. Community Discord: https://discord.gg/YfmUHqU
+LGPL-2.1-or-later; see LICENSE and bundled buildable source. Manabite art/palette
+by Tomm (Discord), used and redistributed with the creator's permission.

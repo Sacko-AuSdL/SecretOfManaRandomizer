@@ -1,4 +1,4 @@
-﻿using SoMRandomizer.config.settings;
+using SoMRandomizer.config.settings;
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.hacks.common.util;
 using SoMRandomizer.util;
@@ -222,6 +222,7 @@ namespace SoMRandomizer.processing.common
                 restrictedPositionBosses.Add(BOSSID_LIMESLIME);
                 restrictedPositionBosses.Add(BOSSID_DREADSLIME);
                 restrictedPositionBosses.Add(TripleTonpoleBossArenaRedirect.BOSS_ID);
+                restrictedPositionBosses.Add(DoppelgangerBossArenaRedirect.BOSS_ID);
             }
 
             // make vampire behave like buffy collision-wise
@@ -316,6 +317,8 @@ namespace SoMRandomizer.processing.common
                 }
                 if (foundPlando)
                 {
+                    if (boss == DoppelgangerBossArenaRedirect.BOSS_ID && plandoMaps.Any(m => newBossNums[m] == boss))
+                        throw new InvalidOperationException("Doppelgangers are unique: multiple planned encounters share one trial allocation.");
                     if ((swapMap1 == VanillaBossMaps.DOPPELGANGERS || boss == DoppelgangerBossArenaRedirect.BOSS_ID)
                         && (randoMode != OpenWorldSettings.MODE_KEY
                             || !BossEncounterRegistry.GetRandomPool(swapMap1).Contains(boss)))
@@ -353,10 +356,29 @@ namespace SoMRandomizer.processing.common
             // Planned foreign shadows displace the native logical encounter
             // in Swap mode; do not create an extra unplanned encounter copy.
             if (randoMode == OpenWorldSettings.MODE_KEY && swapOnly
-                && !plandoMaps.Contains(VanillaBossMaps.DOPPELGANGERS)
-                && plandoMaps.Any(m => m == VanillaBossMaps.MANTISANT
-                    && newBossNums[m] == DoppelgangerBossArenaRedirect.BOSS_ID))
-                newBossNums[VanillaBossMaps.DOPPELGANGERS] = BOSSID_MANTISANT;
+                && !plandoMaps.Contains(VanillaBossMaps.DOPPELGANGERS))
+            {
+                var plannedShadow = plandoMaps.FirstOrDefault(m => m != VanillaBossMaps.DOPPELGANGERS
+                    && newBossNums[m] == DoppelgangerBossArenaRedirect.BOSS_ID);
+                if (plannedShadow != null)
+                {
+                    byte displaced = plannedShadow.getOriginalBossId(origRom);
+                    if (BossEncounterRegistry.CanSwap(VanillaBossMaps.DOPPELGANGERS, displaced))
+                        newBossNums[VanillaBossMaps.DOPPELGANGERS] = displaced;
+                    else
+                    {
+                        // Deterministic three-way conservation, not an arbitrary
+                        // replacement/duplicate: move the displaced encounter to
+                        // an unplanned compatible slot and its boss to Jehk.
+                        var bridge = swapMaps.FirstOrDefault(m => m != VanillaBossMaps.DOPPELGANGERS
+                            && !plandoMaps.Contains(m) && BossEncounterRegistry.CanSwap(m, displaced)
+                            && BossEncounterRegistry.CanSwap(VanillaBossMaps.DOPPELGANGERS, newBossNums[m]));
+                        if (bridge == null) throw new InvalidOperationException("Planned Doppelgangers cannot conserve Swap assignments; unpin a compatible bridge slot or explicitly plan Jehk.");
+                        newBossNums[VanillaBossMaps.DOPPELGANGERS] = newBossNums[bridge];
+                        newBossNums[bridge] = displaced;
+                    }
+                }
+            }
 
             foreach (VanillaBossMap swapMap1 in swapMaps)
             {
@@ -442,6 +464,9 @@ namespace SoMRandomizer.processing.common
                 }
             }
 
+            if (randoMode == OpenWorldSettings.MODE_KEY)
+                DoppelgangerEncounterExpansion.Configure(outRom, context, newBossNums);
+
             foreach (VanillaBossMap testMap in swapMaps)
             {
                 byte bossNum = newBossNums[testMap];
@@ -449,17 +474,17 @@ namespace SoMRandomizer.processing.common
                 {
                     context.workingData.setInt(DoppelgangerBossArenaRedirect.PROPERTY_NATIVE_BOSS, bossNum);
                     Logging.log("Boss map Doppelgangers has boss " + (bossNum == DoppelgangerBossArenaRedirect.BOSS_ID
-                        ? "Doppelgangers" : "Mantis Ant") + " (" + bossNum + ")", "spoiler");
-                    if (bossNum != DoppelgangerBossArenaRedirect.BOSS_ID)
+                        ? "Doppelgangers" : context.namesOfThings.getOriginalName(NamesOfThings.INDEX_ENEMIES_START + bossNum)) + " (" + bossNum + ")", "spoiler");
+                    if (bossNum != DoppelgangerBossArenaRedirect.BOSS_ID && context.doppelgangerExpansion == null)
                         DoppelgangerBossArenaRedirect.createReverse(outRom, context, bossNum);
                     // No synthetic stat/species lookup or ordinary one-object patch.
                     continue;
                 }
                 if (bossNum == DoppelgangerBossArenaRedirect.BOSS_ID)
                 {
-                    if (randoMode != OpenWorldSettings.MODE_KEY || testMap != VanillaBossMaps.MANTISANT)
+                    if (randoMode != OpenWorldSettings.MODE_KEY || !DoppelgangerEncounterExpansion.SupportsShadows(testMap))
                         throw new InvalidOperationException("Unsafe Doppelganger redirect.");
-                    DoppelgangerBossArenaRedirect.createForeign(outRom, context);
+                    if (context.doppelgangerExpansion == null) DoppelgangerBossArenaRedirect.createForeign(outRom, context);
                     Logging.log("Boss map " + testMap + " has boss Doppelgangers (129)", "spoiler");
                     continue;
                 }

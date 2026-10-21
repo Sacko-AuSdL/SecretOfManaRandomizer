@@ -45,16 +45,17 @@ Assert-True ($embedded -eq (Get-FileHash $jsonPath -Algorithm SHA256).Hash) 'Emb
 $registry=$a.GetType('SoMRandomizer.processing.common.BossEncounterRegistry',$true)
 $maps=$a.GetType('SoMRandomizer.processing.common.VanillaBossMaps',$true)
 $jehk=$maps.GetField('DOPPELGANGERS').GetValue($null)
-Assert-True (-not $registry.GetMethod('CanSwap').Invoke($null,@($jehk,[byte]0x5E))) 'Frost/Jehk prototype publicly admitted.'
+Assert-True ($registry.GetMethod('CanSwap').Invoke($null,@($jehk,[byte]0x5E))) 'Approved production Frost/Jehk binding missing.'
 $contextType=$a.GetType('SoMRandomizer.processing.common.RandoContext',$true)
 Assert-True ($null -eq $contextType.GetField('frostJehkManualPilot',[Reflection.BindingFlags]'Instance,NonPublic')) 'Pilot switch remains compiled.'
 foreach($name in @('AllowsManualPilot','GetDirectPrototype','AssessDirect')) {
  Assert-True ($null -eq $registry.GetMethod($name,[Reflection.BindingFlags]'Static,Public,NonPublic')) ('Experimental registry API remains: '+$name)
 }
-Assert-True (@($a.GetTypes() | Where-Object {$_.Name -match '^(DirectBoss|BossDirect)'}).Count -eq 0) 'Prototype types remain compiled.'
-Assert-True ($registry.GetMethod('Capability').Invoke($null,@($jehk,[byte]0x5E)).ToString() -eq 'Unsupported') 'Frost/Jehk pilot classification remains.'
+Assert-True (@($a.GetTypes() | Where-Object {$_.Name -match '^(DirectBoss|BossDirect)' -and $_.Name -notin @('DirectBossSpawn','DirectBossFloor')}).Count -eq 0) 'Prototype types remain compiled.'
+Assert-True ($null -ne $a.GetType('SoMRandomizer.processing.common.BossArenaGeometry',$false)) 'Required shared production geometry helpers missing.'
+Assert-True ($registry.GetMethod('Capability').Invoke($null,@($jehk,[byte]0x5E)).ToString() -eq 'Implemented') 'Approved Frost/Jehk production classification missing.'
 foreach($file in $manifest.Files | Where-Object Path -like '*.cs') {
  Assert-True ((Get-Content -LiteralPath (Join-Path $snapshot $file.Path) -Raw) -notmatch 'frostJehkManualPilot|AllowsManualPilot|DirectBossPlacement|BossDirectAssessment|DirectBossJumpPositions|GetDirectPrototype|AssessDirect') ('Experimental source dependency: '+$file.Path)
 }
-Assert-True ($manifest.Files.Count -eq 487 -and $manifest.RemovedExclusive.Count -eq 3) 'Unexpected cleanup inventory.'
-'PASS: RC2 ordinary generator; Weapon Power and prototype types/APIs/switches absent; all source hashes and patched dependencies intact; public Frost/Jehk remains unsupported.'
+Assert-True ($manifest.Files.Count -eq 490 -and $manifest.Candidate -eq 'Alpha 0.1 RC4') 'Unexpected final runtime inventory.'
+'PASS: RC4 ordinary generator; required runtime geometry/approved expansion present; Weapon Power and prototype catalogue/APIs/pilot absent; all 490 source hashes and patched dependencies intact.'

@@ -1,6 +1,6 @@
 param(
     [string]$AssemblyPath=(Join-Path $PSScriptRoot '..\SoMRandomizer\bin\Debug\net462\SoMRandomizer.exe'),
-    [string]$SourceRom='',
+    [string]$SourceRom='D:\views\tools\bots\Secret of Mana (US) (1993) (Action Role Playing Game) (Super Nes).sfc',
     [string]$BaselinePath='',
     [switch]$WriteBaseline
 )
@@ -22,7 +22,7 @@ foreach($row in $rows) {
         if($registry) { Assert-True ($swap -eq $registry.GetMethod('CanSwap').Invoke($null,@($slot,$id))) 'Registry widened Swap.' }
     }
 }
-Assert-True ($rows.Count -eq 38 -and $randomCount -eq 1046 -and $swapCount -eq 833) 'Admission snapshot changed.'
+Assert-True ($rows.Count -eq 38 -and $randomCount -eq 1077 -and $swapCount -eq 864) 'Admission snapshot changed outside documented expansion.'
 $fixtures=@{}
 foreach($mode in @('vanilla','random','swap','coexist')) {
     $pins=@{}
@@ -67,10 +67,10 @@ if($WriteBaseline) {
 }
 if($registry) {
     $jehk=$maps.GetField('DOPPELGANGERS').GetValue($null)
-    Assert-True ($registry.GetMethod('Capability').Invoke($null,@($jehk,[byte]0x5E)).ToString() -eq 'Unsupported') 'Removed Frost pilot is still classified as supported.'
-    Assert-True (-not $registry.GetMethod('CanSwap').Invoke($null,@($jehk,[byte]0x5E))) 'Pilot exposed to Swap.'
-    $pins=Native-Pins; $pins.doppelgangers='Frost-Gigas'; $rejected=$false
-    try { Apply 'processing.common.BossSwaps' (New-Case 'random' $pins) } catch { $rejected=$_.Exception.ToString().Contains('plando is incompatible') }
-    Assert-True $rejected 'Public Frost/Jehk plando admitted.'
+    Assert-True ($registry.GetMethod('Capability').Invoke($null,@($jehk,[byte]0x5E)).ToString() -eq 'Implemented') 'Accepted Frost/Jehk contract not promoted.'
+    Assert-True ($registry.GetMethod('CanSwap').Invoke($null,@($jehk,[byte]0x5E))) 'Production Frost/Jehk Swap missing.'
+    $pins=Native-Pins; $pins.doppelgangers='Frost-Gigas'
+    $direct=New-Case 'random' $pins; Apply 'processing.common.BossSwaps' $direct
+    Assert-True (($direct.Context.bossEncounters.Bindings | Where-Object DestinationMap -eq 72).PhysicalMap -eq 72) 'Production Frost/Jehk still uses donor pilot.'
 }
 'PASS: 38 destinations, 1444 pairing equivalence, all adapter descriptions; Random/Swap/native/coexist ROM, events, doors and RNG fingerprints.'

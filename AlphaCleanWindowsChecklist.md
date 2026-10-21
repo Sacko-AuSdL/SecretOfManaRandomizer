@@ -1,4 +1,4 @@
-# Alpha 0.1 RC3 clean Windows acceptance
+# Alpha 0.1 RC4 clean Windows acceptance
 
 **Status: NOT RUN.** Relocated command-line checks on a developer machine do not
 count as a clean environment. No clean Windows VM/profile was supplied.

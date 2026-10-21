@@ -1,67 +1,37 @@
-# Alpha verification results
+# Alpha 0.1 RC4 verification
 
-## RC3 verification
+The existing release checkout was built independently from the development
+checkout. Release/net462 passed: 0 errors, 25 existing warnings. Locked restore
+and live all-transitive vulnerability audit passed without reported findings.
 
-Completed 2026-10-20 from the independently exported RC3 source: Release/net462
-build passed (0 errors, 25 existing warnings); all 38 production suites passed;
-locked restore and the fresh all-transitive NuGet vulnerability audit passed.
-The 1,444 registry pairings and four baseline fingerprints are unchanged.
-All seven production controls match AlphaProduction.RC3.csv. The reported seed
-and repeat are identical: 97EC839534864B8968EED37D89A43BFDF26DBCB580B775F0162E23898FD9E827.
-The first Fire Palace chest grants the Drum and all seven Chaos offices remain
-closed. Three packaged CLI starter worlds and the repeat retain RC2 hashes.
-Headless UI options serialization/round trips passed; no visible GUI/Mesen
-acceptance of this package is claimed.
+All 45 production suites passed. These cover boss registry/geometry, expanded
+Doppelgangers, Death Link/scaling/returns, Slime/Wall/Triple compatibility, native
+map bounds, spells/affinity, Orbs/hints, gameplay options, save/reset music,
+normal starting prizes, Cannon travel, Sandship, Christmas and Kakkara/Luna logic.
+The final pool has 38 destinations, 1,444 possible pairings, 1,077 Random and
+864 Swap admissions, 18 Doppelganger locations and 17 Jehk encounter choices.
 
-The current runner includes 38 production suites: the inherited 36 plus
-KakkaraChaosReachability and KakkaraProgression. The latter asserts Luna stays
-Flammie-gated in every Cannon mode, retains Orb/Moon Seed gates, rejects circular
-Drum placement, and preserves Drum-out-of-logic initial flight. Ferry events
-are unchanged. The exact reported seed and deterministic repeat require the
-first Fire Palace chest to grant the Drum; all seven Chaos offices remain closed.
+Two initial failures were obsolete RC3 expectations, not suppressed defects:
 
-AlphaProduction.RC3.csv changes only mixed-per-character (Kakkara Chaos), to
-76BCF20871086CBA7C965A0B6298BEB38B3FBACABCFDCA4DD059177DB603C861.
-Six controls retain RC2 hashes. Three real CLI starter profiles plus a repeat
-retain their RC2 output hashes. Final results and package hashes are reported
-by the release handoff and RELEASE.json; logs/ROMs remain ignored.
+- Source scope now admits the required neutral geometry value types and approved
+  production encounters, while still rejecting actual prototype catalogues,
+  historical pilot APIs and Weapon Power. All 490 source hashes are checked.
+- The Kakkara test now verifies real initial reachability and actual ROM reward
+  bytes rather than a frozen Cannon count/chest. All nine cases passed, including
+  the exact seed/repeat and equal free/paid route topology and initial checks.
+  Seed `370385E350F7D294` has closed Kakkara and Sandship Captain grants the Drum
+  in cycle zero. The forced-closed-network solver regression remains unchanged.
 
-## Existing RC2 package
+Initial failed logs and retest evidence are preserved in private build output;
+none of the 45 production suites was excluded. Expanded boss pools intentionally
+change old RC3 world hashes; deterministic generation remains required.
 
-Recorded 2026-10-18: 37 suites passed; Release/net462 build 0 errors and
-25 existing warnings; locked restore and live transitive audit passed;
-1,444 boss pairings and four ROM/event/door/RNG fixtures matched;
-seven control ROMs and three starters plus repeat matched RC1.
-All 170 packaged checksums and the source input manifest were verified.
+The package workflow additionally verifies real UI-binding serialization,
+three normal production CLI worlds and a repeat, exact source/runtime/archive
+hashes, excluded/private artifact checks and ZIP extraction. Final package
+metadata and the handoff report give the results and checksum, not old fixtures.
 
-Those are original package checks, not claims of a clean Windows GUI test or
-new emulator completion. The package remains immutable.
-
-## Historical RC2 committed-branch verification
-
-Use `release/Invoke-AlphaVerification.ps1` against an independently built
-executable exported from this committed source. Its three groups comprise
-36 production suites. The one manual-profile-only test from RC2 is omitted
-because that manual ROM scaffolding is deliberately not committed.
-
-The runner compares all seven generated control ROM hashes to
-`tests/fixtures/AlphaProduction.RC2.csv`; the registry uses
-`tests/fixtures/BossEncounterRegistry.RC2.json` for 1,444 admissions and four
-fixed ROM/event/door/RNG fingerprints. Fixtures contain hashes, not ROM bytes.
-
-`release/Invoke-AlphaGameplayChecks.ps1` launches the real executable for all
-three canonical starter options and a repeat. It checks successful production
-simulation, normal Sword/start inventory, native executable/event bounds and
-all RC2 starter hashes. No manual subclass or debug profile is used there.
-
-The local handoff reports the exact verified commit and command outcomes.
-Raw logs/ROMs stay in ignored output directories, not public source.
-Rebuilt EXE hashes need not equal RC2 because of wildcard build metadata;
-487 input hashes and gameplay-output hashes must match exactly.
-
-## Human coverage
-
-Clean Windows GUI and complete package-level playthroughs have not been
-performed by this repository-only process. Previous maintainer Mesen approvals
-for individual features remain acknowledged. Full runs may be performed by
-volunteer Alpha testers after technical distribution checks and approval.
+Manual Mesen acceptance of the integrated features was supplied by the
+maintainer, including the final Dragon Worm arena/return correction. No new
+emulator run, exhaustive pairing playthrough or clean Windows GUI test is
+claimed by this repository-only preparation. Those remain distinct coverage.

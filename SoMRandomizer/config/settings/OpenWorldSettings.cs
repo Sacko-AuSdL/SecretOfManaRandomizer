@@ -71,6 +71,7 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON = "on";
         public const string PROPERTYNAME_CRYSTAL_ORB_WEAPON_BREAKING = "crystalOrbWeaponBreaking";
         public const string PROPERTYNAME_SPELL_SHUFFLE = "spellShuffle";
+        public const string PROPERTYNAME_DOPPELGANGER_DEATH_LINK = "doppelgangerDeathLink";
         public const string PROPERTYVALUE_SPELL_SHUFFLE_OFF = "off";
         public const string PROPERTYVALUE_SPELL_SHUFFLE_PER_CHARACTER = "perCharacter";
         public const string PROPERTYVALUE_SPELL_SHUFFLE_PARTY = "party";
@@ -105,6 +106,8 @@ namespace SoMRandomizer.config.settings
             setInitial(PROPERTYNAME_RANDOMIZE_SHOPS, true); // shop rando
             setInitial(PROPERTYNAME_RANDOMIZE_COLORS, false); // map color rando
             setInitial(PROPERTYNAME_AUTOSAVE, true); // autosave in 4th slot
+            setInitial(PROPERTYNAME_DOPPELGANGER_DEATH_LINK, new string[] { "on", "off" },
+                new string[] { "On (Vanilla)", "Off (Challenge)" }, "on");
             setInitial(PROPERTYNAME_NO_WALKING_CHESTS, true); // chests don't run away
             setInitial(PROPERTYNAME_SHOW_ENEMY_LEVEL, true); // show enemy level as part of its name
             setInitial(PROPERTYNAME_REFACTOR_MAGIC_ROPE, true); // magic rope works in more places

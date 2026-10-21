@@ -1,7 +1,8 @@
 param(
  [Parameter(Mandatory=$true)][string]$PackageRoot,
  [Parameter(Mandatory=$true)][string]$SourceRom,
- [string]$OutputRoot=''
+ [string]$OutputRoot='',
+ [switch]$RecordCandidate
 )
 $ErrorActionPreference='Stop'
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -74,7 +75,7 @@ foreach($profile in @($profiles)+@($profiles[0])) {
  $romHash=(Get-FileHash $destination).Hash
  $baselineName=if($name -eq 'Short-Repeat') { 'Short' } else { $name }
  $expected=@($baseline.Profiles | Where-Object Name -eq $baselineName)
- Assert-True ($expected.Count -eq 1 -and $romHash -ceq $expected[0].ExpectedRomSha256) ('Committed source changed RC2 starter ROM: '+$name)
+ if(-not $RecordCandidate){Assert-True ($expected.Count -eq 1 -and $romHash -ceq $expected[0].ExpectedRomSha256) ('Packaged candidate starter ROM changed: '+$name)}
  $results += [pscustomobject]@{Name=$name;Seed=$profile.Seed;Goal=$profile.Goal;Options=$profile.Options;Sha256=$romHash;Simulation='passed';NormalSword='passed';GameplayCompletion='pending';KeyPlacements=$expectations}
  $results | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output 'results.json') -Encoding UTF8
  Write-Output ('PASS: standalone production CLI '+$name+'; normal Sword/no supplies, simulation and pointer/native-code checks.')

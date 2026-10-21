@@ -239,6 +239,7 @@ namespace SoMRandomizer.forms
 
         // due to hardcoded positions in vanilla game; may change later
         string[] singleInstanceBosses = new string[] {
+            VALUE_BOSS_DOPPELGANGERS,
             VALUE_BOSS_TRIPLE_TONPOLE,
             VALUE_BOSS_SPIKEY,
             VALUE_BOSS_BLUESPIKE,
@@ -291,6 +292,7 @@ namespace SoMRandomizer.forms
             VALUE_BOSS_VAMPIRE,
             VALUE_BOSS_METALMANTIS,
             VALUE_BOSS_MECHRIDER2,
+            VALUE_BOSS_MECHRIDER1,
             VALUE_BOSS_BLUESPIKE,
             VALUE_BOSS_GORGONBULL,
             VALUE_BOSS_HYDRA,

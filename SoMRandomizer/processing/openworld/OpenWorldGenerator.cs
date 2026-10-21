@@ -33,6 +33,7 @@ namespace SoMRandomizer.processing.openworld
             addModeSpecificHack(new CrystalOrbWeaponBreaking());
             // randomize bosses
             addModeSpecificHack(new BossSwaps());
+            addModeSpecificHack(new DoppelgangerDeathLink());
             // should be after BossSwaps since that sets the name of mech rider to mech rider 1/2/3
             addModeSpecificHack(new OpenWorldSillyEnemyNamePicker());
             // determine number of seeds for MTR and publish to the context

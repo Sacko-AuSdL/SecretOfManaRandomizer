@@ -625,6 +625,13 @@ namespace SoMRandomizer.processing.hacks.openworld
                             }
                         }
                         byte level = origRom[0x101C00 + i * 29 + 0];
+                        // Native shadows have level zero. The averages above already
+                        // normalize these rows to level 50; use the SAME denominator
+                        // for classification. Dividing HP/STR/DEF by zero classified
+                        // every nonzero shadow stat as +Infinity ("high"), inflating
+                        // three actors independently. This is not an HP balance nerf.
+                        if (level == 0 && DoppelgangerBossArenaRedirect.SHADOW_SPECIES.Contains((byte)i))
+                            level = 50;
                         int vanillaValue = 0;
                         if (sixteenBitOffsets.Contains(offset))
                         {

@@ -1,32 +1,32 @@
-# Alpha 0.1 RC3 known issues
+# Expanded Open World Alpha 0.1 RC4 — known limitations
 
-**Unofficial experimental candidate; explicit release approval and clean Windows
-GUI smoke testing remain pending.** Full runs are volunteer coverage, not a
-personal-playthrough prerequisite for inviting testers. Keep ordinary saves
-separate from other ROMs and Alpha versions.
+This is an unofficial, unsigned community playtest build, not an upstream stable
+release. Use a new game and separate ordinary saves/save states for each ROM.
 
-- A defeated Doppelganger may occasionally leave a ghost visual with three
-  Sprite roles. Previously reported cases still completed; report any blocker.
-- Boss compatibility is intentionally conservative. Many special encounters use
-  private copies of their native arenas while preserving the destination's
-  reward and return. New direct-placement prototypes are not regular choices.
-- Weapon Power, Weapon Master/Fortress weapon gates and harder Manabite combat
-  are not included. Manabite is cosmetic.
-- The application and ROM still show upstream numeric version 1.49. Use the
-  **Alpha 0.1 RC3 package identifier and EXE hash** in reports; do not mistake the
-  upstream update link/banner for an Alpha update channel.
-- Only Open World is in this playtest's acceptance scope. Cannon Chaos is not
-  the separate legacy Chaos game mode. Other existing UI modes have not been
-  qualified for this Alpha.
-- Command-line generation can report an error without a failing process exit
-  code. Require a valid output and `Done!` in the generation log.
-- Settings/spoilers can reveal a seed; generation logs may contain local paths.
-  Share them privately and redact personal paths before public posting.
-- Different emulators/flash hardware, display scaling, keyboard navigation and
-  clean Windows installation still need human verification.
-- RC2 removes the prototype catalogue/helpers and disabled Frost/Jehk pilot
-  from release source and binaries, rather than merely hiding their settings.
-  No public boss eligibility expansion is included.
+- Boss compatibility is deliberately bounded. Some encounters use private arena
+  copies while retaining the entered location's prize/progression/return.
+  Dragon Worm's shadow encounter uses a recognizable copy of its own clearing.
+  The other five Pure Lands shadow placements still use donor rooms and may
+  include a brief completed-entry return transition. Report any wrong position,
+  lost control, repeated fight or repeated reward; they were not converted in
+  the Dragon Worm fix.
+- A defeated shadow can occasionally leave a nonblocking ghost visual with
+  three Sprite gameplay roles. Previously reported encounters still completed.
+- The maintainer has accepted the focused Doppelganger/Death Link/scaling,
+  Jehk, save/reset and Dragon Worm ArenaFix2 cases in Mesen. That does not mean
+  every supported boss pairing, party configuration or full seed was played.
+- Clean Windows GUI installation, unusual display scaling, other emulators and
+  flash hardware still need human coverage. Packaged CLI checks on the development
+  machine are not a clean-machine GUI test.
+- The application/ROM retain upstream numeric version 1.49. Identify this build
+  as Alpha 0.1 RC4 and include its EXE/ROM hashes in reports.
+- Only Open World is qualified for this playtest. Cannon Chaos is not the
+  separate legacy Chaos game mode.
+- The CLI may exit successfully even when generation fails. Require a valid
+  output and `Done!` plus successful simulation in its log.
+- Weapon Power, generic direct-placement experiments, the historical Frost
+  donor pilot, Weapon Master/Fortress weapon gates and harder Manabite combat
+  are excluded. Approved production Jehk Gigas replacements ARE included.
 
-For a crash or softlock preserve the earliest pre-failure save, seed, full
-options, ROM/EXE hashes, emulator version and exact steps. Do not send game ROMs.
+Never share base/generated game ROMs. Preserve a pre-failure save, complete
+settings, seed, emulator version and exact steps. Redact private paths from logs.

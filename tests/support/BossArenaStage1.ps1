@@ -23,13 +23,14 @@ function Native-Pins {
         thunderGigas='Thunder-Gigas';tripleTonpole='Triple-Tonpole'
     }
 }
-function New-Case([string]$Mode='random',$Pins=@{}) {
+function New-Case([string]$Mode='random',$Pins=@{},[bool]$Pilot=$false) {
     $settings=[Activator]::CreateInstance((T 'config.settings.OpenWorldSettings'),[object[]]@([Activator]::CreateInstance((T 'config.settings.CommonSettings'))))
     $settings.set('opBosses',$Mode); $settings.set('crystalOrbWeaponBreaking','off')
     $context=[Activator]::CreateInstance((T 'processing.common.RandoContext'))
     $context.randomFunctional=[Random]::new(21377)
     $context.namesOfThings=[Activator]::CreateInstance((T 'processing.hacks.common.util.NamesOfThings'),[object[]]@(,$original))
     foreach($key in $Pins.Keys) { $context.plandoSettings['P_'+$key]=[Collections.Generic.List[string]]::new([string[]]@($Pins[$key])) }
+    if($Pilot) { throw 'Historical manual pilot is not part of the release.' }
     [byte[]]$rom=[byte[]]::new(0x400000); [Array]::Copy($original,$rom,$original.Length)
     $context.originalRom=$original; $context.outputRom=$rom
     return [pscustomobject]@{Rom=$rom;Context=$context;Settings=$settings}

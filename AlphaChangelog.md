@@ -1,79 +1,53 @@
-# Open World Alpha 0.1 RC3 changelog
+# Expanded Open World Alpha 0.1 RC4
 
-Unofficial experimental candidate **Alpha 0.1 RC3**. Fork changes relative to the upstream
-1.49 experience, not a claim that these were all introduced in one commit.
-Awaiting release approval and clean Windows GUI smoke testing; volunteer
-complete-run coverage is still being gathered. Nothing has been published.
+Player-facing expansion since historical baseline aecfa3a. Reduced Watts costs
+were already present at that baseline and remain available; they are not claimed
+as newly introduced by RC4. All previously accepted RC3 features are retained.
 
-## RC3 Kakkara progression correction
+## Final Doppelganger integration
 
-- Physical Potos sword-pedestal ($532) and Pandora ($188) rewards no longer
-  count as portable startup rewards. Kakkara/closed Chaos seeds must actually
-  reach them; only the real startup weapon prizes remain unrestricted.
-- Reported seed `370385E350F7D294` now places the Drum in the first Fire Palace
-  chest, not the inaccessible Potos pedestal. Corrected hotfix manually tested.
-- Luna rewards retain their intended Flammie, Orb and restrictive Moon Seed
-  gates. Cannon networks, fares and RNG algorithms are unchanged.
-- RC2 remains archived, but must not be published with this known softlock.
-
-## RC2 source cleanup
-
-- Removed direct-arena prototype catalogue, assessment and geometry helper
-  classes, and the disabled Frost/Jehk pilot, its switch and admission bypass.
-- Retained the production encounter registry and all approved adapters. Public
-  Random/Swap/plando eligibility and normal ROM generation are unchanged.
-- Manabite assets are credited to Tomm (Discord); creator permission for use
-  and redistribution is confirmed by the maintainer. No asset license invented.
-- RC1 package remains archived unchanged; RC2 has its own source manifest,
-  independently buildable source archive, binaries and checksums.
+- 18 supported locations, including the native trial and17 foreign boss slots.
+- 17 total Jehk encounter choices, with destination-owned rewards/restoration.
+- Death Link On/Vanilla by default; optional Off/Challenge.
+- Corrected shadow HP classes in the existing scaling system; no global HP nerf.
+- Safe private-arena autosave/continue and all-three exact-once completion.
+- Dragon Worm uses its own recognizable clearing copy, both native approaches
+ and exits, in-place rewards and clean completed re-entry rather than cave bounces.
+- Production geometry validation is separated from excluded prototype catalogues.
 
 ## World and travel
 
-- Sandship adds a normal boss/reward location, one-time Captain prize, repeatable
-  Morie hint and cleared revisits.
-- Cannon Travel supports Off, Open, Shuffle and Chaos with progression-aware
-  network integration, destination spoilers and a three-page Open menu.
-- Optional Free Cannon Travel, Kakkara starting location and startup Upper Land
-  Orb requirement information.
-- Christmas delivery logic respects the Flammie requirement for mountain NPCs.
+- Kakkara Start, optional Upper Land Orb startup information and Free Cannons.
+- Cannon Off/Open/Shuffle/Chaos, eight-destination paged Open menus, canonical
+ landing zones, route/closed-office spoilers and progression-aware placement.
+- Sandship boss/reward location, one-time Captain prize, repeatable Morie hint,
+ cleared revisits and normal desert return without the capture sequence.
+- Correct geographic Kakkara/Potos/Pandora ownership, Luna/Flammie/Moon Seed
+ gates, start-with prize simulation and Christmas mountain delivery rules.
 
-## Bosses and progression
+## Bosses
 
-- Conservative regular-boss replacements for Doom's Wall, with eye-stat fixes.
-- Lime/Dread Slime private-arena redirects, neutral display restoration and
-  shared multiline reward-dialogue cleanup.
-- Independent Triple Tonpole/Ice Palace randomization, transformations,
-  Triple-only half HP and exact-once completion.
-- Restricted Doppelganger ↔ Mantis/Jehk replacements preserving destination
-  prizes, return routes and Jehk restoration.
-- Native map traversal protects generated arena pointers and native executable
-  data. NoEnemies preserves the untouched Jehk trial even with Vanilla bosses.
+- Regular bosses in the Doom's Wall Random slot, with wall-eye stat corrections.
+- Lime and Dread Slime compatible redirects and shared neutral display/dialogue
+ restoration, preserving native Fortress and destination progression.
+- Independent Ice Palace boss selection; Triple Tonpole, transformations,
+ Triple-only half HP and exact-once completion.
+- Expanded conservative boss Random/Swap/Plando choices, not universal placement.
 
 ## Magic and optional gameplay
 
-- Crystal Orb Off/Mixed/Weapon Only requirements shared by runtime, hints,
-  target text, colors, spoilers and logic.
-- Per Character and Party Spell Shuffle, including repeated character roles;
-  originating spirit context for Orbs and destination-spirit damage affinity.
-- Optional reduced forging prices and configurable player magic damage.
-- Cosmetic Manabite graphics/palette and battle name; no combat/stat changes.
-- Inherited map music restored after save/load, including soft-reset autosaves.
+- Per Character and Party Spell Shuffle across actual party instances, repeated
+ roles, destination-spirit damage affinity and originating-slot Orb checks.
+- Crystal Orb Off/Mixed/Weapon Only, role-aware eligibility, all eight weapons,
+ correct melee/projectile detection and shared hints/Analyze/colors/spoilers/logic.
+- Player offensive magic damage Vanilla/Fixed/Random;0–100% in 5% steps.
+- Cosmetic Manabite art, palette and battle name; no boss combat changes.
+- Inherited map music restored after save/load and soft-reset autosave sequences.
 
-## Release preparation
+## Packaging and limits
 
-- Scope-clean source snapshot includes the approved production integration,
-  but excludes Weapon Power and manual test generators.
-- System.Text.Json updated from 8.0.4 to 8.0.6; dependency versions/content hashes
-  are locked. Known direct and transitive advisories checked before packaging.
-- Includes three reproducible normal gameplay configurations, licenses/buildable
-  source, known issues, clean Windows checklist and file hashes. No ROM included.
-
-## Not included
-
-New direct-arena experiments, unrestricted boss compatibility, Weapon Power,
-Weapon Master/Mana Fortress weapon gates and harder Manabite combat. Legacy
-non-Open-World modes are outside this Alpha's validation scope.
-
-Known issue: an occasional lingering defeated-shadow ghost visual with three
-Sprite roles. See the player guide for bug reports and the readiness report for
-distribution blockers.
+RC4 has its own binaries, 490-input source manifest/buildable archive, dependencies,
+licenses, normal starter profiles and checksums. RC3 artifacts/tag stay intact.
+Weapon Power, historical Frost pilot and general direct-arena experiments are
+not shipped. KnownIssues.md distinguishes accepted Mesen cases from remaining
+full-run, clean-Windows and exhaustive compatibility coverage.

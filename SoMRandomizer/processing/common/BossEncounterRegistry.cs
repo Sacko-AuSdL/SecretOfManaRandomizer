@@ -7,7 +7,7 @@ using Slot = SoMRandomizer.processing.common.VanillaBossMaps.VanillaBossMap;
 
 namespace SoMRandomizer.processing.common
 {
-    public enum BossExecutionKind { Native, Direct, DonorCopy, Specialized }
+    public enum BossExecutionKind { Native, Direct, DonorCopy, Specialized, DestinationCopy }
     public enum BossCapabilityStatus { Unsupported, Implemented }
 
     /// <summary>Immutable description, NOT a replacement runtime death handler.</summary>
@@ -29,8 +29,8 @@ namespace SoMRandomizer.processing.common
         public string DestinationContinuation { get; }
         public string ReentryContract { get; }
         // Named ownership groups intentionally allow the two directions of an
-        // existing adapter to SHARE its already-reserved block. These are not
-        // free spans or a general-purpose allocation API.
+        // existing adapter to SHARE its already-reserved block. Stage 2 will
+        // add transactional multi-binding allocation; these are not free spans.
         public ReadOnlyCollection<string> Resources { get; }
 
         internal BossEncounterBinding(Slot slot, byte boss, BossExecutionKind kind,
@@ -72,19 +72,27 @@ namespace SoMRandomizer.processing.common
         public static bool CanSwap(Slot slot, byte boss)
         { return DoppelgangerBossArenaRedirect.canSwapInOpenWorld(slot, boss); }
 
+        // Separate evidence from public admission and from the selected physical
+        // binding. A manually accepted harness must not silently become a pool entry.
+
+
+
+
         public static BossCapabilityStatus Capability(Slot slot, byte boss)
         {
             return GetRandomPool(slot).Contains(boss) || CanSwap(slot, boss)
                 ? BossCapabilityStatus.Implemented : BossCapabilityStatus.Unsupported;
         }
 
+
+
         internal static void Capture(RandoContext context, byte[] originalRom, IDictionary<Slot, byte> assignments)
         {
             context.bossEncounters = new BossEncounterRegistry(Destinations().Select(slot =>
-                Describe(originalRom, slot, assignments == null ? slot.getOriginalBossId(originalRom) : assignments[slot])));
+                Describe(originalRom, slot, assignments == null ? slot.getOriginalBossId(originalRom) : assignments[slot], context)));
         }
 
-        private static BossEncounterBinding Describe(byte[] originalRom, Slot slot, byte boss)
+        private static BossEncounterBinding Describe(byte[] originalRom, Slot slot, byte boss, RandoContext context = null)
         {
             byte native = slot.getOriginalBossId(originalRom);
             var kind = native == boss ? BossExecutionKind.Native : BossExecutionKind.Direct;
@@ -110,7 +118,7 @@ namespace SoMRandomizer.processing.common
                 if (reverse)
                 {
                     kind = BossExecutionKind.DonorCopy; physical = DoppelgangerBossArenaRedirect.MANTIS_MAP;
-                    template = MAPNUM_MANTISANT_ARENA;
+                    template = boss == BOSSID_FROSTGIGAS ? MAPNUM_FROSTGIGAS_ARENA : MAPNUM_MANTISANT_ARENA;
                     encounterEvent = DoppelgangerBossArenaRedirect.JEHK_DEATH_EVENT;
                     entries = new List<int> { 0x3DB }; doors = new List<int> { 0x304 };
                     condition = "Real bound actor death -> 6BB -> Jehk flag 3F=5 -> guarded 4E5";
@@ -126,6 +134,49 @@ namespace SoMRandomizer.processing.common
                 }
                 if (boss != native)
                     resources.Add("Doppelganger shared: maps1F1-1F3; ROM08FF50-08FFA3; events6D5/6D6/6B9/6BA/6BB; existing Potos/Jehk flags");
+                // Static assessments describe the production contract, not the
+                // retained historical donor harness. Capture below additionally
+                // records the actual immutable per-seed construction binding.
+                if (context == null && reverse && boss != BOSSID_MANTISANT && DoppelgangerEncounterExpansion.JehkBosses.Contains(boss))
+                {
+                    kind = DoppelgangerEncounterExpansion.IsDirectJehk(boss) ? BossExecutionKind.Direct : BossExecutionKind.DonorCopy;
+                    physical = kind == BossExecutionKind.Direct ? MAPNUM_DOPPEL_ARENA : DoppelgangerBossArenaRedirect.MANTIS_MAP;
+                    template = kind == BossExecutionKind.Direct ? MAPNUM_DOPPEL_ARENA : VanillaBossMaps.BY_VANILLA_BOSS_ID[boss].originalMapNum;
+                }
+                if (context == null && boss == DoppelgangerBossArenaRedirect.BOSS_ID && slot != VanillaBossMaps.DOPPELGANGERS
+                    && slot != VanillaBossMaps.MANTISANT && DoppelgangerEncounterExpansion.SupportsShadows(slot))
+                {
+                    template = DoppelgangerEncounterExpansion.UsesDestinationGeometry(slot) ? slot.originalMapNum : MAPNUM_DOPPEL_ARENA;
+                    if (slot == VanillaBossMaps.DRAGONWORM) kind = BossExecutionKind.DestinationCopy;
+                    doors = DoppelgangerEncounterExpansion.ShadowDestinations.Single(d => d.Map == slot.originalMapNum).Doors.ToList();
+                    condition = "Bound all-three native status gate -> destination completion";
+                    reentry = "Destination completion flag -> guarded destination return";
+                }
+                var expanded = context == null ? null : context.doppelgangerExpansion;
+                if (expanded != null && reverse)
+                {
+                    kind = expanded.DirectJehk ? BossExecutionKind.Direct : BossExecutionKind.DonorCopy;
+                    physical = expanded.DirectJehk ? MAPNUM_DOPPEL_ARENA : DoppelgangerBossArenaRedirect.MANTIS_MAP;
+                    template = expanded.DirectJehk ? MAPNUM_DOPPEL_ARENA : VanillaBossMaps.BY_VANILLA_BOSS_ID[boss].originalMapNum;
+                    continuation += " -> explicit JSR626 destination music after return";
+                }
+                else if (expanded != null && slot == expanded.ForeignSlot)
+                {
+                    kind = expanded.PreservesDestinationTraversal ? BossExecutionKind.DestinationCopy : BossExecutionKind.Specialized; physical = DoppelgangerBossArenaRedirect.SHADOW_MAP;
+                    template = expanded.UsesDonor ? MAPNUM_DOPPEL_ARENA : slot.originalMapNum;
+                    encounterEvent = 0x6D6; doors = expanded.Destination.Doors.ToList();
+                    entries = new List<int> { 0x6D5 };
+                    condition = "Bound map/species/native death-status + living party -> safe deferred all-three 4A -> destination event";
+                    continuation = expanded.Completion.ToString("X3") + " unchanged destination rewards/flags/return/music";
+                    reentry = expanded.PreservesDestinationTraversal
+                        ? "Destination flag >= completed -> area music only; stay on clearing with native upper/lower exits; no repeated prize"
+                        : "Destination flag >= completed -> 6B9 destination return only; no repeated prize";
+                }
+                if (expanded != null && boss != native)
+                {
+                    resources.Clear();
+                    resources.Add("Doppelganger shared transactional reserve: maps1F1-1F3; ROM08FF50-08FFB8; events6D5/6D6/6B9/6BA/6BB; optional pieces3E2/3B8; chained idleB6A4");
+                }
             }
             else if (slot == VanillaBossMaps.DOOMSWALL && DoomWallBossArenaRedirect.requiresRedirect(boss))
             {

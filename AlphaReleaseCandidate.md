@@ -1,101 +1,37 @@
-# Alpha 0.1 RC3 source and package provenance
+# Alpha 0.1 RC4 source and package provenance
 
-This isolated release branch records RC3 production source.
-Local release commits are authorized; push, tags, publication and announcements
-remain unauthorized. RC2 remains archived unchanged.
+This is a local review integration in the existing release checkout, based on
+RC3 commit `a4211863f5fce354f63d0018b1dc31ec3cfd501c`. It is not committed or
+published. The existing RC3 ZIP and alpha.1 tag must remain unchanged.
 
-## Current candidate: RC3
+The manifest records 490 exact production source/resource inputs. The approved
+Doppelganger expansion, Death Link option, scaling, safe saves and Dragon Worm
+return logic are included. Shared geometry validation is separated from excluded
+prototype catalogues, pilot APIs and experimental Weapon Power.
 
-Only one of RC2's 487 production inputs changes: CannonTravelRegions.cs.
-The physical Potos pedestal ($532) and Pandora ($188) checks use PotosArea,
-not unrestricted startup ownership. Real startup weapons remain unrestricted.
-Luna's intended Flammie, Orb and restrictive Moon Seed gates remain unchanged.
-The placement algorithm, Cannon routes/fares and RNG algorithms are untouched.
+The Release build passed with 0 errors and 25 existing warnings. Locked restore,
+live transitive dependency audit and all 45 final production suites passed.
+Initial obsolete RC3 assertions and their successful retests are retained in the
+private verification evidence; no suite was dropped to obtain a pass.
 
-The reported seed `370385E350F7D294` has its Drum in the first Fire Palace
-chest. The corrected hotfix has maintainer Mesen acceptance. RC3 itself is
-repository/CLI verified; no new clean Windows GUI or full-playthrough claim.
-38 production suites cover the inherited integration plus Kakkara/Luna cases.
-Six of seven production control hashes and all starter/repeat hashes stay RC2;
-the Kakkara Chaos control intentionally changes. See AlphaProduction.RC3.csv.
+The exact Kakkara report seed now has a closed Kakkara office and the Flammie
+Drum at Sandship Captain in the initial reachable collection cycle. The old
+fixed chest and seven-closed-office assumptions were not gameplay invariants.
+The independent forced-closed-network softlock regression remains mandatory.
 
-The final handoff and generated ZIP sidecar identify the RC3 artifact/hash.
-RELEASE.json inside the ZIP records the local release commit, EXE/source/archive
-hashes and verification counts. Source and runtime are exported from this branch,
-not reconstructed from the dirty development tree. No ROM/build is committed.
+The packaging workflow validates the source manifest, tested runtime, real CLI
+starter profiles and deterministic repeat before creating a separate RC4 ZIP.
+RELEASE.json and SHA256SUMS.txt identify the exact source/archive/runtime bytes.
+No game ROM, generated log, developer cache or test shortcut is distributed.
 
-The remaining sections below record immutable RC2 provenance/history, not
-authorization to publish the obsolete RC2 package.
+Headless UI-binding and extracted CLI checks do not constitute clean Windows
+GUI acceptance. Wider full-run and compatibility coverage remains volunteer
+playtest work. See KnownIssues and the clean Windows checklist.
 
-## Archived RC2 artifact (superseded; do not publish)
+Existing RC2/RC3 provenance and fixture files remain historical records, not
+current RC4 output-hash expectations. The archival source-export and RC2-to-RC3
+manifest-update scripts are not part of the RC4 workflow. Use release/README.md.
 
-- Filename: `SecretOfManaRandomizer-Alpha-0.1-RC2.zip`
-- Size: 5,664,295 bytes; 171 files.
-- ZIP SHA-256: `7EE6E1B5A82B0C0EFBB8B7E375126844823CF9BF9E451038606EB5EF3B63B98F`
-- Original EXE SHA-256: `F62B9E8AE903034012822A1F44CCFC41ABE15751B2298173B5635D4420ED1BD2`
-- Source archive SHA-256: `30EE4E3BE0AFFCE76A21FF6F87CE10A9E50741652418B10301E425336D63DFD4`
-- Manifest SHA-256: `22E854AB32903F56C1C9C7C17A7DB50F306E498CA1EC081855F3B1C444D730E3`
-
-RC2's archived manifest listed all 487 exact build inputs. The current
-`RELEASE-SOURCE-MANIFEST.json` records the single RC3 input update and parent hash.
-`release/RC2-PACKAGE.json` retains the original
-package metadata and starter ROM hashes. No ZIP/EXE/ROM is committed.
-
-## History and cleanup
-
-Base commit: `1fabbb3741a4b6843d25ef933a6a0985c5fe2f1f`.
-The base alone omitted the approved Doppelganger/registry integration.
-This branch adds the clean RC2 version, not the dirty development version.
-
-Excluded prototype files/types: DirectBossPlacement, BossDirectAssessment and
-DirectBossJumpPositions, including their exclusively experimental nested types.
-Also removed: the Frost/Jehk pilot field, construction branch, template/log
-special cases, ManualPilot capability, assessment APIs and plando bypass.
-Weapon Power, manual profile installers and prototype generators are absent.
-
-Retained: production BossEncounterRegistry/BossEncounterBinding admission and
-destination metadata, approved Mantis/Jehk Doppelganger adapters, NoEnemies
-native-trial preservation and all existing Slime/Wall/Triple/Sandship behavior.
-No new public boss combinations or RNG draws are introduced.
-
-Ten inherited source files differ from raw base blobs by EOL only; preserving
-these bytes is necessary to match the approved manifest. `.gitattributes`
-prevents checkout normalization of build inputs. Ignore-EOL review confirms no
-behavior edits in those ten files. Nine pre-existing trailing-space-only lines
-in MainForm_OpenWorldPresets.cs and Tileset16.cs are intentionally retained.
-No source formatting cleanup or replacement candidate is hidden in this branch.
-
-## Verification evidence and reproduction
-
-Original RC2 verification (2026-10-18): 37 suites passed, 1,444 registry pairings
-and four baseline fixtures passed; seven production controls and all three
-starter/repeat outputs matched RC1. Fresh extraction verified 170 checksums.
-Both Release builds passed with 0 errors / 25 existing warnings.
-
-The RC2 public branch excluded the manual-equipment profile and its one profile-only
-test. Its **36 production suites** preserved all relevant production coverage and
-add no manual teleport or debug grants. Run committed-source verification as
-documented in `release/README.md`; results identify the verified local Git tip.
-The permanent fixtures contain hashes/admission metadata only, not ROM data.
-
-`release/New-AlphaSourceSnapshot.ps1` verifies and exports all 487 inputs from
-this checkout, refusing hash mismatches or extra compiled C# files. Restore/build
-the exported source independently to verify committed build provenance.
-Normal ROM hashes must match the RC3 fixture (six RC2 controls unchanged);
-source-scope tests require excluded types/APIs
-and settings to be absent.
-
-The target remains net462 and System.Text.Json remains 8.0.6 with a locked graph.
-The original wildcard version/Deterministic=false mean a new EXE hash may differ
-because of build metadata even when input bytes and ROM behavior match.
-The archived RC2 ZIP must not be overwritten. RC3 is packaged separately.
-
-## Credits and pending acceptance
-
-Manabite by **Tomm (Discord)**, with permission for use and redistribution
-confirmed by the maintainer. Upstream authorship and all applicable notices
-are preserved. No additional asset terms or creator URL are invented.
-
-Clean Windows GUI smoke testing is still pending. No new Mesen/full-playthrough
-acceptance is claimed. Full runs are volunteer coverage, not a mandatory personal
-playthrough gate before inviting Alpha testers after distribution checks.
+Manabite artwork/palette is credited to Tomm (Discord), with creator permission
+for use and redistribution confirmed by the maintainer. Upstream authorship,
+source and applicable license notices are retained.

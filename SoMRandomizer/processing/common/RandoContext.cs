@@ -1,4 +1,4 @@
-﻿using SoMRandomizer.config.settings;
+using SoMRandomizer.config.settings;
 using SoMRandomizer.processing.common.structure;
 using SoMRandomizer.processing.hacks.common.util;
 using System;
@@ -46,5 +46,6 @@ namespace SoMRandomizer.processing.common
         // Generation metadata only. The existing selector and runtime adapters
         // remain authoritative; this is not another boss roll or runtime router.
         public BossEncounterRegistry bossEncounters;
+        public DoppelgangerEncounterExpansion doppelgangerExpansion;
     }
 }

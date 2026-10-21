@@ -118,6 +118,7 @@ public sealed class SpellShuffleMachine
             case 0x0B: Push(DP,2); break;
             case 0x2B: DP=Pull(2); NZ(DP,2); break;
             case 0x5B: DP=A&65535; NZ(DP,2); break;
+            case 0x3B: L(S); break;
             case 0xAB: DB=Pull(1); NZ(DB,1); break;
             case 0xA9: L(O(W)); break;
             case 0xAD: L(Read(Abs(),W)); break;
@@ -137,6 +138,7 @@ public sealed class SpellShuffleMachine
             case 0x99: Write(Abs()+Y,A,W); break;
             case 0x85: Write(DP+O(1),A,W); break;
             case 0x84: Write(DP+O(1),Y,IW); break;
+            case 0x86: Write(DP+O(1),X,IW); break;
             case 0x64: Write(DP+O(1),0,W); break;
             case 0x83: Write(S+O(1),A,W); break;
             case 0x9C: Write(Abs(),0,W); break;
@@ -144,6 +146,7 @@ public sealed class SpellShuffleMachine
             case 0xA2: X=O(IW); NZ(X,IW); break;
             case 0xA0: Y=O(IW); NZ(Y,IW); break;
             case 0xAE: X=Read(Abs(),IW); NZ(X,IW); break;
+            case 0xBE: X=Read(Abs()+Y,IW); NZ(X,IW); break;
             case 0xAC: Y=Read(Abs(),IW); NZ(Y,IW); break;
             case 0xA6: X=Read(DP+O(1),IW); NZ(X,IW); break;
             case 0xA4: Y=Read(DP+O(1),IW); NZ(Y,IW); break;
@@ -158,6 +161,9 @@ public sealed class SpellShuffleMachine
             case 0x89: v=O(W); P=(P&~2)|((A&v&Mask)==0?2:0); break;
             case 0x3C: v=Read(Abs()+X,W); P=(P&~0xC2)|(v&(W==1?0xC0:0xC000))>>(W==1?0:8)|((A&v&Mask)==0?2:0); break;
             case 0x29: L(A&O(W)); break;
+            case 0x3F: L(A&Read(O(3)+X,W)); break;
+            case 0x1F: L(A|Read(O(3)+X,W)); break;
+            case 0x91: Write(DB*65536+Read(DP+O(1),2)+Y,A,W); break;
             case 0x23: L(A&Read(S+O(1),W)); break;
             case 0x09: L(A|O(W)); break;
             case 0x18: P&=~1; break;
@@ -165,16 +171,20 @@ public sealed class SpellShuffleMachine
             case 0x69: Math(O(W),false); break;
             case 0x63: Math(Read(S+O(1),W),false); break;
             case 0x6D: Math(Read(Abs(),W),false); break;
+            case 0x6F: Math(Read(O(3),W),false); break;
             case 0x7D: Math(Read(Abs()+X,W),false); break;
+            case 0x79: Math(Read(Abs()+Y,W),false); break;
             case 0x65: Math(Read(DP+O(1),W),false); break;
             case 0xE9: Math(O(W),true); break;
             case 0xED: Math(Read(Abs(),W),true); break;
             case 0xE5: Math(Read(DP+O(1),W),true); break;
+            case 0xFF: Math(Read(O(3)+X,W),true); break;
             case 0xC9: C(O(W),A,W); break;
             case 0xCF: C(Read(O(3),W),A,W); break;
             case 0xC5: C(Read(DP+O(1),W),A,W); break;
             case 0xDF: C(Read(O(3)+X,W),A,W); break;
             case 0xDD: C(Read(Abs()+X,W),A,W); break;
+            case 0xD9: C(Read(Abs()+Y,W),A,W); break;
             case 0xE0: C(O(IW),X,IW); break;
             case 0xC0: C(O(IW),Y,IW); break;
             case 0x1A: L(A+1); break;
@@ -196,6 +206,7 @@ public sealed class SpellShuffleMachine
             case 0x22: v=O(3); Call(v); break;
             case 0x6B: Return(); break;
             case 0x20: v=O(2); Push((PC-1)&65535,2); PC=(PC&0xFF0000)|v; break;
+            case 0xFC: v=O(2); v=Read((PC&0xFF0000)+v+X,2); Push((PC-1)&65535,2); PC=(PC&0xFF0000)|v; break;
             case 0x4C: v=O(2); PC=(PC&0xFF0000)|v; break;
             case 0x5C: PC=O(3); break;
             case 0x7C: v=O(2); PC=(PC&0xFF0000)|Read((PC&0xFF0000)+v+X,2); break;

@@ -42,7 +42,7 @@ public sealed class DoppelgangerEventMachine
                 pc += NativeActorAdvance(rom, cmd, ActorStatus);
             }
             else if (op >= 0x10 && op <= 0x17)
-            { eventId = ((op - 0x10) << 8) | script[pc + 1]; pc = 0; }
+            { eventId = ((op - 0x10) << 8) | script[pc + 1]; Sequence.Add("jump:" + eventId.ToString("X3")); pc = 0; }
             else if (op >= 0x18 && op <= 0x1B)
             { LastDoor = ((op - 0x18) << 8) | script[pc + 1]; Sequence.Add("door:" + LastDoor.ToString("X3")); pc += 2; }
             else if (op >= 0x20 && op <= 0x27)
@@ -56,6 +56,8 @@ public sealed class DoppelgangerEventMachine
                 pc += 2;
             }
             else if (op == 0x30) { Flags[script[pc + 1]] = script[pc + 2]; pc += 3; }
+            else if (op == 0x29 || op == 0x2A)
+            { int flag = script[pc + 1]; Flags[flag] = (byte)((Flags[flag] + (op == 0x29 ? 1 : 15)) & 15); pc += 2; }
             else if (op == 0x2F || op == 0x28)
             {
                 if (op == 0x2F && script[pc + 1] == 0x84) PartyMpRestorations++;

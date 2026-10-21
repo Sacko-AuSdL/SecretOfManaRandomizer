@@ -296,7 +296,8 @@ namespace SoMRandomizer.processing.hacks.openworld
                     context.workingData.getInt(TripleTonpoleBossArenaRedirect.PROPERTY_SLOT_MAP)];
 
             if (DoppelgangerBossArenaRedirect.hasForeign(context))
-                minLevels[DoppelgangerBossArenaRedirect.SHADOW_MAP] = minLevels[MAPNUM_MANTISANT_ARENA];
+                minLevels[DoppelgangerBossArenaRedirect.SHADOW_MAP] = minLevels[
+                    context.doppelgangerExpansion == null ? MAPNUM_MANTISANT_ARENA : context.doppelgangerExpansion.ForeignSlot.originalMapNum];
             if (DoppelgangerBossArenaRedirect.hasReverse(context))
                 minLevels[DoppelgangerBossArenaRedirect.MANTIS_MAP] = minLevels[MAPNUM_DOPPEL_ARENA];
 

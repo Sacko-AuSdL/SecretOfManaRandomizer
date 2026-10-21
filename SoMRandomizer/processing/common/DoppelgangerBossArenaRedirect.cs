@@ -48,6 +48,7 @@ namespace SoMRandomizer.processing.common
 
         public static void reset(RandoContext context)
         {
+            context.doppelgangerExpansion = null;
             context.workingData.setInt(PROPERTY_NATIVE_BOSS, BOSS_ID);
             context.workingData.setBool(PROPERTY_FOREIGN, false);
             context.workingData.setBool(PROPERTY_REVERSE, false);
@@ -82,15 +83,15 @@ namespace SoMRandomizer.processing.common
 
         public static byte[] getOpenWorldRandomPool(VanillaBossMaps.VanillaBossMap slot)
         {
-            if (slot == VanillaBossMaps.DOPPELGANGERS) return new[] { BOSS_ID, BOSSID_MANTISANT };
+            if (slot == VanillaBossMaps.DOPPELGANGERS) return (byte[])DoppelgangerEncounterExpansion.JehkBosses.Clone();
             byte[] existing = TripleTonpoleBossArenaRedirect.getOpenWorldRandomPool(slot);
-            return slot == VanillaBossMaps.MANTISANT ? existing.Concat(new[] { BOSS_ID }).ToArray() : existing;
+            return DoppelgangerEncounterExpansion.SupportsShadows(slot) ? existing.Concat(new[] { BOSS_ID }).ToArray() : existing;
         }
 
         public static bool canSwapInOpenWorld(VanillaBossMaps.VanillaBossMap slot, byte boss)
         {
-            if (slot == VanillaBossMaps.DOPPELGANGERS) return boss == BOSS_ID || boss == BOSSID_MANTISANT;
-            if (boss == BOSS_ID) return slot == VanillaBossMaps.MANTISANT;
+            if (slot == VanillaBossMaps.DOPPELGANGERS) return DoppelgangerEncounterExpansion.JehkBosses.Contains(boss);
+            if (boss == BOSS_ID) return DoppelgangerEncounterExpansion.SupportsShadows(slot);
             return TripleTonpoleBossArenaRedirect.canSwapInOpenWorld(slot, boss);
         }
 
@@ -205,6 +206,11 @@ namespace SoMRandomizer.processing.common
 
         public static void patchEvents(RandoContext context)
         {
+            if (context.doppelgangerExpansion != null)
+            {
+                context.doppelgangerExpansion.PatchEvents(context);
+                return;
+            }
             if (hasForeign(context))
             {
                 ReserveEvent(context, ENTRY_EVENT);
@@ -227,7 +233,11 @@ namespace SoMRandomizer.processing.common
                 completion.Jump(0x112); completion.End();
                 context.replacementEvents[COMPLETION_EVENT] = completion;
             }
-            if (hasReverse(context))
+            if (hasReverse(context)) PatchReverseEvents(context);
+        }
+
+        internal static void PatchReverseEvents(RandoContext context)
+        {
             {
                 ReserveEvent(context, JEHK_RETURN_EVENT);
                 ReserveEvent(context, JEHK_DEATH_EVENT);

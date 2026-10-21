@@ -1,6 +1,6 @@
 param(
     [string]$AssemblyPath=(Join-Path $PSScriptRoot '..\SoMRandomizer\bin\Debug\net462\SoMRandomizer.exe'),
-    [string]$SourceRom=''
+    [string]$SourceRom='D:\views\tools\bots\Secret of Mana (US) (1993) (Action Role Playing Game) (Super Nes).sfc'
 )
 $ErrorActionPreference='Stop'
 function Assert-True([bool]$Condition,[string]$Message) { if(-not $Condition) { throw $Message } }
@@ -102,8 +102,9 @@ for($map=0;$map -lt 511;$map++) {
 foreach($field in $mapsType.GetFields() | Where-Object FieldType -eq (RepoType 'processing.common.VanillaBossMaps+VanillaBossMap')) {
     $slot=$field.GetValue($null)
     $pool=$redirect.GetMethod('getOpenWorldRandomPool').Invoke($null,@($slot))
-    Assert-True (@($pool | Where-Object { $_ -eq 0x81 }).Count -eq [int]($field.Name -in @('MANTISANT','DOPPELGANGERS'))) 'Doppelganger pool escaped Mantis/Jehk.'
-    if($field.Name -notin @('MANTISANT','DOPPELGANGERS')) {
+    $supported=($field.Name -eq 'DOPPELGANGERS') -or (RepoType 'processing.common.DoppelgangerEncounterExpansion').GetMethod('SupportsShadows').Invoke($null,@($slot))
+    Assert-True (@($pool | Where-Object { $_ -eq 0x81 }).Count -eq [int]$supported) 'Doppelganger pool escaped audited destinations.'
+    if(-not $supported) {
         $old=(RepoType 'processing.common.TripleTonpoleBossArenaRedirect').GetMethod('getOpenWorldRandomPool').Invoke($null,@($slot))
         Assert-True (Equal-Bytes $old $pool) 'Unrelated boss pool changed.'
     }
@@ -163,10 +164,10 @@ Assert-True ($m.Prizes -eq 1 -and $m.LastDoor -eq 0x38) 'Reverse re-entry/callba
 Assert-True ($m.JehkRestorations -eq 1 -and $m.PartyMpRestorations -eq 1) 'Completed re-entry unexpectedly repeats first-completion restoration.'
 
 # Original native trial still works when retained, and NoEnemies protects only it.
-$retained=New-Case 'Doppelgangers' 'Doppelgangers'; Generate-Events $retained
+$retained=New-Case 'Mantis-Ant' 'Doppelgangers'; Generate-Events $retained
 Apply 'processing.hacks.openworld.NoEnemies' $retained
 foreach($obj in (Read-Map $retained[0] 'getObjects' 72)) { Assert-True ($obj.getEventVisMinimum() -ne 15) 'NoEnemies removed selected native shadows.' }
-foreach($obj in (Read-Map $retained[0] 'getObjects' 498)) { Assert-True ($obj.getEventVisMinimum() -ne 15) 'NoEnemies removed private shadows.' }
+Assert-True ((Read-Map $retained[0] 'getObjects' 498).Count -eq 0) 'Retained native trial allocated a duplicate foreign trio.'
 $nativeMachine=Machine $retained; $nativeMachine.Flags[0x3F]=4
 $nativeMachine.Run(0x4E5); Assert-True ($nativeMachine.Prizes -eq 0) 'Native completion bypassed.'
 for($i=0;$i -lt 3;$i++) { $nativeMachine.ActorStatus[$i]=0x80 }

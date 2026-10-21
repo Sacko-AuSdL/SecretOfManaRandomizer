@@ -334,6 +334,7 @@ namespace SoMRandomizer.processing.openworld
         public const string VALUE_BOSS_DOOMSWALL = "Doom's-Wall";
         public const string VALUE_BOSS_VAMPIRE = "Vampire";
         public const string VALUE_BOSS_METALMANTIS = "Metal-Mantis";
+        public const string VALUE_BOSS_MECHRIDER1 = "Mech-Rider-1";
         public const string VALUE_BOSS_MECHRIDER2 = "Mech-Rider-2";
         public const string VALUE_BOSS_BLUESPIKE = "Blue-Spike";
         public const string VALUE_BOSS_GORGONBULL = "Gorgon-Bull";
@@ -407,6 +408,7 @@ namespace SoMRandomizer.processing.openworld
             { VALUE_BOSS_DOOMSWALL, 0x61 },
             { VALUE_BOSS_VAMPIRE, 0x62 },
             { VALUE_BOSS_METALMANTIS, 0x63 },
+            { VALUE_BOSS_MECHRIDER1, 0x60 },
             { VALUE_BOSS_MECHRIDER2, 0x64 },
             { VALUE_BOSS_BLUESPIKE, 0x6B },
             { VALUE_BOSS_GORGONBULL, 0x66 },

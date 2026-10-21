@@ -2,6 +2,7 @@
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.util;
+using System.Collections.Generic;
 using static SoMRandomizer.processing.common.SomVanillaValues;
 
 namespace SoMRandomizer.processing.hacks.common.qol
@@ -289,7 +290,7 @@ namespace SoMRandomizer.processing.hacks.common.qol
             outRom[context.workingOffset++] = 0x01;
 
             // here: filter out maps we don't want to save at, too
-            int[] dontSaveMaps = new int[]
+            var dontSaveMaps = new List<int>
             {
                 MAPNUM_SPIKEY_WITH_NPCS, // spikey arena
                 MAPNUM_EARTHPALACE_INTERIOR_C, // before fire gigas arena
@@ -309,6 +310,18 @@ namespace SoMRandomizer.processing.hacks.common.qol
                 MAPNUM_ICECASTLE_INTERIOR_I, // pre-triple-tonpole
                 MAPNUM_NTR_INTERIOR_H, // NTR indoor rooms
             };
+
+            // The native range test below recognizes species 57-7F, not the
+            // three shadow species 20/2E/3F. Never publish a private arena's
+            // entry door as the saved continue destination. Keep the last safe
+            // world-door save instead; native load uses A25A, not current DC.
+            // This applies only to actually selected Open World trial redirects.
+            if (randoMode == OpenWorldSettings.MODE_KEY
+                && (DoppelgangerBossArenaRedirect.hasForeign(context) || DoppelgangerBossArenaRedirect.hasReverse(context)))
+            {
+                dontSaveMaps.Add(DoppelgangerBossArenaRedirect.SHADOW_MAP);
+                dontSaveMaps.Add(DoppelgangerBossArenaRedirect.MANTIS_MAP);
+            }
 
             // if the target map is any of the ones we don't want, RTL and don't autosave.
             foreach(int dontSaveMap in dontSaveMaps)
