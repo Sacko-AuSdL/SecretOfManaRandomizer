@@ -35,6 +35,18 @@ namespace SoMRandomizer.processing.openworld.events
                 // Use Kakkara's existing town-theme event after the startup door transition.
                 eventData.Jsr(OpenWorldStartingLocation.KAKKARA_MUSIC_EVENT);
             }
+            else if(OpenWorldStartingLocation.useAlternateStart(settings, context))
+            {
+                var town = OpenWorldStartingLocation.getTown(settings, context);
+                // Native town music events END rather than RETURN: copy only their
+                // sound command so initialization and Sword acquisition continue.
+                var music = VanillaEventUtil.getVanillaEvent(origRom, town.MusicEvent);
+                if (music.Count < 5 || music[0] != EventCommandEnum.PLAY_SOUND.Value)
+                    throw new System.InvalidOperationException("Native starting-town music contract changed.");
+                eventData.SetFlag(0xFD, (byte)(town.Map == OpenWorldStartingLocation.ICE_COUNTRY_MAP ? 0 : 1));
+                eventData.SetFlag(0xFE, (byte)(town.Map == OpenWorldStartingLocation.ICE_COUNTRY_MAP ? 13 : 0));
+                eventData.AddRange(music.GetRange(0, 5));
+            }
             else
             {
                 eventData.Add(EventCommandEnum.PLAY_SOUND.Value);

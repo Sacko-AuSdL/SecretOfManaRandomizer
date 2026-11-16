@@ -8,8 +8,9 @@
     <Product>SoMRandomizer</Product>
     <Copyright>Copyright ©  2016-2024</Copyright>
     <Deterministic>false</Deterministic>
-    <AssemblyVersion>1.0.*</AssemblyVersion>
-    <FileVersion>1.0.*</FileVersion>
+    <AssemblyVersion>0.1.0.3</AssemblyVersion>
+    <InformationalVersion>0.1.0-alpha.3</InformationalVersion>
+    <FileVersion>0.1.0.3</FileVersion>
     <LangVersion>7.2</LangVersion>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>

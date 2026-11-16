@@ -1,4 +1,4 @@
-# Expanded Open World Alpha 0.1 RC4 — player guide
+# Expanded Open World Alpha 0.1 Update 3 — player guide
 
 Welcome to this unofficial expansion of Moppleton's Secret of Mana Randomizer!
 The package is a local review candidate until the maintainer approves publication.
@@ -17,16 +17,16 @@ The package is a local review candidate until the maintainer approves publicatio
 
 ## First playthrough
 
-Try `StarterSettings/Short.options.txt`, seed `Alpha01-RC4-Short`: Vanilla Short,
+Try `StarterSettings/Short.options.txt`, seed `Alpha01-Update3-Short`: Vanilla Short,
 Restrictive, Random bosses, ordinary roles, Drum in logic, Mixed Orbs, Per Character
 spells and Cannon Shuffle. Characters/items still have to be found normally.
 
-Then try `Long.options.txt` / `Alpha01-RC4-Long` (Kakkara, Swap bosses, Weapon Only,
+Then try `Long.options.txt` / `Alpha01-Update3-Long` (Kakkara, Swap bosses, Weapon Only,
 Party spells, free Open Cannons), or `ThreeSprites.options.txt` /
-`Alpha01-RC4-ThreeSprites` (three physical characters with Sprite gameplay roles,
+`Alpha01-Update3-ThreeSprites` (three physical characters with Sprite gameplay roles,
 Party spells and free Chaos Cannons). These are normal level 1 profiles, not
 manual boss teleports or equipment grants. Death Link defaults to On/Vanilla.
-RC4's expanded pools intentionally produce different worlds from RC3.
+Boss selection pools remain those of the published Alpha.2; this update adds town starts and the listed localized stability/access fixes.
 
 ## New choices worth trying
 
@@ -80,3 +80,7 @@ Manabite graphics/palette by Tomm (Discord), with creator permission for use and
 redistribution confirmed by the maintainer. Existing credits are retained; no
 creator URL or extra license terms are invented. See LICENSE, buildable Source,
 THIRD-PARTY-NOTICES.md and ThirdPartyLicenses.
+
+## New town starts
+
+With Find Flammie Drum in Logic enabled, Starting Location now also offers Ice Country town (Todo) and Southtown. Default/Potos and Kakkara remain available; Christmas goals keep their dedicated start. No extra progression items are granted. Cannon reachability and placement use your selected starting region.

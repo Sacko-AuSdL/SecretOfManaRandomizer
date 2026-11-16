@@ -66,6 +66,8 @@ namespace SoMRandomizer.config.settings
         public const string PROPERTYNAME_STARTING_LOCATION = "opStartingLocation";
         public const string PROPERTYVALUE_STARTING_LOCATION_DEFAULT = "default";
         public const string PROPERTYVALUE_STARTING_LOCATION_KAKKARA = "kakkara";
+        public const string PROPERTYVALUE_STARTING_LOCATION_ICE_COUNTRY = "iceCountry";
+        public const string PROPERTYVALUE_STARTING_LOCATION_SOUTHTOWN = "southtown";
         public const string PROPERTYNAME_SHOW_UPPER_LAND_ORB_REQUIREMENT = "showUpperLandOrbRequirement";
         public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_OFF = "off";
         public const string PROPERTYVALUE_SHOW_UPPER_LAND_ORB_REQUIREMENT_ON = "on";
@@ -168,8 +170,10 @@ namespace SoMRandomizer.config.settings
                 {
                     PROPERTYVALUE_STARTING_LOCATION_DEFAULT,
                     PROPERTYVALUE_STARTING_LOCATION_KAKKARA,
+                    PROPERTYVALUE_STARTING_LOCATION_ICE_COUNTRY,
+                    PROPERTYVALUE_STARTING_LOCATION_SOUTHTOWN,
                 },
-                new string[] { "Default", "Kakkara" },
+                new string[] { "Default", "Kakkara", "Ice Country town (Todo)", "Southtown" },
                 PROPERTYVALUE_STARTING_LOCATION_DEFAULT);
             setInitial(PROPERTYNAME_RANDOMIZE_ENEMIES, new string[] { "vanilla", "swap", "random", "oops", "none" }, new string[] { "Vanilla", "Swap", "Random spawns", "Oops! All owls", "None" }, "swap");
             setInitial(PROPERTYNAME_RANDOMIZE_BOSSES, new string[] { "vanilla", "swap", "random" }, new string[] { "Vanilla", "Swap", "Random" }, "random");

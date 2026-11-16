@@ -30,7 +30,7 @@ namespace SoMRandomizer.processing.openworld.randomization
             bool cannonTravelEnabled = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION) !=
                 OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF;
             bool useCannonRegionModel = cannonTravelEnabled ||
-                OpenWorldStartingLocation.useKakkara(settings, context);
+                OpenWorldStartingLocation.useAlternateStart(settings, context);
             Dictionary<int, byte> crystalOrbColorMap = ElementSwaps.getCrystalOrbElementMap(context);
             bool force100PercentPossible = !settings.getBool(OpenWorldSettings.PROPERTYNAME_ALLOW_MISSED_ITEMS);
             bool anySpellTriggers = context.workingData.getBool(OpenWorldClassSelection.ANY_MAGIC_EXISTS);

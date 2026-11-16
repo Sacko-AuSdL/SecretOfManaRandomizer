@@ -37,7 +37,7 @@ namespace SoMRandomizer.processing.openworld.randomization
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
             bool cannonTravelEnabled = settings.get(OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION) !=
                 OpenWorldSettings.PROPERTYVALUE_CANNON_TRAVEL_OFF;
-            bool alternateStartingRegion = OpenWorldStartingLocation.useKakkara(settings, context);
+            bool alternateStartingRegion = OpenWorldStartingLocation.useAlternateStart(settings, context);
             bool useCannonRegionModel = cannonTravelEnabled || alternateStartingRegion;
             ResolvedCannonNetwork cannonNetwork = cannonTravelEnabled
                 ? CannonTravelModel.getResolvedNetwork(context)

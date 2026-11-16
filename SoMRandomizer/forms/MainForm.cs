@@ -97,6 +97,7 @@ namespace SoMRandomizer.forms
         public MainForm()
         {
             InitializeComponent();
+            Text += " - Expanded Open World Alpha 0.1 Update 3";
 
             commonSettings = new CommonSettings();
 

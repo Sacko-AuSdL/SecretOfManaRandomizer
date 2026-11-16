@@ -1,4 +1,4 @@
-# Expanded Open World Alpha 0.1 RC4 — known limitations
+# Expanded Open World Alpha 0.1 Update 3 — known limitations
 
 This is an unofficial, unsigned community playtest build, not an upstream stable
 release. Use a new game and separate ordinary saves/save states for each ROM.
@@ -19,7 +19,7 @@ release. Use a new game and separate ordinary saves/save states for each ROM.
   flash hardware still need human coverage. Packaged CLI checks on the development
   machine are not a clean-machine GUI test.
 - The application/ROM retain upstream numeric version 1.49. Identify this build
-  as Alpha 0.1 RC4 and include its EXE/ROM hashes in reports.
+  as Alpha 0.1 Update 3 and include its EXE/ROM hashes in reports.
 - Only Open World is qualified for this playtest. Cannon Chaos is not the
   separate legacy Chaos game mode.
 - The CLI may exit successfully even when generation fails. Require a valid
@@ -30,3 +30,5 @@ release. Use a new game and separate ordinary saves/save states for each ROM.
 
 Never share base/generated game ROMs. Preserve a pre-failure save, complete
 settings, seed, emulator version and exact steps. Redact private paths from logs.
+
+Todo and Southtown starts passed user Mesen testing (startup, movement, Ring Menu, exits/re-entry, save/reload). Mara empty-reward follow-up passed native event and save/load checks; no new emulator verification is claimed for this small correction. Uncharged Javelin live launch remains a recommended additional check. Publication requires explicit approval.

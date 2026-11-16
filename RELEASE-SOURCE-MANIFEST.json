@@ -1,24 +1,24 @@
 ﻿{
-    "Candidate":  "Alpha 0.1 RC4",
+    "Candidate":  "Alpha 0.1 Update 3",
     "HistoricalBaseline":  "aecfa3ab47866912ff4b1f269031673c8b0dd07d",
-    "ParentCandidate":  "Alpha 0.1 RC3",
-    "ParentReleaseCommit":  "a4211863f5fce354f63d0018b1dc31ec3cfd501c",
-    "SourceState":  "Verified uncommitted review integration; no new commit/tag authorized",
+    "ParentCandidate":  "Published Alpha 0.1 (v0.1.0-alpha.2)",
+    "ParentReleaseCommit":  "11af11a6da7ef102e45d1e50f209ddf268a21d73",
+    "SourceState":  "Isolated published-tag projection with explicitly reviewed starting-location, Upper Land and committed Undine fixes and Mara empty-prize guard; no development-tree import",
     "IncludedFeatures":  [
-                             "All RC3 production features",
-                             "18 supported Doppelganger locations",
-                             "17 Jehk encounter choices",
-                             "Death Link On/Off; native default",
-                             "Corrected shadow HP scaling",
-                             "Safe arena autosave/continue",
-                             "Dragon Worm destination-copy traversal"
+                             "All published Alpha.2 gameplay features",
+                             "Todo and Southtown starts through the existing selector and regional solver",
+                             "Accepted bidirectional Upper Land weapon-Orb hedge",
+                             "Accepted Undine completion/re-entry/autosave exit corrections",
+                             "Mara empty-prize collection guard; genuine rewards preserved"
                          ],
     "Excluded":  [
                      "Weapon Power",
                      "Direct-placement prototype catalogue and assessments",
                      "Historical Frost/Jehk pilot switch/bypass",
                      "Manual generators and shortcuts from application/source archive",
-                     "ROMs, saves, logs, build caches and diagnostic artifacts"
+                     "ROMs, saves, logs, build caches and diagnostic artifacts",
+                     "Post-Alpha direct boss compatibility campaign",
+                     "Experimental Watts enhancements and Weapon Power"
                  ],
     "Files":  [
                   {
@@ -78,8 +78,8 @@
                   },
                   {
                       "Path":  "SoMRandomizer/config/settings/OpenWorldSettings.cs",
-                      "SnapshotSha256":  "924E9AAA012C5C8494006F1E5B11916957C1BAC2697695D31163AFF7068ADF34",
-                      "ParentSnapshotSha256":  "2D668FFA84D14CDDB0F67D0005A8CE263D8767D5F336923DC2D3B5647E148B17"
+                      "SnapshotSha256":  "B93155F0BC51E2E49D81ECE79E0AFA857E0261E7F5E2EE3C447629387A25D9E4",
+                      "ParentSnapshotSha256":  "924E9AAA012C5C8494006F1E5B11916957C1BAC2697695D31163AFF7068ADF34"
                   },
                   {
                       "Path":  "SoMRandomizer/config/settings/RandoSettings.cs",
@@ -178,7 +178,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/forms/MainForm.cs",
-                      "SnapshotSha256":  "701E542AD988744591C6D5DE2E5C44EBC07117CFECC80D2A806A086DFD45EE9A",
+                      "SnapshotSha256":  "96210FF114A1420F80F6512E491030898664F0F44E9FAE59BCC92B74BE0F3E54",
                       "ParentSnapshotSha256":  "701E542AD988744591C6D5DE2E5C44EBC07117CFECC80D2A806A086DFD45EE9A"
                   },
                   {
@@ -203,8 +203,8 @@
                   },
                   {
                       "Path":  "SoMRandomizer/forms/MainForm_UiOptionsInitialization.cs",
-                      "SnapshotSha256":  "8A673066A9DD23518E25D439DBD35C7C8C660C206DAA120D542FBEF0348E63D3",
-                      "ParentSnapshotSha256":  "D9C10B96DEB49AFCBAD78CEFBB7A4B1F71E18F0B12FC0187114A13DE20009181"
+                      "SnapshotSha256":  "CC373EC8F9AA1A249D2548F89DFF1543499BC0C4D8307889DF383FC308318615",
+                      "ParentSnapshotSha256":  "8A673066A9DD23518E25D439DBD35C7C8C660C206DAA120D542FBEF0348E63D3"
                   },
                   {
                       "Path":  "SoMRandomizer/forms/PaletteControl.cs",
@@ -219,7 +219,7 @@
                   {
                       "Path":  "SoMRandomizer/forms/PlandoForm.cs",
                       "SnapshotSha256":  "E271C53123E5D2A3E9720394C4E1A023B20A3735478D840E28BD849C0413A540",
-                      "ParentSnapshotSha256":  "417486B418DFBF8D0C5FE71BB6B0342C26990421CCEFE9E0A4FCCF95F7A7396F"
+                      "ParentSnapshotSha256":  "E271C53123E5D2A3E9720394C4E1A023B20A3735478D840E28BD849C0413A540"
                   },
                   {
                       "Path":  "SoMRandomizer/forms/PlandoForm.Designer.cs",
@@ -554,17 +554,17 @@
                   {
                       "Path":  "SoMRandomizer/processing/common/BossArenaGeometry.cs",
                       "SnapshotSha256":  "CA58D83A9F96453860A54A05E9BF9C3DD1141365F081958988FC3D6E8C9A7107",
-                      "ParentSnapshotSha256":  null
+                      "ParentSnapshotSha256":  "CA58D83A9F96453860A54A05E9BF9C3DD1141365F081958988FC3D6E8C9A7107"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/BossEncounterRegistry.cs",
                       "SnapshotSha256":  "6861B733D49033A58CEA1043F18E8C70A6EEA297531F9D70F6FE933D2195168E",
-                      "ParentSnapshotSha256":  "F73F303A1E6ABD6044B769989A16033BB67589A0E4B404D72B87882BC1BD1CA9"
+                      "ParentSnapshotSha256":  "6861B733D49033A58CEA1043F18E8C70A6EEA297531F9D70F6FE933D2195168E"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/BossSwaps.cs",
                       "SnapshotSha256":  "5BA0E4558539D4B028D28AAC7EC03EAC17A7CF58B80C050F1B6EF1EE943DA0CD",
-                      "ParentSnapshotSha256":  "C398F19A4294444C593B765F2DA77472EA998EBB9868D0F73CE19C5B1918F83C"
+                      "ParentSnapshotSha256":  "5BA0E4558539D4B028D28AAC7EC03EAC17A7CF58B80C050F1B6EF1EE943DA0CD"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/CustomRamOffsets.cs",
@@ -579,12 +579,12 @@
                   {
                       "Path":  "SoMRandomizer/processing/common/DoppelgangerBossArenaRedirect.cs",
                       "SnapshotSha256":  "88667FE96E9A3D1EC8CE054BFF35D2238C3795FE83D40A59F974A5EF6B535C70",
-                      "ParentSnapshotSha256":  "A2CD176D346224EA473BC33C61249FBAE738236E914F338DB4F1743A0E25DA1B"
+                      "ParentSnapshotSha256":  "88667FE96E9A3D1EC8CE054BFF35D2238C3795FE83D40A59F974A5EF6B535C70"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/DoppelgangerEncounterExpansion.cs",
                       "SnapshotSha256":  "8EAB20E865D1C5847E02EA171BDBC03B6AA48E9FE53628BA36BB171F5F3AFD76",
-                      "ParentSnapshotSha256":  null
+                      "ParentSnapshotSha256":  "8EAB20E865D1C5847E02EA171BDBC03B6AA48E9FE53628BA36BB171F5F3AFD76"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/DreadSlimeBossArenaRedirect.cs",
@@ -639,7 +639,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/common/RandoContext.cs",
                       "SnapshotSha256":  "C54177208CEB556CFFDD0A964AA1D81E72B85DCA8D919B937A42CF885FB6ABC9",
-                      "ParentSnapshotSha256":  "0FEC73BDF91C62C488A27AFD57A4F709DEB2CD2131437C8AD79309B94A476B12"
+                      "ParentSnapshotSha256":  "C54177208CEB556CFFDD0A964AA1D81E72B85DCA8D919B937A42CF885FB6ABC9"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/RomGenerator.cs",
@@ -723,7 +723,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/common/TripleTonpoleBossArenaRedirect.cs",
-                      "SnapshotSha256":  "6CAD0C5D4289DA9CE44ECE9CEF0218CF40B7807108FF9697CD95173901F65FDB",
+                      "SnapshotSha256":  "A97C110C4C25D1343FD3ABB4803F537D94DA7F7277AEE3C895A487603C32C140",
                       "ParentSnapshotSha256":  "6CAD0C5D4289DA9CE44ECE9CEF0218CF40B7807108FF9697CD95173901F65FDB"
                   },
                   {
@@ -1179,7 +1179,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/hacks/common/qol/Autosave.cs",
                       "SnapshotSha256":  "52437D9FF20A4946550C0315FE14F780DD54E99CF7902987889DA7A0048CEED4",
-                      "ParentSnapshotSha256":  "6EF9190C5BC49AE8186B03F079E5918B90D13A72AA1C1A2426E35683ADB71873"
+                      "ParentSnapshotSha256":  "52437D9FF20A4946550C0315FE14F780DD54E99CF7902987889DA7A0048CEED4"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/hacks/common/qol/BeakShieldDisable.cs",
@@ -1364,7 +1364,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/DoppelgangerDeathLink.cs",
                       "SnapshotSha256":  "E45EC06670933DE3E50F4DBA393327A681870EBCB6450E69CB6E5F0AAF7C5251",
-                      "ParentSnapshotSha256":  null
+                      "ParentSnapshotSha256":  "E45EC06670933DE3E50F4DBA393327A681870EBCB6450E69CB6E5F0AAF7C5251"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/DropOnlyConsumables.cs",
@@ -1374,7 +1374,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/EnemiesAtYourLevel.cs",
                       "SnapshotSha256":  "A7CDB60DCDB4A5496B951E66F296305639B5D146A4C713C4BD18FC81A3D0DD2E",
-                      "ParentSnapshotSha256":  "C35A15629B77B44C1479A9AD2A97CB042E405D95D078B34FE12ADD4FCD3F5BE8"
+                      "ParentSnapshotSha256":  "A7CDB60DCDB4A5496B951E66F296305639B5D146A4C713C4BD18FC81A3D0DD2E"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/EnemyRandomizer.cs",
@@ -1419,7 +1419,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/MinMaxLevel.cs",
                       "SnapshotSha256":  "DCF6B0C985D2A829787AB789F2AB595D4341D079D8644CA9406583BA075D8582",
-                      "ParentSnapshotSha256":  "578EC859805CC90552ABA50FA3F4691F7B341B9220A376F71FB6DD3DCEA63228"
+                      "ParentSnapshotSha256":  "DCF6B0C985D2A829787AB789F2AB595D4341D079D8644CA9406583BA075D8582"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/hacks/openworld/Nesoberi.cs",
@@ -1533,7 +1533,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/events/FlammieLogicIntroEvent.cs",
-                      "SnapshotSha256":  "E24587C2F5A6C1B6BA4A08D75C15D6429DAA9AFCF26CE55759BA6E52ADBA8CC5",
+                      "SnapshotSha256":  "08FDAD492820F1CA8CF13665BCBA9C43148480C075A29B4FDE58BD0365D38D31",
                       "ParentSnapshotSha256":  "E24587C2F5A6C1B6BA4A08D75C15D6429DAA9AFCF26CE55759BA6E52ADBA8CC5"
                   },
                   {
@@ -1583,7 +1583,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/events/OpenWorldSupportingMapChanges.cs",
-                      "SnapshotSha256":  "BB1FCE57C62CE815C6A6DB79D4DC9738102E6FF8B7D30D9FAC179EFBC5D9391D",
+                      "SnapshotSha256":  "F18BCED884444B577D4E47270A340813C20995306234DC9EA9373ECA34C97DCB",
                       "ParentSnapshotSha256":  "BB1FCE57C62CE815C6A6DB79D4DC9738102E6FF8B7D30D9FAC179EFBC5D9391D"
                   },
                   {
@@ -1634,7 +1634,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/openworld/OpenWorldGenerator.cs",
                       "SnapshotSha256":  "1644DA83774AAB38F7F6307FBCEC9235E5C1778DEC504025B65683CF0767A6C1",
-                      "ParentSnapshotSha256":  "5408EA0039057BDA3F6C41C84FBDB9570C9DDC1A4C6283D45F4C8FFC36528F5F"
+                      "ParentSnapshotSha256":  "1644DA83774AAB38F7F6307FBCEC9235E5C1778DEC504025B65683CF0767A6C1"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/OpenWorldGoalProcessor.cs",
@@ -1653,7 +1653,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/OpenWorldStartingLocation.cs",
-                      "SnapshotSha256":  "FCE373CA38744A90703A7ED241499FE48E29B59DA8A0781B8FF8B41578374C74",
+                      "SnapshotSha256":  "A0665EBE15695FD3C667F13B99A850A53AD8FECEEE0A2CA466078157E3D8A00E",
                       "ParentSnapshotSha256":  "FCE373CA38744A90703A7ED241499FE48E29B59DA8A0781B8FF8B41578374C74"
                   },
                   {
@@ -1664,7 +1664,7 @@
                   {
                       "Path":  "SoMRandomizer/processing/openworld/PlandoProperties.cs",
                       "SnapshotSha256":  "014D0C0D95CB925603674EB01C1976D8A3106E08C11CF0465434766CE8FF0C04",
-                      "ParentSnapshotSha256":  "E6276F50B673E1717261A2D2F9186837F372D785FA551D5E419428DEA38BBBEF"
+                      "ParentSnapshotSha256":  "014D0C0D95CB925603674EB01C1976D8A3106E08C11CF0465434766CE8FF0C04"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/PlandoUtils.cs",
@@ -1683,7 +1683,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/randomization/OpenWorldLocationPrizeMatcher.cs",
-                      "SnapshotSha256":  "6FFFA7C03413723086AAB8A445DA104AC0B495D3013A7CBA7F48ACBA343B12F9",
+                      "SnapshotSha256":  "200F67D4284CB1F5807E42D2C3DF15B050556B10E150A1D9FCF5B7B407A835E8",
                       "ParentSnapshotSha256":  "6FFFA7C03413723086AAB8A445DA104AC0B495D3013A7CBA7F48ACBA343B12F9"
                   },
                   {
@@ -1703,12 +1703,12 @@
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/randomization/OpenWorldResultInjector.cs",
-                      "SnapshotSha256":  "499D6DB053F21A8F97A61254F0B2065EFEDEEFBA1B4CC3F24504E01FF085A4E7",
+                      "SnapshotSha256":  "B52427B35081E929396591F66E3EE736A00ABE9AD8EE43B88B2243951869D261",
                       "ParentSnapshotSha256":  "499D6DB053F21A8F97A61254F0B2065EFEDEEFBA1B4CC3F24504E01FF085A4E7"
                   },
                   {
                       "Path":  "SoMRandomizer/processing/openworld/randomization/OpenWorldSimulator.cs",
-                      "SnapshotSha256":  "0B2F331A67C5A10B6D088647959C8D09ECD548CC26EC30D0D723F3520F39A401",
+                      "SnapshotSha256":  "BFE9E4CFCAF62D7D60B2DA37CC39F810BCA1312971B0EA52CD53FD70C5AB178B",
                       "ParentSnapshotSha256":  "0B2F331A67C5A10B6D088647959C8D09ECD548CC26EC30D0D723F3520F39A401"
                   },
                   {
@@ -2373,7 +2373,7 @@
                   },
                   {
                       "Path":  "SoMRandomizer/SoMRandomizer.csproj",
-                      "SnapshotSha256":  "9D3260CC4C3503BE6B67623587F063F89B43D723D38FB1FDE931101EDA87495B",
+                      "SnapshotSha256":  "5C1FC6C88DCBCA93E04500399262C765AEC92C971FB8334B7DCDC5DBF92F4BE7",
                       "ParentSnapshotSha256":  "9D3260CC4C3503BE6B67623587F063F89B43D723D38FB1FDE931101EDA87495B"
                   },
                   {
@@ -2471,5 +2471,7 @@
                       "SnapshotSha256":  "6035B9FEA914D0386D24C9E6EAD813DD2D365A49DEC9B2131C132FF7385C6936",
                       "ParentSnapshotSha256":  "6035B9FEA914D0386D24C9E6EAD813DD2D365A49DEC9B2131C132FF7385C6936"
                   }
-              ]
+              ],
+    "SuggestedTag":  "v0.1.0-alpha.3",
+    "ManualNewTownAcceptance":  "passed: user Mesen Todo and Southtown startup, movement, Ring Menu, exit/re-entry and save/reload"
 }

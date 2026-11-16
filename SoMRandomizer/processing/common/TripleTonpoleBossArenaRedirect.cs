@@ -141,6 +141,25 @@ namespace SoMRandomizer.processing.common
             if (context.replacementDoors.ContainsKey(entryDoor))
                 throw new InvalidOperationException("Triple Tonpole entry door already owned.");
             context.replacementDoors[entryDoor] = door;
+            if (slot.originalMapNum == MAPNUM_TONPOLE_ARENA)
+            {
+                // Guard the two fish-room portals BEFORE loading the donor arena.
+                int sourceMap = MAPNUM_UNDINECAVE_FISH_ROOM;
+                List<ushort> triggers = VanillaMapUtil.getTriggers(context.originalRom, sourceMap);
+                int start = VanillaMapUtil.getTriggerOffset(rom, sourceMap);
+                var portals = Enumerable.Range(0, triggers.Count)
+                    .Where(i => triggers[i] == 0x800 + entryDoor).ToArray();
+                if (portals.Length != 2)
+                    throw new InvalidOperationException("Undine entrance trigger contract changed.");
+                foreach (int i in portals)
+                    if (rom[start + i * 2] != 0x44 || rom[start + i * 2 + 1] != 0x09)
+                        throw new InvalidOperationException("Undine entrance trigger already owned.");
+                foreach (int i in portals)
+                {
+                    rom[start + i * 2] = (byte)(UNDINE_RETURN_EVENT & 0xFF);
+                    rom[start + i * 2 + 1] = (byte)(UNDINE_RETURN_EVENT >> 8);
+                }
+            }
             context.workingData.setInt(PROPERTY_SLOT_MAP, slot.originalMapNum);
             context.workingData.setInt(PROPERTY_DEATH_EVENT, deathEvent);
         }
@@ -169,23 +188,26 @@ namespace SoMRandomizer.processing.common
             int slotDeath = context.workingData.getInt(PROPERTY_DEATH_EVENT);
             EventScript entry = new EventScript();
             // Undine's death event has no return door. Door $147 is its real
-            // native return, unchanged; subsequent $144 entrances go straight
-            // back to the now-completed cave instead of respawning the trio.
+            // native return, unchanged. Source portals use $6D4 to choose the
+            // native room before loading a completed encounter's donor arena.
             if (slotMap == MAPNUM_TONPOLE_ARENA)
             {
                 if (context.replacementEvents.ContainsKey(UNDINE_RETURN_EVENT)
                     || !VanillaEventUtil.getVanillaEvent(context.originalRom, UNDINE_RETURN_EVENT).SequenceEqual(new byte[] { 0 }))
                     throw new InvalidOperationException("Triple Undine return event already owned.");
                 EventScript returnOnly = new EventScript();
-                returnOnly.Door(0x147);
+                returnOnly.Logic(EventFlags.OPEN_WORLD_TONPOLE_FLAG, 1, 15, new byte[] { 0x19, 0x47 });
+                returnOnly.Logic(EventFlags.OPEN_WORLD_TONPOLE_FLAG, 0, 0, new byte[] { 0x19, 0x44 });
                 returnOnly.End();
                 context.replacementEvents[UNDINE_RETURN_EVENT] = returnOnly;
                 entry.Logic(EventFlags.OPEN_WORLD_TONPOLE_FLAG, 1, 15, EventScript.GetJumpCmd(UNDINE_RETURN_EVENT));
                 List<byte> tail = context.replacementEvents[slotDeath];
                 if (!tail.Skip(tail.Count - 3).SequenceEqual(new byte[] { 0x17, 0x0B, 0 }))
                     throw new InvalidOperationException("Undine death tail changed.");
-                tail[tail.Count - 3] = 0x27; // return from existing music before the native door
-                tail.InsertRange(tail.Count - 1, new byte[] { 0x19, 0x47 });
+                // $70B terminates the whole event (END), not a subroutine
+                // (RETURN). Return to the cleared cave BEFORE its terminal
+                // music jump; JSR $70B would strand the party in the trio arena.
+                tail.InsertRange(tail.Count - 3, new byte[] { 0x19, 0x47 });
             }
             entry.SetFlag(COUNT_FLAG, 0);
             entry.Jsr(0x704); // existing boss music

@@ -1,0 +1,13 @@
+param([string]$AssemblyPath=(Join-Path $PSScriptRoot '../SoMRandomizer/bin/Debug/net462/SoMRandomizer.exe'),[string]$SourceRom='D:/views/tools/bots/Secret of Mana (US) (1993) (Action Role Playing Game) (Super Nes).sfc',[string]$ControlRom='')
+. (Join-Path $PSScriptRoot 'support/BossArenaStage1.ps1')
+$cp=[CodeDom.Compiler.CompilerParameters]::new();$cp.GenerateInMemory=$true;foreach($r in @($assembly.Location,'System.dll','System.Core.dll')){[void]$cp.ReferencedAssemblies.Add($r)}
+$b=([Microsoft.CSharp.CSharpCodeProvider]::new()).CompileAssemblyFromFile($cp,[string[]]@('MaraEmptyPrizeChecks.cs','SpellShuffleMachine.cs'|ForEach-Object{Join-Path $PSScriptRoot ('support/'+$_)}));Assert-True (-not $b.Errors.HasErrors) ($b.Errors|Out-String)
+if($ControlRom){[byte[]]$rom=[IO.File]::ReadAllBytes((Resolve-Path $ControlRom).Path)}else{
+ $common=[Activator]::CreateInstance((T config.settings.CommonSettings));$common.set('mode','open');$common.set('version','1.49');$common.set('testOnly','yes')
+ $s=[Activator]::CreateInstance((T config.settings.OpenWorldSettings),[object[]]@($common));foreach($pair in @(@('opStartingLocation','southtown'),@('opFlammieDrumInLogic','yes'),@('cannonTravelRandomization','off'),@('freeCannonTravel','on'),@('opLogic','restrictive'),@('opGoal','vshort'),@('opStartChar','girl'),@('opCharacters','startboth'),@('opStartWeapon','1'),@('opStartGold','1000'),@('opDifficulty','easy'),@('opMinLevel','no'),@('opMaxLevel','no'),@('crystalOrbWeaponBreaking','on'))){$s.set($pair[0],$pair[1])}
+ [byte[]]$padded=[byte[]]::new(0x400000);[Array]::Copy($original,$padded,$original.Length);[byte[]]$rom=$padded.Clone();$g=[Activator]::CreateInstance((T processing.openworld.OpenWorldGenerator));Assert-True ((T processing.common.RomGenerator).GetMethod('generate',[type[]]@([byte[]],[byte[]],[string],(T config.settings.RandoSettings))).Invoke($g,@($padded,$rom,'TownStart-southtown-2026',$s))) 'Southtown generation failed.'
+ $table=([int]$rom[0x1E7A3]-bor([int]$rom[0x1E7A4]-shl 8)-bor([int]$rom[0x1E7A5]-shl 16))-0xC00000;$at=$table+0x399*3;$ptr=([int]$rom[$at]-bor([int]$rom[$at+1]-shl 8)-bor([int]$rom[$at+2]-shl 16))-0xC00000
+ Assert-True (Same $rom[$ptr..($ptr+8)] ([byte[]]@(0x50,0x42,0x31,0x1F,0x13,0x96,0x30,0x31,1))) 'Actual generated Mara event is unguarded.'
+ Write-Host 'PASS same reported diagnostic seed/settings generated in memory; actual event399 contains empty-only guard. No ROM emitted.'
+}
+try {$b.CompiledAssembly.GetType('MaraEmptyPrizeChecks').GetMethod('Run').Invoke($null,@(,$rom))|Write-Host}catch{Write-Host $_.Exception.InnerException.ToString();throw}

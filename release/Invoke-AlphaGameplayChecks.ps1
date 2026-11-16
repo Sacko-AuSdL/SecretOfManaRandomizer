@@ -25,7 +25,7 @@ if(-not (Test-Path $baselinePath)) { $baselinePath=Join-Path $PSScriptRoot 'RC2-
 $baseline=Get-Content $baselinePath -Raw | ConvertFrom-Json
 $results=@()
 foreach($profile in @($profiles)+@($profiles[0])) {
- $name=$profile.Name; if($results.Count -eq 3) { $name='Short-Repeat' }
+ $name=$profile.Name; if($results.Count -eq @($profiles).Count) { $name='Short-Repeat' }
  $directory=Join-Path $output $name; [void][IO.Directory]::CreateDirectory($directory)
  $destination=Join-Path $directory ($name+'.sfc')
  $start=[Diagnostics.ProcessStartInfo]::new($exe)
@@ -80,5 +80,5 @@ foreach($profile in @($profiles)+@($profiles[0])) {
  $results | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output 'results.json') -Encoding UTF8
  Write-Output ('PASS: standalone production CLI '+$name+'; normal Sword/no supplies, simulation and pointer/native-code checks.')
 }
-Assert-True ($results[0].Sha256 -eq $results[3].Sha256) 'Packaged CLI regeneration is not deterministic.'
-'PASS: three normal production configurations plus deterministic repeat. Clean Windows and full gameplay NOT tested.'
+Assert-True ($results[0].Sha256 -eq $results[-1].Sha256) 'Packaged CLI regeneration is not deterministic.'
+'PASS: all supplied normal production configurations plus deterministic repeat. Clean Windows and full gameplay NOT tested.'

@@ -41,6 +41,23 @@ namespace SoMRandomizer.processing.openworld.randomization
                 injectionPattern.Add((byte)index);
                 VanillaEventUtil.replaceEventData(injectionPattern, eventData, thisPrize.eventData.ToList());
 
+                // A filler prize has no item flag. Reserve the retired Southtown
+                // guard flag for Mara's empty check only: both original flag31
+                // actors are hidden/unconditional in Open World. Christmas owns
+                // this flag separately and keeps its existing event architecture.
+                if (eventNum == 0x399 && index == 0 && thisPrize.prizeName == "nothing"
+                    && goal != OpenWorldGoalProcessor.GOAL_GIFTMODE
+                    && goal != OpenWorldGoalProcessor.GOAL_REINDEER)
+                {
+                    if (thisPrize.gotItemEventFlag != 0 || !eventData.SequenceEqual(
+                        new byte[] { 0x50 }.Concat(thisPrize.eventData).Concat(new byte[] { 0x28, 0, 0x51, 0 })))
+                        throw new System.InvalidOperationException("Mara empty-prize event contract changed.");
+                    // Already-got event396 expects an open dialogue. Keep the
+                    // existing open/wait/close/END flow and empty text unchanged.
+                    eventData.InsertRange(1, new byte[] { 0x42, EventFlags.SOUTHTOWN_GUARD_VISIBILITY_FLAG,
+                        0x1F, 0x13, 0x96, 0x30, EventFlags.SOUTHTOWN_GUARD_VISIBILITY_FLAG, 1 });
+                }
+
                 // set the visibility flag for chests so they disappear once giving their prize.
                 // don't change the two whip chests since spikey death makes them appear; event flags D8, D9
                 if(prizeLocation.mapNum != -1)

@@ -2,6 +2,9 @@
 using SoMRandomizer.logging;
 using SoMRandomizer.processing.common;
 using SoMRandomizer.processing.common.structure;
+using SoMRandomizer.processing.hacks.openworld;
+using SoMRandomizer.util;
+using System.Collections.Generic;
 using static SoMRandomizer.processing.hacks.openworld.XmasRandoData;
 using static SoMRandomizer.processing.common.SomVanillaValues;
 
@@ -23,6 +26,8 @@ namespace SoMRandomizer.processing.openworld.events
         {
             bool flammieDrumInLogic = settings.getBool(OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC);
             string goal = context.workingData.get(OpenWorldGoalProcessor.GOAL_SHORT_NAME);
+
+            makeUpperLandWeaponOrbAccessible(origRom, outRom, context);
 
             if(goal == OpenWorldGoalProcessor.GOAL_GIFTMODE || goal == OpenWorldGoalProcessor.GOAL_REINDEER)
             {
@@ -47,7 +52,8 @@ namespace SoMRandomizer.processing.openworld.events
             else if (flammieDrumInLogic)
             {
                 int waterfallDoorNum = 0x82;
-                if(OpenWorldStartingLocation.useKakkara(settings, context))
+                OpenWorldStartingLocation.StartingTown town = OpenWorldStartingLocation.getTown(settings, context);
+                if(town != null)
                 {
                     // Door $228 supplies the proven Kakkara destination (map 89 at 29,36),
                     // but its $81 transition first walks an actor up out of the active desert
@@ -55,9 +61,9 @@ namespace SoMRandomizer.processing.openworld.events
                     // exit phase, so Door $82 needs the same direct $00 startup transition as
                     // the established Potos start.
                     Door kakkaraStartDoor = new Door();
-                    kakkaraStartDoor.setTargetMap((ushort)OpenWorldStartingLocation.KAKKARA_MAP);
-                    kakkaraStartDoor.setXpos((byte)OpenWorldStartingLocation.KAKKARA_X);
-                    kakkaraStartDoor.setYpos((byte)OpenWorldStartingLocation.KAKKARA_Y);
+                    kakkaraStartDoor.setTargetMap((ushort)town.Map);
+                    kakkaraStartDoor.setXpos((byte)town.X);
+                    kakkaraStartDoor.setYpos((byte)town.Y);
                     kakkaraStartDoor.setLayer2Collision(OpenWorldStartingLocation.KAKKARA_LAYER2_COLLISION);
                     kakkaraStartDoor.setTransitionType(OpenWorldStartingLocation.STARTUP_SAFE_TRANSITION);
                     VanillaDoorUtil.putDoor(outRom, kakkaraStartDoor, waterfallDoorNum);
@@ -218,6 +224,19 @@ namespace SoMRandomizer.processing.openworld.events
             setObjectAlwaysVisible(outRom, MAPNUM_UNDINECAVE_EXTERIOR, 0);
             setObjectAlwaysVisible(outRom, MAPNUM_UNDINECAVE_EXTERIOR, 1);
             setObjectAlwaysVisible(outRom, MAPNUM_UNDINECAVE_EXTERIOR, 2);
+
+            // Undine's bottom exit normally restores the volatile CE00 room cache,
+            // including CE08 (the previous map). Loading an autosave directly into
+            // this room cannot reconstruct that cache. Use its existing Door $147
+            // triggers instead: tile $77 is graphically identical to $B4, but is a
+            // normal door tile rather than a cached-room return. Piece $34 belongs
+            // to this native room only; keep its geometry and every other tile.
+            // This also repairs existing saves without changing the save format.
+            byte[,] undineRoom = VanillaMapUtil.loadVanillaMapPiece(origRom, 0x34);
+            undineRoom[14, 34] = 0x77;
+            undineRoom[15, 34] = 0x77;
+            context.replacementMapPieces.Add(0x34,
+                new List<byte>(SomMapCompressor.EncodeMap(undineRoom)));
 
             // remove scorpion guys on salamando town map
             setObjectNeverVisible(outRom, MAPNUM_ICECOUNTRY_PARADISETOWN_COLD, 2);
@@ -563,6 +582,48 @@ namespace SoMRandomizer.processing.openworld.events
             int mapObjOffset = VanillaMapUtil.getObjectOffset(outRom, mapNum);
             mapObjOffset += 8; // skip header
             return outRom[mapObjOffset + 8 * objNum + index];
+        }
+
+        private static void makeUpperLandWeaponOrbAccessible(byte[] origRom, byte[] outRom, RandoContext context)
+        {
+            CrystalOrbRequirement requirement;
+            if (!CrystalOrbRequirements.getResolvedRequirements(context).TryGetValue(
+                ElementSwaps.ORBMAP_UPPERLAND, out requirement)
+                || requirement.Type != CrystalOrbRequirementType.SpecificWeapon) return;
+
+            // Keep the Orb at its native (28,62). Replace the wide closed-state
+            // tree with a one-column hedge at x28, y61..64. The retained forest
+            // above and native forest below seal both ends, while the road on each
+            // side gives real weapon probes an unobstructed adjacent approach.
+            // The existing flag $20=4 removes these SAME conditional pieces.
+            foreach (int id in new[] { 0x11A, 0x120 })
+            {
+                byte[,] native = VanillaMapUtil.loadVanillaMapPiece(origRom, id);
+                byte[,] floor = VanillaMapUtil.loadVanillaMapPiece(origRom, id == 0x11A ? 0x115 : 0x116);
+                byte[,] data = (byte[,])native.Clone();
+                int ox = id == 0x11A ? 21 : 20, oy = id == 0x11A ? 57 : 56;
+                for (int y = 0; y < data.GetLength(1); y++)
+                    for (int x = 0; x < data.GetLength(0); x++)
+                        if (id == 0x120 || y >= 4) data[x, y] = floor[x + ox, y + oy];
+                if (id == 0x11A) for (int y = 4; y < 8; y++) data[7, y] = 0x8F;
+                List<byte> existing;
+                if (context.replacementMapPieces.TryGetValue(id, out existing))
+                {
+                    byte[,] prior = SomMapCompressor.DecodeMap(existing.ToArray());
+                    for (int y = 0; y < data.GetLength(1); y++)
+                        for (int x = 0; x < data.GetLength(0); x++)
+                            if (prior[x, y] != native[x, y] && prior[x, y] != data[x, y])
+                            {
+                                if (native[x, y] == data[x, y]) data[x, y] = prior[x, y];
+                                else throw new System.InvalidOperationException("Upper Land gate piece already modified.");
+                            }
+                }
+                context.replacementMapPieces[id] = new List<byte>(SomMapCompressor.EncodeMap(data));
+            }
+            MapObject orb = VanillaMapUtil.getObjects(outRom, MAPNUM_UPPERLAND_SOUTHEAST)[0];
+            if (orb.getSpecies() != 0x55 || orb.getYpos() != 62
+                || orb.getXpos() != 28)
+                throw new System.InvalidOperationException("Upper Land Orb object already modified.");
         }
 
         private static byte getObjectX(byte[] outRom, int mapNum, int objNum)

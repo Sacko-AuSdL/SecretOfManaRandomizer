@@ -258,7 +258,7 @@ namespace SoMRandomizer.forms
             propertyManager.makeMultiStringValueProperty("openMisc", OpenWorldSettings.PROPERTYNAME_CANNON_TRAVEL_RANDOMIZATION, "Cannon Travel", "Keep the current routes, open every safe destination, safely shuffle the route network, or generate disconnected Chaos routes.", openWorldSettings);
             propertyManager.makeMultiStringValueProperty("openMisc", OpenWorldSettings.PROPERTYNAME_FREE_CANNON_TRAVEL, "Free Cannon Travel", "Remove Cannon Travel fares in every Cannon route mode.", openWorldSettings);
             propertyManager.makeMultiStringValueProperty("openMisc", OpenWorldSettings.PROPERTYNAME_SHOW_UPPER_LAND_ORB_REQUIREMENT, "Show Upper Land Orb Requirement", "Show the seed's Upper Land Crystal Orb requirement during startup when Flammie Drum is in logic.", openWorldSettings);
-            propertyManager.makeMultiStringValueProperty("openMisc", OpenWorldSettings.PROPERTYNAME_STARTING_LOCATION, "Starting Location", "Choose the Potos elder-house start or Kakkara when Flammie Drum in Logic is enabled. This setting is ignored otherwise.", openWorldSettings);
+            propertyManager.makeMultiStringValueProperty("openMisc", OpenWorldSettings.PROPERTYNAME_STARTING_LOCATION, "Starting Location", "Choose Potos, Kakkara, Ice Country town (Todo), or Southtown when Flammie Drum in Logic is enabled. Christmas goals keep their dedicated start. Ignored when starting with Flammie.", openWorldSettings);
             propertyManager.makeMultiStringValueProperty("openCharacters", OpenWorldSettings.PROPERTYNAME_BOY_CLASS, "Boy character role", "Change or randomize the boy character's role in the run. Boy character will inherit spells and stats of selected vanilla character.", openWorldSettings);
             propertyManager.makeMultiStringValueProperty("openCharacters", OpenWorldSettings.PROPERTYNAME_GIRL_CLASS, "Girl character role", "Change or randomize the girl character's role in the run. Girl character will inherit spells and stats of selected vanilla character.", openWorldSettings);
             propertyManager.makeMultiStringValueProperty("openCharacters", OpenWorldSettings.PROPERTYNAME_SPRITE_CLASS, "Sprite character role", "Change or randomize the sprite character's role in the run. Sprite character will inherit spells and stats of selected vanilla character.", openWorldSettings);
@@ -321,7 +321,7 @@ namespace SoMRandomizer.forms
             initCheckbox(chkOpenRandomMapColors, OpenWorldSettings.PROPERTYNAME_RANDOMIZE_COLORS, openWorldSettings); // random colors in open world
             t.SetToolTip(chkOpenRandomMapColors, "Randomize the hue/saturation/luminance of map colors.");
             initCheckbox(chkOpenFlammieDrumLogic, OpenWorldSettings.PROPERTYNAME_FLAMMIE_DRUM_IN_LOGIC, openWorldSettings); // flammie drum found
-            t.SetToolTip(chkOpenFlammieDrumLogic, "Don't start with Flammie Drum - find it as a check instead.\nRestricts your options at the beginning of the run.\nChanges start location to Potos so you don't need a cutting weapon.");
+            t.SetToolTip(chkOpenFlammieDrumLogic, "Don't start with Flammie Drum - find it as a check instead.\nRestricts your options at the beginning of the run.\nUses the selected Starting Location instead of the Sword pedestal.");
 
             t.SetToolTip(picOpenDetails, "More details about this mode!"); // open
 

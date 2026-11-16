@@ -37,7 +37,7 @@ function New-Case([string]$Target='MANTISANT',[string]$Ice='Mantis-Ant',[string]
     $idNames=@{}
     foreach($pair in $p.GetField('BOSS_IDS_BY_PLANDO_VALUE').GetValue($null).GetEnumerator()) { $idNames[[int]$pair.Value]=$pair.Key }
     $pins=@{
-        mantisAnt='Mantis-Ant'; doppelgangers='Doppelgangers'; wallFace='Wall-Face'; tropicallo='Tropicallo'; minotaur='Minotaur';
+        mantisAnt='Mantis-Ant'; wallFace='Wall-Face'; tropicallo='Tropicallo'; minotaur='Minotaur';
         spikeyTiger='Spikey-Tiger'; jabberwocky='Jabberwocky'; springBeak='Spring-Beak'; frostGigas='Frost-Gigas';
         snapDragon='Snap-Dragon'; doomsWall="Doom's-Wall"; vampire='Vampire'; metalMantis='Metal-Mantis';
         mechRider2='Mech-Rider-2'; kilroy='Kilroy'; gorgonBull='Gorgon-Bull'; borealFace='Boreal-Face';
@@ -105,6 +105,46 @@ function Count-Death($Bytes,[int[]]$State,[int]$Flag) {
         }
     }
     throw 'Counter lacks completion tail.'
+}
+# Follow the generated event transfers AND native music callees. In particular,
+# END terminates the whole event even when reached through JSR; only RETURN
+# resumes the caller. Treat the unchanged fixed-orb/victory callees as observed
+# boundaries, not every JSR as an automatically returning call.
+function New-UndineState {
+    return @{ Flags=[int[]]::new(256); Doors=[Collections.Generic.List[int]]::new();
+        Sounds=[Collections.Generic.List[int]]::new(); FixedOrbs=0; Victories=0; Refreshes=0 }
+}
+function Run-UndineEvent($Context,[int]$Id,$State) {
+    $pc=0; $stack=[Collections.Generic.Stack[object]]::new()
+    for($steps=0;$steps -lt 200;$steps++) {
+        if($Id -eq 0) { return }
+        $script=if($Context.replacementEvents.ContainsKey($Id)) { $Context.replacementEvents[$Id] }
+            else { $eventUtil.GetMethod('getVanillaEvent').Invoke($null,@($original,$Id)) }
+        $op=[int]$script[$pc]
+        if($op -eq 0) { return } # native END does NOT return to a JSR caller
+        elseif($op -eq 2) {
+            if($stack.Count -eq 0) { return }
+            $frame=$stack.Pop(); $Id=$frame[0]; $pc=$frame[1]
+        }
+        elseif($op -eq 0x42) {
+            $value=$State.Flags[$script[$pc+1]]; $range=$script[$pc+2]
+            if($value -ge ($range-shr 4) -and $value -le ($range-band 15)) { $pc+=3 } else { $pc+=5 }
+        }
+        elseif($op -ge 0x10 -and $op -le 0x17) { $Id=(($op-0x10)-shl 8)-bor $script[$pc+1]; $pc=0 }
+        elseif($op -ge 0x18 -and $op -le 0x1B) { $State.Doors.Add((($op-0x18)-shl 8)-bor $script[$pc+1]); $pc+=2 }
+        elseif($op -ge 0x20 -and $op -le 0x27) {
+            $call=(($op-0x20)-shl 8)-bor $script[$pc+1]
+            if($call -eq 0x500) { $State.FixedOrbs++; $pc+=2 }
+            elseif($call -eq 0x784) { $State.Victories++; $pc+=2 }
+            else { $stack.Push(@($Id,($pc+2))); $Id=$call; $pc=0 }
+        }
+        elseif($op -eq 0x29) { $State.Flags[$script[$pc+1]]=($State.Flags[$script[$pc+1]]+1)-band 15; $pc+=2 }
+        elseif($op -eq 0x30) { $State.Flags[$script[$pc+1]]=$script[$pc+2]; $pc+=3 }
+        elseif($op -eq 0x0A) { $State.Refreshes++; $pc++ }
+        elseif($op -eq 0x40) { $State.Sounds.Add($script[$pc+2]); $pc+=5 }
+        else { throw ('Unsupported Undine event opcode '+$op.ToString('X2')) }
+    }
+    throw 'Undine event failed to terminate.'
 }
 $safe=@('MANTISANT','WALLFACE','TROPICALLO','JABBER','MECHRIDER2','AEGRTOJNFSDGHOPALNIAPLEIAN','MECHRIDER3','FROSTGIGAS','FIREGIGAS','TONPOLE','TRIPLE_TONPOLE')
 foreach($field in $mapsType.GetFields() | Where-Object FieldType -eq $mapType) {
@@ -184,9 +224,65 @@ foreach($testCase in @($case,$nativeCase)) {
 }
 $cave=New-Case 'TONPOLE'
 Generate-Events $cave[1] $cave[2]
-Assert-True (Contains-Bytes $cave[1].replacementEvents[0x233] @(0x27,0x0B,0x19,0x47,0)) 'Undine return is unreachable or changes native music.'
+Assert-True (Contains-Bytes $cave[1].replacementEvents[0x233] @(0x19,0x47,0x17,0x0B,0)) 'Undine return must precede the terminal music jump.'
 Assert-True (Contains-Bytes $cave[1].replacementEvents[0x6D3] @(0x42,0xA0,0x1F,0x16,0xD4)) 'Completed Undine encounter respawns trio.'
-Assert-True (Equal-Bytes $cave[1].replacementEvents[0x6D4] @(0x19,0x47,0)) 'Undine completed return repeats reward.'
+Assert-True (Equal-Bytes $cave[1].replacementEvents[0x6D4] @(0x42,0xA0,0x1F,0x19,0x47,0x42,0xA0,0,0x19,0x44,0)) 'Undine source gate must choose only the uncleared or completed door.'
+Assert-True (([string]::Join(',',(Read-Map $cave[0] 'getTriggers' 275))) -eq '560,1748,1748,2369,2369') 'Both source portals must test completion before loading the trio.'
+# This native callee ends the entire event; it cannot be called before a door.
+Assert-True (Equal-Bytes ($eventUtil.GetMethod('getVanillaEvent').Invoke($null,@($original,0x70B))) @(0x40,1,0x0B,0x17,0x8F,0)) 'Native dungeon music event contract changed.'
+Assert-True (Equal-Bytes $original[0x1E9C4..0x1E9C7] @(0x64,0xF1,0x64,0xD0)) 'Native END no longer terminates interpreter state.'
+$undineState=New-UndineState
+Run-UndineEvent $cave[1] 0x6D3 $undineState
+Assert-True ($undineState.Flags[0xE3] -eq 0 -and $undineState.Doors.Count -eq 0) 'Uncleared entry skips the trio.'
+for($death=1;$death -le 3;$death++) {
+    # Each native Tonpole transforms to Biting Lizard, retaining this callback;
+    # feed its final death, not its intermediate transformation, to the event.
+    Run-UndineEvent $cave[1] 0x6D2 $undineState
+    Assert-True ($undineState.Flags[0xE3] -eq $death) 'Final transformed deaths were not counted.'
+    if($death -lt 3) { Assert-True ($undineState.Flags[0xA0] -eq 0 -and $undineState.FixedOrbs -eq 0 -and $undineState.Doors.Count -eq 0) 'Premature Undine completion.' }
+}
+Assert-True ($undineState.Flags[0xA0] -eq 1 -and $undineState.FixedOrbs -eq 1 -and $undineState.Victories -eq 1 -and $undineState.Refreshes -eq 1) 'Undine victory/reward/progression did not run exactly once.'
+Assert-True ($undineState.Doors.Count -eq 1 -and $undineState.Doors[0] -eq 0x147 -and $undineState.Sounds.Contains(0x0B)) 'Third death did not return to the cleared cave and restore its music.'
+$flagsAfter=$undineState.Flags.Clone()
+Run-UndineEvent $cave[1] 0x6D2 $undineState
+Run-UndineEvent $cave[1] 0x6D3 $undineState
+Assert-True ($undineState.Doors.Count -eq 2 -and $undineState.Doors[1] -eq 0x147 -and $undineState.FixedOrbs -eq 1 -and $undineState.Victories -eq 1 -and (Equal-Bytes $undineState.Flags $flagsAfter)) 'Duplicate death/completed re-entry respawns or rewards the trio.'
+# Reproduce the shipped bug with the actual native callee: JSR $70B reaches
+# END before Door $147. A byte-presence-only assertion used to miss this.
+$fixedTail=$cave[1].replacementEvents[0x233]
+try {
+    $broken=[Collections.Generic.List[byte]]::new([byte[]]$fixedTail.GetRange(0,$fixedTail.Count-5))
+    $broken.AddRange([byte[]]@(0x27,0x0B,0x19,0x47,0)); $cave[1].replacementEvents[0x233]=$broken
+    $oldState=New-UndineState; $oldState.Flags[0xE3]=2
+    Run-UndineEvent $cave[1] 0x6D2 $oldState
+    Assert-True ($oldState.Flags[0xA0] -eq 1 -and $oldState.FixedOrbs -eq 1 -and $oldState.Doors.Count -eq 0) 'Regression no longer reproduces the shipped unreachable return door.'
+} finally { $cave[1].replacementEvents[0x233]=$fixedTail }
+# A normal compatible boss still completes in the native room without an
+# injected return. Compare its full death script with the trio variant minus
+# only the added door, and preserve native exits and visibility flag $A0.
+$normal=New-Case 'native' 'Mantis-Ant' 'Minotaur'; Generate-Events $normal[1] $normal[2]
+$withoutDoor=[Collections.Generic.List[byte]]::new($fixedTail); $withoutDoor.RemoveRange($withoutDoor.Count-5,2)
+Assert-True (Equal-Bytes $normal[1].replacementEvents[0x233] $withoutDoor) 'Normal Undine death event changed beyond the trio return door.'
+Assert-True (Equal-Bytes $cave[1].replacementEvents[0x581] $normal[1].replacementEvents[0x581]) 'Undine NPC randomized rewards changed.'
+foreach($prizeIndex in @(0,1)) {
+    Assert-True (Contains-Bytes $cave[1].replacementEvents[0x581] @(0x12,0x34,0x56,0x78,$prizeIndex)) 'An Undine NPC randomized prize was lost.'
+}
+$normalState=New-UndineState; Run-UndineEvent $normal[1] 0x233 $normalState
+Assert-True ($normalState.Flags[0xA0] -eq 1 -and $normalState.FixedOrbs -eq 1 -and $normalState.Doors.Count -eq 0 -and $normalState.Flags[0xE3] -eq 0) 'Normal Undine boss completion changed.'
+foreach($testCase in @($cave,$normal)) {
+    Assert-True (([string]::Join(',',(Read-Map $testCase[0] 'getTriggers' 277))) -eq ([string]::Join(',',(Read-Map $original 'getTriggers' 277)))) 'Native cave exits changed.'
+    $nativeActor=(Read-Map $testCase[0] 'getObjects' 277)[0]
+    Assert-True ($nativeActor.getEventVisFlag() -eq 0xA0 -and $nativeActor.getEventVisMaximum() -eq 0) 'Completed native boss visibility no longer uses Undine progression.'
+    Assert-True (Equal-Bytes $testCase[0][0x8351C..0x8351F] $original[0x8351C..0x8351F]) 'Door $147 return destination changed.'
+    $refs=0x80000+[int]$testCase[0][0x8522A]+([int]$testCase[0][0x8522B]-shl 8)
+    Assert-True (Equal-Bytes $testCase[0][($refs+6)..($refs+7)] @(0xA0,0x1F)) 'First native exit does not open at Undine completion.'
+    Assert-True (Equal-Bytes $testCase[0][($refs+11)..($refs+12)] @(0xA0,0x1F)) 'Second native exit does not open at Undine completion.'
+    foreach($door in @(0x143,0x146)) {
+        $at=0x83000+4*$door
+        Assert-True (Equal-Bytes $testCase[0][$at..($at+3)] $original[$at..($at+3)]) 'Native cave exit/Undine reward-room door changed.'
+    }
+    Assert-True ($testCase[0][0xD635F] -eq 0xAF -and $testCase[0][0xD636A] -eq 0xAF) 'Native cave exit tile repair was bypassed.'
+}
 # Coexistence through real processors, not just theoretical span comparisons.
 $coexist=New-Case 'MANTISANT' 'Mantis-Ant' 'Minotaur' $true
 Generate-Events $coexist[1] $coexist[2]

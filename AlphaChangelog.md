@@ -1,4 +1,14 @@
-# Expanded Open World Alpha 0.1 RC4
+# Expanded Open World Alpha 0.1 Update 3
+
+Changes from the published Alpha 0.1:
+
+- Added Ice Country town (Todo) and Southtown to the existing Starting Location selector when Flammie Drum is in logic.
+- Starting region is used by placement and Cannon reachability, including closed Chaos offices; existing starts and Christmas overrides are preserved.
+- Restored both approaches to the Upper Land / Matango weapon Crystal Orb using the accepted narrow hedge. The Orb keeps its original position and normal requirement validation.
+- Included accepted Undine Cave Triple Tonpole completion/re-entry and cached-return/autosave exit fixes.
+- Advanced direct-arena boss prototypes, singleton changes and Weapon Power/Watts experiments remain excluded.
+
+## Retained published Alpha features
 
 Player-facing expansion since historical baseline aecfa3a. Reduced Watts costs
 were already present at that baseline and remain available; they are not claimed
@@ -51,3 +61,5 @@ licenses, normal starter profiles and checksums. RC3 artifacts/tag stay intact.
 Weapon Power, historical Frost pilot and general direct-arena experiments are
 not shipped. KnownIssues.md distinguishes accepted Mesen cases from remaining
 full-run, clean-Windows and exhaustive compatibility coverage.
+
+Mara: remember intentionally empty Southtown rewards; repeat interactions use the existing Already got this message. Genuine item rewards remain unchanged. Todo and Southtown startup, controls, menus, exits and save/reload passed user Mesen testing.

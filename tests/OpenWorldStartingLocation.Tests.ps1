@@ -113,10 +113,10 @@ Assert-True (([Activator]::CreateInstance($settingsType, [object[]]@([Activator]
 $optionSettings = [Activator]::CreateInstance($settingsType, [object[]]@([Activator]::CreateInstance($commonType)))
 Assert-True ([Linq.Enumerable]::SequenceEqual(
     [string[]]$optionSettings.getOptionsValues('opStartingLocation'),
-    [string[]]@('default','kakkara'))) 'Starting Location serialized values are incorrect.'
+    [string[]]@('default','kakkara','iceCountry','southtown'))) 'Starting Location serialized values are incorrect.'
 Assert-True ([Linq.Enumerable]::SequenceEqual(
     [string[]]$optionSettings.getDisplayValues('opStartingLocation'),
-    [string[]]@('Default','Kakkara'))) 'Starting Location display values are incorrect.'
+    [string[]]@('Default','Kakkara','Ice Country town (Todo)','Southtown'))) 'Starting Location display values are incorrect.'
 Assert-True ($optionSettings.getDefault('showUpperLandOrbRequirement') -eq 'off') `
     'Show Upper Land Orb Requirement default is not Off.'
 Assert-True ([Linq.Enumerable]::SequenceEqual(
